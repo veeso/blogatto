@@ -1,0 +1,50 @@
+//// Blog post type representing a parsed markdown article.
+////
+//// A `Post` is produced by the build pipeline after parsing a markdown file
+//// with frontmatter metadata. The `slug` is derived from the post's directory name,
+//// and the `language` is determined by the filename convention:
+//// `index.md` for the default language (`None`) or `index-{lang}.md` for a specific language.
+////
+//// ## Example
+////
+//// Given the following directory structure:
+////
+//// ```text
+//// blog/
+////   my-first-post/
+////     index.md
+////     index-it.md
+//// ```
+////
+//// Two `Post` values are produced:
+//// - `Post(slug: "my-first-post", language: None, ...)`
+//// - `Post(slug: "my-first-post", language: Some("it"), ...)`
+
+import gleam/dict.{type Dict}
+import gleam/option.{type Option}
+import gleam/time/calendar
+import lustre/element.{type Element}
+
+/// A parsed blog post with rendered markdown contents.
+///
+/// Required frontmatter fields are `title`, `date`, and `description`.
+/// Any additional frontmatter keys are collected in `extras`.
+pub type Post(msg) {
+  Post(
+    /// The post title, extracted from the `title` frontmatter field.
+    title: String,
+    /// URL-friendly identifier derived from the post's directory name.
+    slug: String,
+    /// Publication date extracted from the `date` frontmatter field.
+    date: calendar.Date,
+    /// Short description extracted from the `description` frontmatter field.
+    description: String,
+    /// The language of this post variant, or `None` for the default language.
+    /// Derived from the filename: `index-it.md` produces `Some("it")`.
+    language: Option(String),
+    /// The rendered markdown content as a list of Lustre elements.
+    contents: List(Element(msg)),
+    /// Additional frontmatter keys beyond the required fields.
+    extras: Dict(String, String),
+  )
+}
