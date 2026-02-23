@@ -89,3 +89,68 @@ fn feed_item_to_webls(item: feed_config.FeedItem) -> rss.RssItem {
     guid: option.map(item.guid, fn(g) { #(g, option.None) }),
   )
 }
+
+/// Convert a `FeedConfig` channel fields to an `rss.RssChannel` for XML generation.
+fn feed_config_to_webls_channel(
+  config: feed_config.FeedConfig(msg),
+  items: List(rss.RssItem),
+) -> rss.RssChannel {
+  rss.RssChannel(
+    title: config.title,
+    link: config.link,
+    description: config.description,
+    language: config.language,
+    copyright: config.copyright,
+    managing_editor: config.managing_editor,
+    web_master: config.web_master,
+    pub_date: config.pub_date,
+    last_build_date: config.last_build_date,
+    categories: config.categories,
+    generator: config.generator,
+    docs: config.docs,
+    cloud: option.map(config.cloud, fn(c) {
+      rss.Cloud(
+        domain: c.domain,
+        port: c.port,
+        path: c.path,
+        register_procedure: c.register_procedure,
+        protocol: c.protocol,
+      )
+    }),
+    ttl: config.ttl,
+    image: option.map(config.image, fn(img) {
+      rss.Image(
+        url: img.url,
+        title: img.title,
+        link: img.link,
+        description: img.description,
+        width: img.width,
+        height: img.height,
+      )
+    }),
+    text_input: option.map(config.text_input, fn(ti) {
+      rss.TextInput(
+        title: ti.title,
+        description: ti.description,
+        name: ti.name,
+        link: ti.link,
+      )
+    }),
+    skip_hours: config.skip_hours,
+    skip_days: list.map(config.skip_days, weekday_to_webls),
+    items: items,
+  )
+}
+
+/// Convert a blogatto `Weekday` to a webls `rss.Weekday`.
+fn weekday_to_webls(day: feed_config.Weekday) -> rss.Weekday {
+  case day {
+    feed_config.Monday -> rss.Monday
+    feed_config.Tuesday -> rss.Tuesday
+    feed_config.Wednesday -> rss.Wednesday
+    feed_config.Thursday -> rss.Thursday
+    feed_config.Friday -> rss.Friday
+    feed_config.Saturday -> rss.Saturday
+    feed_config.Sunday -> rss.Sunday
+  }
+}

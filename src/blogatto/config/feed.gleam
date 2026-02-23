@@ -20,6 +20,23 @@
 ////     output: "/rss.xml",
 ////     serialize: option.None,
 ////     title: "My Blog",
+////     link: "https://example.com",
+////     description: "My personal blog",
+////     language: option.Some("en-us"),
+////     copyright: option.None,
+////     managing_editor: option.None,
+////     web_master: option.None,
+////     pub_date: option.None,
+////     last_build_date: option.None,
+////     categories: [],
+////     generator: option.None,
+////     docs: option.None,
+////     cloud: option.None,
+////     ttl: option.None,
+////     image: option.None,
+////     text_input: option.None,
+////     skip_hours: [],
+////     skip_days: [],
 ////   )
 //// ```
 
@@ -29,9 +46,10 @@ import gleam/time/timestamp
 
 /// Configuration for a single RSS feed output.
 ///
-/// The `filter` function, when provided, determines which posts are included.
-/// The `serialize` function, when provided, controls how post metadata maps
-/// to feed items. When either is `None`, a default behavior is used.
+/// Channel-level fields mirror the standard RSS 2.0 `<channel>` element.
+/// The `filter` and `serialize` functions control which posts appear in the
+/// feed and how they are represented. When either is `None`, a default
+/// behavior is used.
 pub type FeedConfig(msg) {
   FeedConfig(
     /// Maximum character length for auto-generated article excerpts.
@@ -44,6 +62,40 @@ pub type FeedConfig(msg) {
     serialize: Option(fn(FeedMetadata(msg)) -> FeedItem),
     /// Title displayed in the RSS channel header.
     title: String,
+    /// The URL of the website corresponding to this channel.
+    link: String,
+    /// A description of the channel.
+    description: String,
+    /// The language the channel is written in (e.g., "en-us").
+    language: Option(String),
+    /// Copyright notice for the channel content.
+    copyright: Option(String),
+    /// Email address for the managing editor.
+    managing_editor: Option(String),
+    /// Email address for the webmaster.
+    web_master: Option(String),
+    /// The publication date of the channel content.
+    pub_date: Option(timestamp.Timestamp),
+    /// The last time the channel content changed.
+    last_build_date: Option(timestamp.Timestamp),
+    /// Category tags for the channel.
+    categories: List(String),
+    /// A string indicating the program used to generate the channel.
+    generator: Option(String),
+    /// A URL that points to the documentation for the RSS format.
+    docs: Option(String),
+    /// Cloud service configuration for channel update notifications.
+    cloud: Option(Cloud),
+    /// Time to live: number of minutes the channel can be cached.
+    ttl: Option(Int),
+    /// An image to display with the channel.
+    image: Option(Image),
+    /// A text input area to display with the channel.
+    text_input: Option(TextInput),
+    /// Hours (0-23) during which aggregators should skip updating.
+    skip_hours: List(Int),
+    /// Days of the week during which aggregators should skip updating.
+    skip_days: List(Weekday),
   )
 }
 
@@ -62,6 +114,65 @@ pub type FeedMetadata(msg) {
     /// Post absolute url
     url: String,
   )
+}
+
+/// Cloud configuration for RSS channel update notifications.
+pub type Cloud {
+  Cloud(
+    /// The domain of the cloud service.
+    domain: String,
+    /// The port for the cloud service.
+    port: Int,
+    /// The path for the cloud service.
+    path: String,
+    /// The registration procedure (usually "http-post" or "xml-rpc").
+    register_procedure: String,
+    /// The protocol used for the cloud service.
+    protocol: String,
+  )
+}
+
+/// An image associated with an RSS channel.
+pub type Image {
+  Image(
+    /// The URL of the image.
+    url: String,
+    /// The title of the image.
+    title: String,
+    /// The link associated with the image.
+    link: String,
+    /// An optional description of the image.
+    description: Option(String),
+    /// An optional width of the image in pixels.
+    width: Option(Int),
+    /// An optional height of the image in pixels.
+    height: Option(Int),
+  )
+}
+
+/// A text input field for an RSS channel.
+pub type TextInput {
+  TextInput(
+    /// The title of the text input field.
+    title: String,
+    /// A description of the text input field's purpose.
+    description: String,
+    /// The name attribute for the text input field.
+    name: String,
+    /// The link associated with the text input field.
+    link: String,
+  )
+}
+
+/// A day of the week for RSS channel skip days.
+pub type Weekday {
+  Monday
+  Tuesday
+  Wednesday
+  Thursday
+  Friday
+  Saturday
+  Sunday
 }
 
 /// An RSS feed item enclosure (e.g., a podcast audio file or image).

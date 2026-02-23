@@ -8,6 +8,33 @@ import gleam/option.{None, Some}
 import gleeunit/should
 import lustre/element/html
 
+fn sample_feed_config() -> feed.FeedConfig(msg) {
+  feed.FeedConfig(
+    excerpt_len: 200,
+    filter: None,
+    output: "/rss.xml",
+    serialize: None,
+    title: "My Blog",
+    link: "https://example.com",
+    description: "A sample blog",
+    language: None,
+    copyright: None,
+    managing_editor: None,
+    web_master: None,
+    pub_date: None,
+    last_build_date: None,
+    categories: [],
+    generator: None,
+    docs: None,
+    cloud: None,
+    ttl: None,
+    image: None,
+    text_input: None,
+    skip_hours: [],
+    skip_days: [],
+  )
+}
+
 pub fn new_sets_site_url_test() {
   let cfg = config.new("https://example.com")
   cfg.site_url
@@ -58,37 +85,23 @@ pub fn new_has_no_static_dir_test() {
 }
 
 pub fn feed_prepends_feed_config_test() {
-  let feed_config =
-    feed.FeedConfig(
-      excerpt_len: 200,
-      filter: None,
-      output: "/rss.xml",
-      serialize: None,
-      title: "My Blog",
-    )
+  let fc = sample_feed_config()
   let cfg =
     config.new("https://example.com")
-    |> config.feed(feed_config)
+    |> config.feed(fc)
 
   cfg.feeds
-  |> should.equal([feed_config])
+  |> should.equal([fc])
 }
 
 pub fn feed_prepends_multiple_feeds_test() {
   let feed1 =
-    feed.FeedConfig(
-      excerpt_len: 200,
-      filter: None,
-      output: "/rss.xml",
-      serialize: None,
-      title: "English",
-    )
+    feed.FeedConfig(..sample_feed_config(), output: "/rss.xml", title: "English")
   let feed2 =
     feed.FeedConfig(
+      ..sample_feed_config(),
       excerpt_len: 150,
-      filter: None,
       output: "/rss-it.xml",
-      serialize: None,
       title: "Italian",
     )
   let cfg =
@@ -203,13 +216,7 @@ pub fn builder_pipeline_preserves_all_settings_test() {
   let sm =
     sitemap.SitemapConfig(filter: None, serialize: None, path: "/sitemap.xml")
   let feed_cfg =
-    feed.FeedConfig(
-      excerpt_len: 200,
-      filter: None,
-      output: "/rss.xml",
-      serialize: None,
-      title: "Blog",
-    )
+    feed.FeedConfig(..sample_feed_config(), title: "Blog")
 
   let cfg =
     config.new("https://example.com")
