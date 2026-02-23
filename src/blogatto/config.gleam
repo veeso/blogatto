@@ -26,6 +26,7 @@ import blogatto/config/feed
 import blogatto/config/markdown
 import blogatto/config/robots
 import blogatto/config/sitemap
+import blogatto/post
 import gleam/dict.{type Dict}
 import gleam/list
 import gleam/option.{type Option, None, Some}
@@ -46,7 +47,9 @@ pub type Config(msg) {
     /// Robots.txt configuration. When `None`, no robots.txt is generated.
     robots: Option(robots.RobotsConfig),
     /// Static routes mapping URL paths to view functions.
-    routes: Dict(String, fn() -> Element(msg)),
+    /// Each view function receives the full list of blog posts, enabling pages
+    /// that display recent posts, featured posts, or other post-based content.
+    routes: Dict(String, fn(List(post.Post(msg))) -> Element(msg)),
     /// The base URL of the site (e.g., `"https://example.com"`).
     /// Used to build absolute URLs for sitemaps, RSS feeds, and other outputs.
     site_url: String,
@@ -102,12 +105,13 @@ pub fn robots(config: Config(msg), robots: robots.RobotsConfig) -> Config(msg) {
 
 /// Add a static route mapping a URL path to a view function.
 ///
-/// The view function is called lazily during the build to produce the page element.
+/// The view function receives the full list of blog posts parsed during the build,
+/// allowing pages to display recent posts, featured posts, or other post-based content.
 /// The route path maps to `{output_dir}/{route}/index.html`.
 pub fn route(
   config: Config(msg),
   route: String,
-  view: fn() -> Element(msg),
+  view: fn(List(post.Post(msg))) -> Element(msg),
 ) -> Config(msg) {
   Config(..config, routes: dict.insert(config.routes, route, view))
 }
