@@ -24,6 +24,7 @@ fn sample_post() -> Post(msg) {
   Post(
     title: "Hello World",
     slug: "hello-world",
+    url: "https://example.com/blog/hello-world",
     date: timestamp.from_unix_seconds(1_700_000_000),
     description: "A first post",
     language: None,

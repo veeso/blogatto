@@ -1,4 +1,5 @@
-import blogatto/config/robots.{Robot, RobotsConfig}
+import blogatto/config
+import blogatto/config/robots.{type RobotsConfig, Robot, RobotsConfig}
 import blogatto/error
 import blogatto/internal/builder/robots as robots_builder
 import gleam/string
@@ -14,6 +15,15 @@ fn with_test_dir(f: fn(String) -> Nil) -> Nil {
   Nil
 }
 
+fn make_config(
+  output_dir: String,
+  robots_cfg: RobotsConfig,
+) -> config.Config(msg) {
+  config.new("https://example.com")
+  |> config.output_dir(output_dir)
+  |> config.robots(robots_cfg)
+}
+
 pub fn build_writes_robots_txt_file_test() {
   use dir <- with_test_dir
   let cfg =
@@ -21,7 +31,7 @@ pub fn build_writes_robots_txt_file_test() {
       Robot(user_agent: "*", allowed_routes: ["/"], disallowed_routes: []),
     ])
 
-  robots_builder.build(dir, cfg)
+  robots_builder.build(make_config(dir, cfg))
   |> should.be_ok
 
   simplifile.is_file(dir <> "/robots.txt")
@@ -36,7 +46,7 @@ pub fn build_includes_sitemap_url_test() {
       Robot(user_agent: "*", allowed_routes: ["/"], disallowed_routes: []),
     ])
 
-  robots_builder.build(dir, cfg)
+  robots_builder.build(make_config(dir, cfg))
   |> should.be_ok
 
   let assert Ok(content) = simplifile.read(dir <> "/robots.txt")
@@ -56,7 +66,7 @@ pub fn build_includes_user_agent_directive_test() {
       ),
     ])
 
-  robots_builder.build(dir, cfg)
+  robots_builder.build(make_config(dir, cfg))
   |> should.be_ok
 
   let assert Ok(content) = simplifile.read(dir <> "/robots.txt")
@@ -76,7 +86,7 @@ pub fn build_includes_allowed_routes_test() {
       ),
     ])
 
-  robots_builder.build(dir, cfg)
+  robots_builder.build(make_config(dir, cfg))
   |> should.be_ok
 
   let assert Ok(content) = simplifile.read(dir <> "/robots.txt")
@@ -98,7 +108,7 @@ pub fn build_includes_disallowed_routes_test() {
       ]),
     ])
 
-  robots_builder.build(dir, cfg)
+  robots_builder.build(make_config(dir, cfg))
   |> should.be_ok
 
   let assert Ok(content) = simplifile.read(dir <> "/robots.txt")
@@ -122,7 +132,7 @@ pub fn build_handles_multiple_robots_test() {
       ),
     ])
 
-  robots_builder.build(dir, cfg)
+  robots_builder.build(make_config(dir, cfg))
   |> should.be_ok
 
   let assert Ok(content) = simplifile.read(dir <> "/robots.txt")
@@ -139,7 +149,7 @@ pub fn build_handles_empty_robots_list_test() {
   let cfg =
     RobotsConfig(sitemap_url: "https://example.com/sitemap.xml", robots: [])
 
-  robots_builder.build(dir, cfg)
+  robots_builder.build(make_config(dir, cfg))
   |> should.be_ok
 
   let assert Ok(content) = simplifile.read(dir <> "/robots.txt")
@@ -149,13 +159,28 @@ pub fn build_handles_empty_robots_list_test() {
   |> should.be_true
 }
 
+pub fn build_skips_when_no_robots_config_test() {
+  use dir <- with_test_dir
+  let cfg =
+    config.new("https://example.com")
+    |> config.output_dir(dir)
+
+  robots_builder.build(cfg)
+  |> should.be_ok
+
+  simplifile.is_file(dir <> "/robots.txt")
+  |> should.be_ok
+  |> should.be_false
+}
+
 pub fn build_returns_file_error_for_missing_directory_test() {
   let cfg =
     RobotsConfig(sitemap_url: "https://example.com/sitemap.xml", robots: [
       Robot(user_agent: "*", allowed_routes: ["/"], disallowed_routes: []),
     ])
 
-  let result = robots_builder.build("./nonexistent_dir_robots_test", cfg)
+  let result =
+    robots_builder.build(make_config("./nonexistent_dir_robots_test", cfg))
 
   result
   |> should.be_error

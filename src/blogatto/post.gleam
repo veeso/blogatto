@@ -35,6 +35,9 @@ pub type Post(msg) {
     title: String,
     /// URL-friendly identifier derived from the post's directory name.
     slug: String,
+    /// The absolute URL for this post (e.g., `"https://example.com/blog/my-post"`).
+    /// Constructed from the site URL, optional route prefix, optional language, and slug.
+    url: String,
     /// Publication date extracted from the `date` frontmatter field.
     date: timestamp.Timestamp,
     /// Short description extracted from the `description` frontmatter field.

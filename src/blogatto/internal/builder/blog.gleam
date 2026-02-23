@@ -249,6 +249,14 @@ fn parse_post(
       options,
       markdown.to_maud_components(markdown_config.components),
     )
+  // compute the absolute URL for this post
+  let url =
+    post_url(
+      config.site_url,
+      markdown_config.route_prefix,
+      frontmatter.slug,
+      markdown_file,
+    )
   // finally return the PostInfo with all the data needed to build the post page and link it in the feed and sitemap
   Ok(PostInfo(
     html_path: html_path,
@@ -257,6 +265,7 @@ fn parse_post(
     post: post.Post(
       title: frontmatter.title,
       slug: frontmatter.slug,
+      url: url,
       date: frontmatter.date,
       description: frontmatter.description,
       featured_image: frontmatter.featured_image,
@@ -310,6 +319,30 @@ fn markdown_html_path(
   base
   |> path.join(slug)
   |> path.join("index.html")
+}
+
+/// Compute the absolute URL for a blog post.
+///
+/// Combines `site_url` with the optional `route_prefix`, optional language,
+/// and slug. For example, given `site_url = "https://example.com"`,
+/// `route_prefix = Some("blog")`, `slug = "my-post"`, and
+/// `language = Some("it")`, the result is
+/// `"https://example.com/blog/it/my-post"`.
+fn post_url(
+  site_url: String,
+  route_prefix: Option(String),
+  slug: String,
+  file: MarkdownFile,
+) -> String {
+  let relative = case route_prefix {
+    option.Some(prefix) -> "/" <> prefix
+    option.None -> ""
+  }
+  let relative = case file.language {
+    option.Some(lang) -> relative <> "/" <> lang
+    option.None -> relative
+  }
+  site_url <> relative <> "/" <> slug
 }
 
 /// Helper function to parse the frontmatter of a markdown file and extract the required fields (title, slug, date, description) along with any additional fields.

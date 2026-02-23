@@ -53,6 +53,7 @@ fn sample_post() -> post.Post(msg) {
   Post(
     title: "Hello",
     slug: "hello",
+    url: "https://example.com/hello",
     date: timestamp.from_unix_seconds(1_700_000_000),
     description: "A post",
     language: None,
@@ -203,6 +204,7 @@ pub fn feed_metadata_construction_test() {
     Post(
       title: "Hello",
       slug: "hello",
+      url: "https://example.com/blog/hello",
       date: timestamp.from_unix_seconds(1_700_000_000),
       description: "A post",
       language: Some("en"),
