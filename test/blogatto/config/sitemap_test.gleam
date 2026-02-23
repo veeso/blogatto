@@ -1,0 +1,156 @@
+import blogatto/config/sitemap.{
+  Always, Daily, Hourly, Monthly, Never, SitemapConfig, SitemapEntry,
+  SitemapLink, Weekly, Yearly,
+}
+import gleam/option.{None, Some}
+import gleam/time/timestamp
+import gleeunit/should
+
+pub fn sitemap_config_construction_with_defaults_test() {
+  let cfg = SitemapConfig(filter: None, serialize: None, path: "/sitemap.xml")
+
+  cfg.filter |> should.equal(None)
+  cfg.serialize |> should.equal(None)
+  cfg.path |> should.equal("/sitemap.xml")
+}
+
+pub fn sitemap_config_with_filter_test() {
+  let filter = fn(route: String) { route != "/admin" }
+  let cfg =
+    SitemapConfig(filter: Some(filter), serialize: None, path: "/sitemap.xml")
+
+  cfg.filter |> should.be_some
+}
+
+pub fn sitemap_config_filter_invocation_test() {
+  let filter = fn(route: String) { route != "/admin" }
+  let cfg =
+    SitemapConfig(filter: Some(filter), serialize: None, path: "/sitemap.xml")
+
+  let assert Some(f) = cfg.filter
+  f("/about") |> should.be_true
+  f("/admin") |> should.be_false
+}
+
+pub fn sitemap_config_with_serialize_test() {
+  let serialize = fn(route: String) {
+    SitemapEntry(
+      url: "https://example.com" <> route,
+      priority: 0.8,
+      last_modified: None,
+      change_frequency: Some(Weekly),
+      links: None,
+    )
+  }
+  let cfg =
+    SitemapConfig(
+      filter: None,
+      serialize: Some(serialize),
+      path: "/sitemap.xml",
+    )
+
+  cfg.serialize |> should.be_some
+}
+
+pub fn sitemap_config_serialize_invocation_test() {
+  let serialize = fn(route: String) {
+    SitemapEntry(
+      url: "https://example.com" <> route,
+      priority: 0.8,
+      last_modified: None,
+      change_frequency: Some(Weekly),
+      links: None,
+    )
+  }
+  let cfg =
+    SitemapConfig(
+      filter: None,
+      serialize: Some(serialize),
+      path: "/sitemap.xml",
+    )
+
+  let assert Some(s) = cfg.serialize
+  let entry = s("/about")
+
+  entry.url |> should.equal("https://example.com/about")
+  entry.priority |> should.equal(0.8)
+  entry.last_modified |> should.equal(None)
+  entry.change_frequency |> should.equal(Some(Weekly))
+  entry.links |> should.equal(None)
+}
+
+pub fn sitemap_entry_with_all_fields_test() {
+  let links = [
+    SitemapLink(lang: Some("en"), url: "https://example.com/en/about"),
+    SitemapLink(lang: Some("it"), url: "https://example.com/it/about"),
+  ]
+  let entry =
+    SitemapEntry(
+      url: "https://example.com/about",
+      priority: 1.0,
+      last_modified: Some(timestamp.from_unix_seconds(1_700_000_000)),
+      change_frequency: Some(Monthly),
+      links: Some(links),
+    )
+
+  entry.url |> should.equal("https://example.com/about")
+  entry.priority |> should.equal(1.0)
+  entry.last_modified |> should.be_some
+  entry.change_frequency |> should.equal(Some(Monthly))
+  entry.links |> should.be_some
+}
+
+pub fn sitemap_entry_with_no_optional_fields_test() {
+  let entry =
+    SitemapEntry(
+      url: "https://example.com/page",
+      priority: 0.5,
+      last_modified: None,
+      change_frequency: None,
+      links: None,
+    )
+
+  entry.last_modified |> should.equal(None)
+  entry.change_frequency |> should.equal(None)
+  entry.links |> should.equal(None)
+}
+
+pub fn change_frequency_variants_test() {
+  // Verify all variants are distinct via pattern matching
+  [Always, Hourly, Daily, Weekly, Monthly, Yearly, Never]
+  |> check_all_frequencies
+}
+
+pub fn sitemap_link_with_language_test() {
+  let link = SitemapLink(lang: Some("it"), url: "https://example.com/it/about")
+
+  link.lang |> should.equal(Some("it"))
+  link.url |> should.equal("https://example.com/it/about")
+}
+
+pub fn sitemap_link_default_language_test() {
+  let link = SitemapLink(lang: None, url: "https://example.com/about")
+
+  link.lang |> should.equal(None)
+  link.url |> should.equal("https://example.com/about")
+}
+
+// --- Helper ---
+
+fn check_all_frequencies(freqs: List(sitemap.ChangeFrequency)) -> Nil {
+  case freqs {
+    [] -> Nil
+    [freq, ..rest] -> {
+      case freq {
+        Always -> should.equal(freq, Always)
+        Hourly -> should.equal(freq, Hourly)
+        Daily -> should.equal(freq, Daily)
+        Weekly -> should.equal(freq, Weekly)
+        Monthly -> should.equal(freq, Monthly)
+        Yearly -> should.equal(freq, Yearly)
+        Never -> should.equal(freq, Never)
+      }
+      check_all_frequencies(rest)
+    }
+  }
+}
