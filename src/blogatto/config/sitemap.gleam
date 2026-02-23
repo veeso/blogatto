@@ -5,9 +5,6 @@
 //// sitemap XML file. The optional `filter` and `serialize` functions allow
 //// controlling which routes appear and how they are represented.
 ////
-//// Multilingual blog posts automatically produce `SitemapLink` entries
-//// with `hreflang` alternate links when language variants exist.
-////
 //// ## Example
 ////
 //// ```gleam
@@ -73,17 +70,4 @@ pub type ChangeFrequency {
   Yearly
   /// The page is archived and will not change again.
   Never
-}
-
-/// An alternate language link within a sitemap entry.
-///
-/// Used to declare `<xhtml:link rel="alternate" hreflang="..." href="..." />`
-/// elements, connecting translated versions of the same page.
-pub type SitemapLink {
-  SitemapLink(
-    /// Language code (e.g., `"it"`, `"en"`), or `None` for the default.
-    lang: Option(String),
-    /// The full URL for this language variant.
-    url: String,
-  )
 }

@@ -1,3 +1,9 @@
+//// Error types for the blogatto build pipeline.
+////
+//// All functions in the library that can fail return
+//// `Result(a, BlogattoError)`. Use `describe_error` to obtain a
+//// human-readable description.
+
 import simplifile
 
 /// Blogatto build errors.

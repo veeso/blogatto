@@ -4,7 +4,6 @@ import gleeunit/should
 import lustre/attribute
 import lustre/element
 import lustre/element/html
-import maud/components as maud_components
 
 // --- default / default_components ---
 
@@ -531,64 +530,6 @@ pub fn multiple_component_setters_compose_test() {
   cfg.components.h1("title", [html.text("Title")])
   |> element.to_string
   |> should.equal("<h1 class=\"custom-h1\" id=\"title\">Title</h1>")
-}
-
-// --- to_maud_components alignment conversion ---
-
-pub fn to_maud_components_converts_center_alignment_test() {
-  let custom_td = fn(alignment, children) {
-    case alignment {
-      Center -> html.td([attribute.class("center")], children)
-      _ -> html.td([], children)
-    }
-  }
-  let comps =
-    markdown.default_components()
-    |> fn(c) { markdown.Components(..c, td: custom_td) }
-  let maud_comps = markdown.to_maud_components(comps)
-
-  // maud_comps.td receives maud alignment; the conversion should map it
-  // to blogatto Center, triggering the custom component
-  maud_comps.td(maud_components.Center, [html.text("data")])
-  |> element.to_string
-  |> should.equal("<td class=\"center\">data</td>")
-}
-
-pub fn to_maud_components_converts_right_alignment_test() {
-  let custom_th = fn(alignment, children) {
-    case alignment {
-      Right -> html.th([attribute.class("right")], children)
-      _ -> html.th([], children)
-    }
-  }
-  let comps =
-    markdown.default_components()
-    |> fn(c) { markdown.Components(..c, th: custom_th) }
-  let maud_comps = markdown.to_maud_components(comps)
-
-  maud_comps.th(maud_components.Right, [html.text("col")])
-  |> element.to_string
-  |> should.equal("<th class=\"right\">col</th>")
-}
-
-// --- to_maud_components ---
-
-pub fn to_maud_components_converts_paragraph_test() {
-  let comps = markdown.default_components()
-  let maud_comps = markdown.to_maud_components(comps)
-
-  maud_comps.p([html.text("hello")])
-  |> element.to_string
-  |> should.equal("<p>hello</p>")
-}
-
-pub fn to_maud_components_converts_heading_test() {
-  let comps = markdown.default_components()
-  let maud_comps = markdown.to_maud_components(comps)
-
-  maud_comps.h1("id", [html.text("Title")])
-  |> element.to_string
-  |> should.equal("<h1 id=\"id\">Title</h1>")
 }
 
 // --- Helper ---

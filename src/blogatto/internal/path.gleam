@@ -1,3 +1,6 @@
+//// Internal path utilities for building output file paths from routes,
+//// extracting language codes from markdown filenames, and safe path joining.
+
 import filepath as path
 import gleam/option.{type Option, None, Some}
 import gleam/string

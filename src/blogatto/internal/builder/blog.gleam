@@ -16,11 +16,13 @@ import gleam/dict.{type Dict}
 import gleam/list
 import gleam/option.{type Option}
 import gleam/result
+import gleam/string
 import gleam/time/timestamp
 import lustre/attribute
 import lustre/element
 import lustre/element/html
 import maud
+import maud/components as maud_components
 import mork
 import simplifile
 
@@ -247,7 +249,7 @@ fn parse_post(
     maud.render_markdown(
       markdown_file.content,
       options,
-      markdown.to_maud_components(markdown_config.components),
+      to_maud_components(markdown_config.components),
     )
   // compute the absolute URL for this post
   let url =
@@ -334,6 +336,11 @@ fn post_url(
   slug: String,
   file: MarkdownFile,
 ) -> String {
+  // Strip trailing slash from site_url to avoid double slashes.
+  let base = case string.ends_with(site_url, "/") {
+    True -> string.drop_end(site_url, 1)
+    False -> site_url
+  }
   let relative = case route_prefix {
     option.Some(prefix) -> "/" <> prefix
     option.None -> ""
@@ -342,7 +349,7 @@ fn post_url(
     option.Some(lang) -> relative <> "/" <> lang
     option.None -> relative
   }
-  site_url <> relative <> "/" <> slug
+  base <> relative <> "/" <> slug
 }
 
 /// Helper function to parse the frontmatter of a markdown file and extract the required fields (title, slug, date, description) along with any additional fields.
@@ -395,4 +402,57 @@ fn get_frontmatter_optional_field(
 ) -> Option(String) {
   dict.get(frontmatter, field_name)
   |> option.from_result
+}
+
+// --- Maud component conversion (internal) ---
+
+/// Convert blogatto `Components` to maud `Components`.
+fn to_maud_components(
+  c: markdown.Components(msg),
+) -> maud_components.Components(msg) {
+  maud_components.Components(
+    a: c.a,
+    blockquote: c.blockquote,
+    checkbox: c.checkbox,
+    code: c.code,
+    del: c.del,
+    em: c.em,
+    footnote: c.footnote,
+    h1: c.h1,
+    h2: c.h2,
+    h3: c.h3,
+    h4: c.h4,
+    h5: c.h5,
+    h6: c.h6,
+    hr: c.hr,
+    img: c.img,
+    li: c.li,
+    mark: c.mark,
+    ol: c.ol,
+    p: c.p,
+    pre: c.pre,
+    strong: c.strong,
+    table: c.table,
+    tbody: c.tbody,
+    td: fn(alignment, children) {
+      c.td(from_maud_alignment(alignment), children)
+    },
+    th: fn(alignment, children) {
+      c.th(from_maud_alignment(alignment), children)
+    },
+    thead: c.thead,
+    tr: c.tr,
+    ul: c.ul,
+  )
+}
+
+/// Convert maud `Alignment` to blogatto `Alignment`.
+fn from_maud_alignment(
+  alignment: maud_components.Alignment,
+) -> markdown.Alignment {
+  case alignment {
+    maud_components.Left -> markdown.Left
+    maud_components.Center -> markdown.Center
+    maud_components.Right -> markdown.Right
+  }
 }

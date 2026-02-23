@@ -496,49 +496,6 @@ pub fn ul(
   )
 }
 
-// --- Internal conversion functions ---
-
-/// Convert blogatto `Components` to maud `Components`.
-///
-/// Used internally by the build pipeline to pass components to the maud
-/// rendering engine. Not intended for end-user use.
-pub fn to_maud_components(c: Components(msg)) -> maud_components.Components(msg) {
-  maud_components.Components(
-    a: c.a,
-    blockquote: c.blockquote,
-    checkbox: c.checkbox,
-    code: c.code,
-    del: c.del,
-    em: c.em,
-    footnote: c.footnote,
-    h1: c.h1,
-    h2: c.h2,
-    h3: c.h3,
-    h4: c.h4,
-    h5: c.h5,
-    h6: c.h6,
-    hr: c.hr,
-    img: c.img,
-    li: c.li,
-    mark: c.mark,
-    ol: c.ol,
-    p: c.p,
-    pre: c.pre,
-    strong: c.strong,
-    table: c.table,
-    tbody: c.tbody,
-    td: fn(alignment, children) {
-      c.td(from_maud_alignment(alignment), children)
-    },
-    th: fn(alignment, children) {
-      c.th(from_maud_alignment(alignment), children)
-    },
-    thead: c.thead,
-    tr: c.tr,
-    ul: c.ul,
-  )
-}
-
 // Convert maud `Components` to blogatto `Components`.
 fn from_maud_components(c: maud_components.Components(msg)) -> Components(msg) {
   Components(
@@ -579,14 +536,5 @@ fn to_maud_alignment(alignment: Alignment) -> maud_components.Alignment {
     Left -> maud_components.Left
     Center -> maud_components.Center
     Right -> maud_components.Right
-  }
-}
-
-// Convert maud `Alignment` to blogatto `Alignment`.
-fn from_maud_alignment(alignment: maud_components.Alignment) -> Alignment {
-  case alignment {
-    maud_components.Left -> Left
-    maud_components.Center -> Center
-    maud_components.Right -> Right
   }
 }

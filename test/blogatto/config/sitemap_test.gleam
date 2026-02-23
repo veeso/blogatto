@@ -1,6 +1,6 @@
 import blogatto/config/sitemap.{
-  Always, Daily, Hourly, Monthly, Never, SitemapConfig, SitemapEntry,
-  SitemapLink, Weekly, Yearly,
+  Always, Daily, Hourly, Monthly, Never, SitemapConfig, SitemapEntry, Weekly,
+  Yearly,
 }
 import gleam/option.{None, Some}
 import gleam/time/timestamp
@@ -108,20 +108,6 @@ pub fn change_frequency_variants_test() {
   // Verify all variants are distinct via pattern matching
   [Always, Hourly, Daily, Weekly, Monthly, Yearly, Never]
   |> check_all_frequencies
-}
-
-pub fn sitemap_link_with_language_test() {
-  let link = SitemapLink(lang: Some("it"), url: "https://example.com/it/about")
-
-  link.lang |> should.equal(Some("it"))
-  link.url |> should.equal("https://example.com/it/about")
-}
-
-pub fn sitemap_link_default_language_test() {
-  let link = SitemapLink(lang: None, url: "https://example.com/about")
-
-  link.lang |> should.equal(None)
-  link.url |> should.equal("https://example.com/about")
 }
 
 // --- Helper ---
