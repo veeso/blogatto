@@ -96,7 +96,11 @@ pub fn feed_prepends_feed_config_test() {
 
 pub fn feed_prepends_multiple_feeds_test() {
   let feed1 =
-    feed.FeedConfig(..sample_feed_config(), output: "/rss.xml", title: "English")
+    feed.FeedConfig(
+      ..sample_feed_config(),
+      output: "/rss.xml",
+      title: "English",
+    )
   let feed2 =
     feed.FeedConfig(
       ..sample_feed_config(),
@@ -215,8 +219,7 @@ pub fn builder_pipeline_preserves_all_settings_test() {
   let robots_cfg = robots.new("https://example.com/sitemap.xml")
   let sm =
     sitemap.SitemapConfig(filter: None, serialize: None, path: "/sitemap.xml")
-  let feed_cfg =
-    feed.FeedConfig(..sample_feed_config(), title: "Blog")
+  let feed_cfg = feed.FeedConfig(..sample_feed_config(), title: "Blog")
 
   let cfg =
     config.new("https://example.com")
