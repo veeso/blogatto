@@ -4,15 +4,29 @@ import blogatto/config/feed.{
 import blogatto/post.{Post}
 import gleam/dict
 import gleam/option.{None, Some}
-import gleam/time/calendar
 import gleam/time/timestamp
 import gleeunit/should
+
+fn sample_feed_item() -> feed.FeedItem {
+  FeedItem(
+    title: "A title",
+    description: "A description",
+    link: Some("https://example.com/blog/post"),
+    author: None,
+    comments: None,
+    source: None,
+    pub_date: Some(timestamp.from_unix_seconds(1_700_000_000)),
+    categories: [],
+    enclosure: None,
+    guid: Some("unique-id-123"),
+  )
+}
 
 fn sample_post() -> post.Post(msg) {
   Post(
     title: "Hello",
     slug: "hello",
-    date: calendar.Date(2025, calendar.January, 1),
+    date: timestamp.from_unix_seconds(1_700_000_000),
     description: "A post",
     language: None,
     featured_image: None,
@@ -65,8 +79,19 @@ pub fn feed_config_filter_invocation_test() {
 
   let assert Some(f) = cfg.filter
   let published =
-    FeedMetadata(path: "/blog/post", excerpt: "Hello", post: sample_post())
-  let draft = FeedMetadata(path: "/draft", excerpt: "WIP", post: sample_post())
+    FeedMetadata(
+      path: "/blog/post",
+      excerpt: "Hello",
+      post: sample_post(),
+      url: "https://example.com/blog/post",
+    )
+  let draft =
+    FeedMetadata(
+      path: "/draft",
+      excerpt: "WIP",
+      post: sample_post(),
+      url: "https://example.com/draft",
+    )
 
   f(published) |> should.be_true
   f(draft) |> should.be_false
@@ -75,11 +100,16 @@ pub fn feed_config_filter_invocation_test() {
 pub fn feed_config_with_serialize_test() {
   let serialize = fn(meta: FeedMetadata(msg)) {
     FeedItem(
-      custom_elements: dict.new(),
-      date: timestamp.from_unix_seconds(0),
+      title: meta.post.title,
       description: meta.excerpt,
-      guid: meta.path,
-      url: "https://example.com" <> meta.path,
+      link: Some("https://example.com" <> meta.path),
+      author: None,
+      comments: None,
+      source: None,
+      pub_date: None,
+      categories: [],
+      enclosure: None,
+      guid: Some(meta.path),
     )
   }
   let cfg =
@@ -97,11 +127,16 @@ pub fn feed_config_with_serialize_test() {
 pub fn feed_config_serialize_invocation_test() {
   let serialize = fn(meta: FeedMetadata(msg)) {
     FeedItem(
-      custom_elements: dict.new(),
-      date: timestamp.from_unix_seconds(0),
+      title: meta.post.title,
       description: meta.excerpt,
-      guid: meta.path,
-      url: "https://example.com" <> meta.path,
+      link: Some("https://example.com" <> meta.path),
+      author: None,
+      comments: None,
+      source: None,
+      pub_date: None,
+      categories: [],
+      enclosure: None,
+      guid: Some(meta.path),
     )
   }
   let cfg =
@@ -115,12 +150,17 @@ pub fn feed_config_serialize_invocation_test() {
 
   let assert Some(s) = cfg.serialize
   let meta =
-    FeedMetadata(path: "/blog/hello", excerpt: "A post", post: sample_post())
+    FeedMetadata(
+      path: "/blog/hello",
+      excerpt: "A post",
+      post: sample_post(),
+      url: "https://example.com/blog/hello",
+    )
   let item = s(meta)
 
   item.description |> should.equal("A post")
-  item.guid |> should.equal("/blog/hello")
-  item.url |> should.equal("https://example.com/blog/hello")
+  item.guid |> should.equal(Some("/blog/hello"))
+  item.link |> should.equal(Some("https://example.com/blog/hello"))
 }
 
 pub fn feed_metadata_construction_test() {
@@ -128,14 +168,20 @@ pub fn feed_metadata_construction_test() {
     Post(
       title: "Hello",
       slug: "hello",
-      date: calendar.Date(2025, calendar.January, 1),
+      date: timestamp.from_unix_seconds(1_700_000_000),
       description: "A post",
       language: Some("en"),
       featured_image: Some("./featured.jpeg"),
       contents: [],
       extras: dict.from_list([#("lang", "en")]),
     )
-  let meta = FeedMetadata(path: "/blog/hello", excerpt: "An excerpt", post: p)
+  let meta =
+    FeedMetadata(
+      path: "/blog/hello",
+      excerpt: "An excerpt",
+      post: p,
+      url: "https://example.com/blog/hello",
+    )
 
   meta.path |> should.equal("/blog/hello")
   meta.excerpt |> should.equal("An excerpt")
@@ -145,18 +191,30 @@ pub fn feed_metadata_construction_test() {
 }
 
 pub fn feed_item_construction_test() {
-  let custom = dict.from_list([#("category", "tech")])
-  let item =
-    FeedItem(
-      custom_elements: custom,
-      date: timestamp.from_unix_seconds(1_700_000_000),
-      description: "A description",
-      guid: "unique-id-123",
-      url: "https://example.com/blog/post",
-    )
+  let item = sample_feed_item()
 
+  item.title |> should.equal("A title")
   item.description |> should.equal("A description")
-  item.guid |> should.equal("unique-id-123")
-  item.url |> should.equal("https://example.com/blog/post")
-  item.custom_elements |> dict.get("category") |> should.equal(Ok("tech"))
+  item.link |> should.equal(Some("https://example.com/blog/post"))
+  item.author |> should.equal(None)
+  item.comments |> should.equal(None)
+  item.source |> should.equal(None)
+  item.pub_date |> should.be_some
+  item.categories |> should.equal([])
+  item.enclosure |> should.equal(None)
+  item.guid |> should.equal(Some("unique-id-123"))
+}
+
+pub fn feed_item_with_enclosure_test() {
+  let enc =
+    feed.Enclosure(
+      url: "https://example.com/audio.mp3",
+      length: 12_345_678,
+      enclosure_type: "audio/mpeg",
+    )
+  let item =
+    FeedItem(..sample_feed_item(), enclosure: Some(enc), categories: ["tech"])
+
+  item.enclosure |> should.be_some
+  item.categories |> should.equal(["tech"])
 }

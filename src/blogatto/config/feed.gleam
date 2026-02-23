@@ -24,7 +24,6 @@
 //// ```
 
 import blogatto/post.{type Post}
-import gleam/dict.{type Dict}
 import gleam/option.{type Option}
 import gleam/time/timestamp
 
@@ -60,21 +59,41 @@ pub type FeedMetadata(msg) {
     excerpt: String,
     /// The parsed blog post with all frontmatter fields and rendered contents.
     post: Post(msg),
+    /// Post absolute url
+    url: String,
   )
 }
 
+/// An RSS feed item enclosure (e.g., a podcast audio file or image).
+pub type Enclosure {
+  Enclosure(url: String, length: Int, enclosure_type: String)
+}
+
 /// A serialized RSS feed item produced by the `serialize` function.
+///
+/// Fields mirror the standard RSS 2.0 `<item>` element. Only `title` and
+/// `description` are required; the remaining fields are optional.
 pub type FeedItem {
   FeedItem(
-    /// Additional custom XML elements as key-value pairs.
-    custom_elements: Dict(String, String),
-    /// Publication timestamp for this feed entry.
-    date: timestamp.Timestamp,
+    /// Title of the feed entry.
+    title: String,
     /// Human-readable description or summary of the item.
     description: String,
-    /// Globally unique identifier for this feed item.
-    guid: String,
     /// The full URL for this entry.
-    url: String,
+    link: Option(String),
+    /// Author email or name for this entry.
+    author: Option(String),
+    /// URL pointing to comments for this item.
+    comments: Option(String),
+    /// Source feed URL where this item originated.
+    source: Option(String),
+    /// Publication timestamp for this feed entry.
+    pub_date: Option(timestamp.Timestamp),
+    /// Category tags for this item.
+    categories: List(String),
+    /// Media enclosure (e.g., podcast audio, image).
+    enclosure: Option(Enclosure),
+    /// Globally unique identifier for this feed item.
+    guid: Option(String),
   )
 }

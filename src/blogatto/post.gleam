@@ -22,7 +22,7 @@
 
 import gleam/dict.{type Dict}
 import gleam/option.{type Option}
-import gleam/time/calendar
+import gleam/time/timestamp
 import lustre/element.{type Element}
 
 /// A parsed blog post with rendered markdown contents.
@@ -36,7 +36,7 @@ pub type Post(msg) {
     /// URL-friendly identifier derived from the post's directory name.
     slug: String,
     /// Publication date extracted from the `date` frontmatter field.
-    date: calendar.Date,
+    date: timestamp.Timestamp,
     /// Short description extracted from the `description` frontmatter field.
     description: String,
     /// The language of this post variant, or `None` for the default language.
