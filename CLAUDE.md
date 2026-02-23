@@ -25,7 +25,7 @@ There is no single-test runner flag in gleeunit; to run a specific test module, 
 ### Public Modules
 
 - **`blogatto`** — Main entry point. Exposes `build(Config(msg)) -> Result(Nil, BuildError)` which orchestrates the entire build pipeline.
-- **`blogatto/config`** — Configuration builder (`Config(msg)` generic type) with functional composition.
+- **`blogatto/config`** — Configuration builder (`Config(msg)` generic type) with functional composition. Routes are defined via `config.route(path, view)` where the view function receives the list of parsed blog posts (`List(Post(msg))`).
   - `config/feed` — RSS feed configuration (`FeedConfig`, `FeedMetadata`, `FeedItem`)
   - `config/markdown` — Markdown rendering config: Maud components, markdown search paths, and optional blog post template override
   - `config/sitemap` — Sitemap generation config (`SitemapConfig`, `SitemapEntry`, `ChangeFrequency`). Custom links (`SitemapLink`) were dropped as webls does not support them.
@@ -47,19 +47,18 @@ There is no single-test runner flag in gleeunit; to run a specific test module, 
 
 1. **Clean** — Delete and recreate `output_dir`
 2. **Copy static assets** — If `static_dir` is set, copy contents to `output_dir`
-3. **Parse markdown** — Walk `markdown_config.paths`, find `index.md`/`index-{lang}.md` per directory, extract frontmatter, render via Maud components → `List(Post(msg))`
-4. **Build blog pages** — Render each Post via `markdown_config.template` (or default template), write to `output_dir/{slug}/index.html` or `output_dir/{slug}/index-{lang}.html`. Copy non-markdown assets (images, etc.) from each post's source directory to the output post directory.
-5. **Build static pages** — For each route in `config.routes`, call the view function, write HTML
+3. **Build robots.txt** — If configured, generate via webls
+4. **Build blog pages** — Walk `markdown_config.paths`, find `index.md`/`index-{lang}.md` per directory, extract frontmatter, render via Maud components, construct `Post(msg)` values, write HTML pages via `markdown_config.template` (or default template) to `output_dir/{slug}/index.html` or `output_dir/{slug}/index-{lang}.html`. Copy non-markdown assets (images, etc.) from each post's source directory to the output post directory. Produces `List(Post(msg))` used by subsequent steps.
+5. **Build static pages** — For each route in `config.routes`, call the view function with the `List(Post(msg))` from step 4, write HTML
 6. **Build feeds** — For each `FeedConfig`, filter/serialize posts into RSS via webls
-7. **Build sitemap** — If configured, collect all routes, apply filter/serialize, generate XML
-8. **Build robots.txt** — If configured, generate via webls
+7. **Build sitemap** — If configured, collect all routes and blog post URLs, apply filter/serialize, generate XML
 
 ### Key Design Patterns
 
 - **Builder pattern**: Configuration is built via functional composition — `config.new(site_url)` piped through `config.feed()`, `config.route()`, `config.output_dir()`, etc.
 - **Generic over message type**: `Config(msg)` threads the Lustre message type through the entire configuration and into Post/template types.
 - **Route-to-file mapping**: Routes map to `{output_dir}/{route}/index.html` output paths.
-- **Closure-based routing**: Static routes stored as `Dict(String, fn() -> Element(msg))`.
+- **Closure-based routing**: Static routes stored as `Dict(String, fn(List(Post(msg))) -> Element(msg))`. Each view function receives the full list of parsed blog posts, enabling pages to display featured posts, recent articles, etc.
 - **Directory-per-post**: Blog posts live in directories under markdown paths. Each post directory contains `index.md` (default language), optional `index-{lang}.md` variants, and any related assets (images, etc.). Slug = directory name. Language = filename pattern (`index-{lang}.md`). Non-markdown files in the post directory are copied to the output alongside the generated HTML, so relative image links in markdown work as-is.
 - **No panics in library code**: All errors return `Result(_, BuildError)`.
 
