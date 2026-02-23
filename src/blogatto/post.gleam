@@ -42,6 +42,8 @@ pub type Post(msg) {
     /// The language of this post variant, or `None` for the default language.
     /// Derived from the filename: `index-it.md` produces `Some("it")`.
     language: Option(String),
+    /// The featured image URL extracted from the `featured_image` frontmatter field, or `None` if not provided.
+    featured_image: Option(String),
     /// The rendered markdown content as a list of Lustre elements.
     contents: List(Element(msg)),
     /// Additional frontmatter keys beyond the required fields.

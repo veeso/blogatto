@@ -15,6 +15,7 @@ fn sample_post() -> post.Post(msg) {
     date: calendar.Date(2025, calendar.January, 1),
     description: "A post",
     language: None,
+    featured_image: None,
     contents: [],
     extras: dict.new(),
   )
@@ -130,6 +131,7 @@ pub fn feed_metadata_construction_test() {
       date: calendar.Date(2025, calendar.January, 1),
       description: "A post",
       language: Some("en"),
+      featured_image: Some("./featured.jpeg"),
       contents: [],
       extras: dict.from_list([#("lang", "en")]),
     )
@@ -138,6 +140,7 @@ pub fn feed_metadata_construction_test() {
   meta.path |> should.equal("/blog/hello")
   meta.excerpt |> should.equal("An excerpt")
   meta.post.title |> should.equal("Hello")
+  meta.post.featured_image |> should.equal(Some("./featured.jpeg"))
   meta.post.extras |> dict.get("lang") |> should.equal(Ok("en"))
 }
 
