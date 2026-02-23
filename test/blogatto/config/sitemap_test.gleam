@@ -36,10 +36,9 @@ pub fn sitemap_config_with_serialize_test() {
   let serialize = fn(route: String) {
     SitemapEntry(
       url: "https://example.com" <> route,
-      priority: 0.8,
+      priority: Some(0.8),
       last_modified: None,
       change_frequency: Some(Weekly),
-      links: None,
     )
   }
   let cfg =
@@ -56,10 +55,9 @@ pub fn sitemap_config_serialize_invocation_test() {
   let serialize = fn(route: String) {
     SitemapEntry(
       url: "https://example.com" <> route,
-      priority: 0.8,
+      priority: Some(0.8),
       last_modified: None,
       change_frequency: Some(Weekly),
-      links: None,
     )
   }
   let cfg =
@@ -73,46 +71,37 @@ pub fn sitemap_config_serialize_invocation_test() {
   let entry = s("/about")
 
   entry.url |> should.equal("https://example.com/about")
-  entry.priority |> should.equal(0.8)
+  entry.priority |> should.equal(Some(0.8))
   entry.last_modified |> should.equal(None)
   entry.change_frequency |> should.equal(Some(Weekly))
-  entry.links |> should.equal(None)
 }
 
 pub fn sitemap_entry_with_all_fields_test() {
-  let links = [
-    SitemapLink(lang: Some("en"), url: "https://example.com/en/about"),
-    SitemapLink(lang: Some("it"), url: "https://example.com/it/about"),
-  ]
   let entry =
     SitemapEntry(
       url: "https://example.com/about",
-      priority: 1.0,
+      priority: Some(1.0),
       last_modified: Some(timestamp.from_unix_seconds(1_700_000_000)),
       change_frequency: Some(Monthly),
-      links: Some(links),
     )
 
   entry.url |> should.equal("https://example.com/about")
-  entry.priority |> should.equal(1.0)
+  entry.priority |> should.equal(Some(1.0))
   entry.last_modified |> should.be_some
   entry.change_frequency |> should.equal(Some(Monthly))
-  entry.links |> should.be_some
 }
 
 pub fn sitemap_entry_with_no_optional_fields_test() {
   let entry =
     SitemapEntry(
       url: "https://example.com/page",
-      priority: 0.5,
+      priority: Some(0.5),
       last_modified: None,
       change_frequency: None,
-      links: None,
     )
 
   entry.last_modified |> should.equal(None)
   entry.change_frequency |> should.equal(None)
-  entry.links |> should.equal(None)
 }
 
 pub fn change_frequency_variants_test() {

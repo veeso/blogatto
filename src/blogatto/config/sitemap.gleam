@@ -47,13 +47,11 @@ pub type SitemapEntry {
     /// The full URL for this sitemap entry.
     url: String,
     /// Priority hint for search engines, between `0.0` and `1.0`.
-    priority: Float,
+    priority: Option(Float),
     /// Optional timestamp of the last modification of this page.
     last_modified: Option(Timestamp),
     /// Optional hint for how frequently this page changes.
     change_frequency: Option(ChangeFrequency),
-    /// Optional alternate language links for this URL.
-    links: Option(List(SitemapLink)),
   )
 }
 
