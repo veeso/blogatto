@@ -6,6 +6,14 @@ pub type BlogattoError {
   File(simplifile.FileError)
   /// Invalid URI
   InvalidUri(String)
+  /// Missing required field in frontmatter
+  FrontmatterMissingField(String)
+  /// Invalid date format in frontmatter
+  FrontmatterInvalidDate(String)
+  /// A frontmatter line could not be parsed as a `key: value` pair.
+  FrontmatterInvalidLine(String)
+  /// Missing Frontmatter
+  FrontmatterMissing
 }
 
 /// Convert an error into a human-readable description.
@@ -13,5 +21,12 @@ pub fn describe_error(error: BlogattoError) -> String {
   case error {
     File(file_error) -> "File error: " <> simplifile.describe_error(file_error)
     InvalidUri(uri) -> "Invalid URI: " <> uri
+    FrontmatterMissingField(field) ->
+      "Frontmatter missing required field: " <> field
+    FrontmatterInvalidDate(date) ->
+      "Frontmatter has invalid date format: " <> date
+    FrontmatterInvalidLine(line) ->
+      "Frontmatter contains invalid line: " <> line
+    FrontmatterMissing -> "Markdown file is missing frontmatter"
   }
 }

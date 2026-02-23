@@ -78,6 +78,8 @@ pub type Components(msg) {
 /// The `components` field specifies the components used to render each markdown
 /// AST node (headings, paragraphs, code blocks, etc.).
 /// The `paths` field lists directories to recursively search for markdown post directories.
+/// The `route_prefix` field sets the URL prefix under which blog posts are placed
+/// in the output directory (e.g., `"blog"` produces `output_dir/blog/{slug}/index.html`).
 /// The `template` field optionally overrides the default blog post page template.
 pub type MarkdownConfig(msg) {
   MarkdownConfig(
@@ -85,6 +87,10 @@ pub type MarkdownConfig(msg) {
     components: Components(msg),
     /// Directories to recursively search for markdown post directories.
     paths: List(String),
+    /// URL prefix for blog post output paths. When `None`, posts are written
+    /// directly under `output_dir/{slug}/index.html`. When `Some("blog")`,
+    /// posts are written to `output_dir/blog/{slug}/index.html`.
+    route_prefix: Option(String),
     /// Optional custom template for rendering a blog post page.
     /// Receives the parsed `Post` and returns a full page element.
     /// When `None`, Blogatto uses a minimal default template.
@@ -93,9 +99,14 @@ pub type MarkdownConfig(msg) {
 }
 
 /// Create a default `MarkdownConfig` with default components,
-/// no search paths, and no custom template.
+/// no search paths, no route prefix, and no custom template.
 pub fn default() -> MarkdownConfig(msg) {
-  MarkdownConfig(components: default_components(), paths: [], template: None)
+  MarkdownConfig(
+    components: default_components(),
+    paths: [],
+    route_prefix: None,
+    template: None,
+  )
 }
 
 /// Return the default components, rendering each markdown element as its
@@ -121,6 +132,18 @@ pub fn markdown_path(
   path: String,
 ) -> MarkdownConfig(msg) {
   MarkdownConfig(..config, paths: list.prepend(config.paths, path))
+}
+
+/// Set the URL prefix used for blog post output paths.
+///
+/// When set to `"blog"`, posts are written to
+/// `output_dir/blog/{slug}/index.html` (or `output_dir/blog/{lang}/{slug}/index.html`
+/// for localized posts). When not set, posts go directly under `output_dir`.
+pub fn route_prefix(
+  config: MarkdownConfig(msg),
+  prefix: String,
+) -> MarkdownConfig(msg) {
+  MarkdownConfig(..config, route_prefix: option.Some(prefix))
 }
 
 /// Set a custom template function for rendering blog post pages.

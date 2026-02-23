@@ -66,17 +66,25 @@ Each markdown file must have frontmatter with these required fields:
 
 ```markdown
 ---
-title: "My First Post"
-date: 2025-01-15
-description: "A short description of the post"
+title: My First Post
+date: 2025-01-15 00:00:00
+description: A short description of the post
+featured_image: /images/hero.jpg
 ---
 
 Your markdown content here...
 ```
 
+| Field | Required | Description |
+|-------|----------|-------------|
+| `title` | Yes | The post title |
+| `date` | Yes | Publication date in `YYYY-MM-DD HH:MM:SS` format (UTC) |
+| `description` | Yes | A short description or excerpt |
+| `featured_image` | No | URL or path to a featured image |
+
 - **Slug** is derived from the directory name (e.g., `my-first-post`)
 - **Language** is derived from the filename: `index.md` is the default, `index-it.md` is Italian
-- Additional frontmatter keys are available in `Post.extras`
+- Additional frontmatter keys beyond the ones above are available in `Post.extras`
 
 ## Configuration
 
