@@ -27,3 +27,20 @@
 //// }
 //// ```
 
+import blogatto/config
+import blogatto/error
+
+/// Build the static site based on the provided configuration.
+/// 
+/// ## Build steps
+/// 
+/// 0. Clean output directory and copy static assets. This is a prerequisite for all builders to ensure a fresh build environment and that static files are available for the pages and posts.
+/// 1. builder/robots — Generate robots.txt via webls. Simplest builder: no parsing, no post dependencies, just config-to-file. Good warm-up to establish the builder module pattern.
+/// 2. builder/pages — Render static routes to HTML. Still straightforward: iterate config.routes, call each view function, render with Lustre, write files. No markdown parsing involved.
+/// 3. builder/blog — The heavy one. Walk markdown paths, discover post directories, parse frontmatter, render markdown via Maud components, construct Post(msg) values, write HTML pages, copy
+/// non-markdown assets. This produces the List(Post(msg)) that feeds and sitemap both need.
+/// 4. builder/feed — Generate RSS feeds via webls. Depends on the post list from step 4. Apply filter/serialize per FeedConfig, write XML.
+/// 5. builder/sitemap — Generate sitemap XML via webls. Depends on both static routes and blog posts being known. Apply filter/serialize, handle hreflang links for multilingual posts.
+pub fn build(config: config.Config(msg)) -> Result(Nil, error.BlogattoError) {
+  todo
+}

@@ -3,7 +3,7 @@
 import blogatto/config
 import blogatto/config/robots
 import blogatto/error
-import filepath as path
+import blogatto/internal/path
 import gleam/list
 import gleam/result
 import simplifile

@@ -28,7 +28,7 @@ There is no single-test runner flag in gleeunit; to run a specific test module, 
 - **`blogatto/config`** — Configuration builder (`Config(msg)` generic type) with functional composition.
   - `config/feed` — RSS feed configuration (`FeedConfig`, `FeedMetadata`, `FeedItem`)
   - `config/markdown` — Markdown rendering config: Maud components, markdown search paths, and optional blog post template override
-  - `config/sitemap` — Sitemap generation config (`SitemapConfig`, `SitemapEntry`, `SitemapLink`)
+  - `config/sitemap` — Sitemap generation config (`SitemapConfig`, `SitemapEntry`, `ChangeFrequency`). Custom links (`SitemapLink`) were dropped as webls does not support them.
   - `config/robots` — Robots.txt generation config
 - **`blogatto/post`** — `Post(msg)` type representing a parsed blog post with title, slug, date, description, language, optional featured image, rendered contents, and extras dict.
 
