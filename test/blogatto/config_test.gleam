@@ -3,6 +3,7 @@ import blogatto/config/feed
 import blogatto/config/markdown
 import blogatto/config/robots
 import blogatto/config/sitemap
+import blogatto/post
 import gleam/dict
 import gleam/option.{None, Some}
 import gleeunit/should
@@ -148,7 +149,7 @@ pub fn robots_sets_robots_config_test() {
 }
 
 pub fn route_adds_route_to_dict_test() {
-  let view = fn() { html.div([], []) }
+  let view = fn(_posts: List(post.Post(msg))) { html.div([], []) }
   let cfg =
     config.new("https://example.com")
     |> config.route("/about", view)
@@ -161,8 +162,12 @@ pub fn route_adds_route_to_dict_test() {
 pub fn route_adds_multiple_routes_test() {
   let cfg =
     config.new("https://example.com")
-    |> config.route("/about", fn() { html.div([], []) })
-    |> config.route("/contact", fn() { html.div([], []) })
+    |> config.route("/about", fn(_posts: List(post.Post(msg))) {
+      html.div([], [])
+    })
+    |> config.route("/contact", fn(_posts: List(post.Post(msg))) {
+      html.div([], [])
+    })
 
   cfg.routes
   |> dict.size
@@ -170,13 +175,15 @@ pub fn route_adds_multiple_routes_test() {
 }
 
 pub fn route_view_produces_expected_element_test() {
-  let view = fn() { html.p([], [html.text("hello")]) }
+  let view = fn(_posts: List(post.Post(msg))) {
+    html.p([], [html.text("hello")])
+  }
   let cfg =
     config.new("https://example.com")
     |> config.route("/about", view)
 
   let assert Ok(route_view) = dict.get(cfg.routes, "/about")
-  route_view()
+  route_view([])
   |> should.equal(html.p([], [html.text("hello")]))
 }
 
@@ -201,8 +208,12 @@ pub fn static_dir_sets_static_directory_test() {
 }
 
 pub fn route_overwrites_duplicate_key_test() {
-  let view1 = fn() { html.p([], [html.text("first")]) }
-  let view2 = fn() { html.p([], [html.text("second")]) }
+  let view1 = fn(_posts: List(post.Post(msg))) {
+    html.p([], [html.text("first")])
+  }
+  let view2 = fn(_posts: List(post.Post(msg))) {
+    html.p([], [html.text("second")])
+  }
   let cfg =
     config.new("https://example.com")
     |> config.route("/about", view1)
@@ -210,7 +221,7 @@ pub fn route_overwrites_duplicate_key_test() {
 
   cfg.routes |> dict.size |> should.equal(1)
   let assert Ok(route_view) = dict.get(cfg.routes, "/about")
-  route_view()
+  route_view([])
   |> should.equal(html.p([], [html.text("second")]))
 }
 
@@ -229,7 +240,9 @@ pub fn builder_pipeline_preserves_all_settings_test() {
     |> config.robots(robots_cfg)
     |> config.sitemap(sm)
     |> config.feed(feed_cfg)
-    |> config.route("/about", fn() { html.div([], []) })
+    |> config.route("/about", fn(_posts: List(post.Post(msg))) {
+      html.div([], [])
+    })
 
   cfg.site_url |> should.equal("https://example.com")
   cfg.output_dir |> should.equal("./build")

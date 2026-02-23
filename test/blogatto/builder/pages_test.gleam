@@ -1,5 +1,6 @@
 import blogatto/config
 import blogatto/internal/builder/pages as pages_builder
+import blogatto/post
 import gleam/string
 import gleeunit/should
 import lustre/attribute
@@ -16,18 +17,18 @@ fn with_test_dir(f: fn(String) -> Nil) -> Nil {
   Nil
 }
 
-fn simple_view() -> element.Element(msg) {
+fn simple_view(_posts: List(post.Post(msg))) -> element.Element(msg) {
   html.div([], [html.text("Hello, world!")])
 }
 
-fn about_view() -> element.Element(msg) {
+fn about_view(_posts: List(post.Post(msg))) -> element.Element(msg) {
   html.main([], [
     html.h1([], [html.text("About Us")]),
     html.p([], [html.text("We build static sites.")]),
   ])
 }
 
-fn contact_view() -> element.Element(msg) {
+fn contact_view(_posts: List(post.Post(msg))) -> element.Element(msg) {
   html.section([attribute.id("contact")], [
     html.h2([], [html.text("Contact")]),
   ])
@@ -44,7 +45,7 @@ pub fn build_with_no_routes_succeeds_test() {
   use dir <- with_test_dir
   let cfg = minimal_config(dir)
 
-  pages_builder.build(cfg)
+  pages_builder.build(cfg, [])
   |> should.be_ok
 }
 
@@ -56,7 +57,7 @@ pub fn build_creates_index_html_for_single_route_test() {
     minimal_config(dir)
     |> config.route("/", simple_view)
 
-  pages_builder.build(cfg)
+  pages_builder.build(cfg, [])
   |> should.be_ok
 
   simplifile.is_file(dir <> "/index.html")
@@ -70,7 +71,7 @@ pub fn build_renders_view_content_to_html_test() {
     minimal_config(dir)
     |> config.route("/", simple_view)
 
-  pages_builder.build(cfg)
+  pages_builder.build(cfg, [])
   |> should.be_ok
 
   let assert Ok(content) = simplifile.read(dir <> "/index.html")
@@ -85,7 +86,7 @@ pub fn build_wraps_output_in_html_document_test() {
     minimal_config(dir)
     |> config.route("/", simple_view)
 
-  pages_builder.build(cfg)
+  pages_builder.build(cfg, [])
   |> should.be_ok
 
   let assert Ok(content) = simplifile.read(dir <> "/index.html")
@@ -102,7 +103,7 @@ pub fn build_creates_subdirectory_for_named_route_test() {
     minimal_config(dir)
     |> config.route("/about", about_view)
 
-  pages_builder.build(cfg)
+  pages_builder.build(cfg, [])
   |> should.be_ok
 
   simplifile.is_file(dir <> "/about/index.html")
@@ -116,7 +117,7 @@ pub fn build_named_route_contains_view_content_test() {
     minimal_config(dir)
     |> config.route("/about", about_view)
 
-  pages_builder.build(cfg)
+  pages_builder.build(cfg, [])
   |> should.be_ok
 
   let assert Ok(content) = simplifile.read(dir <> "/about/index.html")
@@ -136,7 +137,7 @@ pub fn build_creates_nested_directories_for_deep_route_test() {
     minimal_config(dir)
     |> config.route("/about/team", simple_view)
 
-  pages_builder.build(cfg)
+  pages_builder.build(cfg, [])
   |> should.be_ok
 
   simplifile.is_file(dir <> "/about/team/index.html")
@@ -150,7 +151,7 @@ pub fn build_creates_deeply_nested_route_test() {
     minimal_config(dir)
     |> config.route("/docs/api/v1", simple_view)
 
-  pages_builder.build(cfg)
+  pages_builder.build(cfg, [])
   |> should.be_ok
 
   simplifile.is_file(dir <> "/docs/api/v1/index.html")
@@ -168,7 +169,7 @@ pub fn build_creates_files_for_all_routes_test() {
     |> config.route("/about", about_view)
     |> config.route("/contact", contact_view)
 
-  pages_builder.build(cfg)
+  pages_builder.build(cfg, [])
   |> should.be_ok
 
   simplifile.is_file(dir <> "/index.html")
@@ -189,7 +190,7 @@ pub fn build_each_route_has_its_own_content_test() {
     |> config.route("/about", about_view)
     |> config.route("/contact", contact_view)
 
-  pages_builder.build(cfg)
+  pages_builder.build(cfg, [])
   |> should.be_ok
 
   let assert Ok(about_content) = simplifile.read(dir <> "/about/index.html")
@@ -217,7 +218,7 @@ pub fn build_preserves_html_attributes_in_output_test() {
     minimal_config(dir)
     |> config.route("/contact", contact_view)
 
-  pages_builder.build(cfg)
+  pages_builder.build(cfg, [])
   |> should.be_ok
 
   let assert Ok(content) = simplifile.read(dir <> "/contact/index.html")
@@ -234,7 +235,7 @@ pub fn build_handles_route_without_leading_slash_test() {
     minimal_config(dir)
     |> config.route("privacy", simple_view)
 
-  pages_builder.build(cfg)
+  pages_builder.build(cfg, [])
   |> should.be_ok
 
   simplifile.is_file(dir <> "/privacy/index.html")
@@ -251,7 +252,7 @@ pub fn build_handles_mixed_root_and_nested_routes_test() {
     |> config.route("/", simple_view)
     |> config.route("/about/team", about_view)
 
-  pages_builder.build(cfg)
+  pages_builder.build(cfg, [])
   |> should.be_ok
 
   simplifile.is_file(dir <> "/index.html")

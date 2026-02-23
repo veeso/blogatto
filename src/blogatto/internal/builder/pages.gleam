@@ -6,6 +6,7 @@
 import blogatto/config
 import blogatto/error
 import blogatto/internal/path
+import blogatto/post
 import gleam/dict
 import gleam/list
 import gleam/result
@@ -13,10 +14,15 @@ import lustre/element.{type Element}
 import simplifile
 
 /// Builds the static pages for the blog.
-pub fn build(config: config.Config(msg)) -> Result(Nil, error.BlogattoError) {
+pub fn build(
+  config: config.Config(msg),
+  posts: List(post.Post(msg)),
+) -> Result(Nil, error.BlogattoError) {
   config.routes
   |> dict.to_list()
-  |> list.try_map(fn(route) { build_page(config.output_dir, route.0, route.1) })
+  |> list.try_map(fn(route) {
+    build_page(config.output_dir, route.0, route.1, posts)
+  })
   |> result.replace(Nil)
 }
 
@@ -24,7 +30,8 @@ pub fn build(config: config.Config(msg)) -> Result(Nil, error.BlogattoError) {
 fn build_page(
   output_dir: String,
   route: String,
-  view: fn() -> Element(msg),
+  view: fn(List(post.Post(msg))) -> Element(msg),
+  posts: List(post.Post(msg)),
 ) -> Result(Nil, error.BlogattoError) {
   let output_file = path.route(output_dir, route)
 
@@ -36,7 +43,7 @@ fn build_page(
     |> result.map_error(error.File),
   )
 
-  let content = element.to_document_string(view())
+  let content = element.to_document_string(view(posts))
 
   output_file
   |> simplifile.write(content)
