@@ -51,9 +51,9 @@ import simplifile
 /// 1. Clean output directory and create output directory. This ensures a fresh build each time, preventing stale files from previous builds from lingering in the output directory. It's a simple file operation but crucial for ensuring that the build process produces consistent results. No parsing or rendering involved, just file system operations to manage the output directory.
 /// 2. builder/robots — Generate robots.txt via webls. Simplest builder: no parsing, no post dependencies, just config-to-file. Good warm-up to establish the builder module pattern.
 /// 3. builder/static - Copy static assets from the configured static_dir to the output directory. This is a straightforward file operation, but it's important to do it early in the build process to ensure that any static files needed by pages or posts are available when those builders run. No parsing or rendering involved, just copying files while preserving directory structure.
-/// 4. builder/pages — Render static routes to HTML. Still straightforward: iterate config.routes, call each view function, render with Lustre, write files. No markdown parsing involved.
-/// 5. builder/blog — The heavy one. Walk markdown paths, discover post directories, parse frontmatter, render markdown via Maud components, construct Post(msg) values, write HTML pages, copy
-/// non-markdown assets. This produces the List(Post(msg)) that feeds and sitemap both need.
+/// 4. builder/blog — The heavy one. Walk markdown paths, discover post directories, parse frontmatter, render markdown via Maud components, construct Post(msg) values, write HTML pages, copy
+/// non-markdown assets. This produces the List(Post(msg)) that feeds, sitemap, and pages all need.
+/// 5. builder/pages — Render static routes to HTML. Receives the parsed blog posts so route view functions can display featured posts, recent posts, etc.
 /// 6. builder/feed — Generate RSS feeds via webls. Depends on the post list from step. Apply filter/serialize, render with Lustre, write XML file.
 /// 7. builder/sitemap — Generate sitemap XML via webls. Depends on both static routes and blog posts being known.
 pub fn build(config: config.Config(msg)) -> Result(Nil, error.BlogattoError) {
@@ -72,10 +72,10 @@ pub fn build(config: config.Config(msg)) -> Result(Nil, error.BlogattoError) {
   use _ <- result.try(static.build(config))
   // Step 3: Generate robots.txt.
   use _ <- result.try(robots.build(config))
-  // Step 4: Render static pages.
-  use _ <- result.try(pages.build(config, []))
-  // Step 5: Render blog posts.
+  // Step 4: Render blog posts.
   use posts <- result.try(blog.build(config))
+  // Step 5: Render static pages.
+  use _ <- result.try(pages.build(config, posts))
   // Step 6: Generate RSS feed.
   let feed_metadata = feed_metadata(posts)
   use _ <- result.try(feed.build(config.output_dir, config.feeds, feed_metadata))
