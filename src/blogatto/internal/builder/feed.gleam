@@ -1,6 +1,5 @@
 //// Feed builder
 
-import blogatto/config
 import blogatto/config/feed as feed_config
 import blogatto/error
 import blogatto/internal/path
@@ -12,12 +11,13 @@ import webls/rss
 
 /// Build the RSS feed XML based on the list of posts and feed configuration.
 pub fn build(
-  config: config.Config(msg),
-  metadata: feed_config.FeedMetadata(msg),
+  output_dir: String,
+  config: List(feed_config.FeedConfig(msg)),
+  metadata: List(feed_config.FeedMetadata(msg)),
 ) -> Result(Nil, error.BlogattoError) {
-  config.feeds
+  config
   |> list.try_map(fn(feed_config) {
-    build_feed(config.output_dir, config.site_url, feed_config, metadata)
+    build_feed(output_dir, feed_config, metadata)
   })
   |> result.replace(Nil)
 }
@@ -26,9 +26,8 @@ pub fn build(
 /// then write it to the output file.
 fn build_feed(
   output_dir: String,
-  site_url: String,
   config: feed_config.FeedConfig(msg),
-  metadata: feed_config.FeedMetadata(msg),
+  metadata: List(feed_config.FeedMetadata(msg)),
 ) -> Result(Nil, error.BlogattoError) {
   let output_path = path.join(output_dir, config.output)
   // create parent directory
@@ -42,7 +41,21 @@ fn build_feed(
   let filter_fn = option.unwrap(config.filter, or: default_filter)
   let serialize_fn = option.unwrap(config.serialize, or: default_serialize)
 
-  todo
+  let feed_items =
+    metadata
+    |> list.filter_map(fn(post_metadata) {
+      case filter_fn(post_metadata) {
+        True -> Ok(post_metadata |> serialize_fn() |> feed_item_to_webls())
+        False -> Error(Nil)
+      }
+    })
+
+  let channel = feed_config_to_webls_channel(config, feed_items)
+  let content = rss.to_string([channel])
+
+  output_path
+  |> simplifile.write(content)
+  |> result.map_error(error.File)
 }
 
 /// Default filter function that includes all posts in the feed when no custom filter is provided.
@@ -86,7 +99,7 @@ fn feed_item_to_webls(item: feed_config.FeedItem) -> rss.RssItem {
         enclosure_type: enc.enclosure_type,
       )
     }),
-    guid: option.map(item.guid, fn(g) { #(g, option.None) }),
+    guid: option.map(item.guid, fn(g) { #(g, option.Some(True)) }),
   )
 }
 
