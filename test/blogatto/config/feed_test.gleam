@@ -1,10 +1,24 @@
 import blogatto/config/feed.{
   type FeedMetadata, FeedConfig, FeedItem, FeedMetadata,
 }
+import blogatto/post.{Post}
 import gleam/dict
 import gleam/option.{None, Some}
+import gleam/time/calendar
 import gleam/time/timestamp
 import gleeunit/should
+
+fn sample_post() -> post.Post(msg) {
+  Post(
+    title: "Hello",
+    slug: "hello",
+    date: calendar.Date(2025, calendar.January, 1),
+    description: "A post",
+    language: None,
+    contents: [],
+    extras: dict.new(),
+  )
+}
 
 pub fn feed_config_construction_with_defaults_test() {
   let cfg =
@@ -24,7 +38,7 @@ pub fn feed_config_construction_with_defaults_test() {
 }
 
 pub fn feed_config_with_filter_test() {
-  let filter = fn(meta: FeedMetadata) { meta.path != "/draft" }
+  let filter = fn(meta: FeedMetadata(msg)) { meta.path != "/draft" }
   let cfg =
     FeedConfig(
       excerpt_len: 100,
@@ -38,7 +52,7 @@ pub fn feed_config_with_filter_test() {
 }
 
 pub fn feed_config_filter_invocation_test() {
-  let filter = fn(meta: FeedMetadata) { meta.path != "/draft" }
+  let filter = fn(meta: FeedMetadata(msg)) { meta.path != "/draft" }
   let cfg =
     FeedConfig(
       excerpt_len: 100,
@@ -50,16 +64,15 @@ pub fn feed_config_filter_invocation_test() {
 
   let assert Some(f) = cfg.filter
   let published =
-    FeedMetadata(path: "/blog/post", excerpt: "Hello", frontmatter: dict.new())
-  let draft =
-    FeedMetadata(path: "/draft", excerpt: "WIP", frontmatter: dict.new())
+    FeedMetadata(path: "/blog/post", excerpt: "Hello", post: sample_post())
+  let draft = FeedMetadata(path: "/draft", excerpt: "WIP", post: sample_post())
 
   f(published) |> should.be_true
   f(draft) |> should.be_false
 }
 
 pub fn feed_config_with_serialize_test() {
-  let serialize = fn(meta: FeedMetadata) {
+  let serialize = fn(meta: FeedMetadata(msg)) {
     FeedItem(
       custom_elements: dict.new(),
       date: timestamp.from_unix_seconds(0),
@@ -81,7 +94,7 @@ pub fn feed_config_with_serialize_test() {
 }
 
 pub fn feed_config_serialize_invocation_test() {
-  let serialize = fn(meta: FeedMetadata) {
+  let serialize = fn(meta: FeedMetadata(msg)) {
     FeedItem(
       custom_elements: dict.new(),
       date: timestamp.from_unix_seconds(0),
@@ -101,11 +114,7 @@ pub fn feed_config_serialize_invocation_test() {
 
   let assert Some(s) = cfg.serialize
   let meta =
-    FeedMetadata(
-      path: "/blog/hello",
-      excerpt: "A post",
-      frontmatter: dict.new(),
-    )
+    FeedMetadata(path: "/blog/hello", excerpt: "A post", post: sample_post())
   let item = s(meta)
 
   item.description |> should.equal("A post")
@@ -114,14 +123,22 @@ pub fn feed_config_serialize_invocation_test() {
 }
 
 pub fn feed_metadata_construction_test() {
-  let fm = dict.from_list([#("title", "Hello"), #("lang", "en")])
-  let meta =
-    FeedMetadata(path: "/blog/hello", excerpt: "An excerpt", frontmatter: fm)
+  let p =
+    Post(
+      title: "Hello",
+      slug: "hello",
+      date: calendar.Date(2025, calendar.January, 1),
+      description: "A post",
+      language: Some("en"),
+      contents: [],
+      extras: dict.from_list([#("lang", "en")]),
+    )
+  let meta = FeedMetadata(path: "/blog/hello", excerpt: "An excerpt", post: p)
 
   meta.path |> should.equal("/blog/hello")
   meta.excerpt |> should.equal("An excerpt")
-  meta.frontmatter |> dict.get("title") |> should.equal(Ok("Hello"))
-  meta.frontmatter |> dict.get("lang") |> should.equal(Ok("en"))
+  meta.post.title |> should.equal("Hello")
+  meta.post.extras |> dict.get("lang") |> should.equal(Ok("en"))
 }
 
 pub fn feed_item_construction_test() {

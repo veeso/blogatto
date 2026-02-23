@@ -38,7 +38,7 @@ import lustre/element.{type Element}
 pub type Config(msg) {
   Config(
     /// RSS feeds to generate, each with its own filter/serialize/output settings.
-    feeds: List(feed.FeedConfig),
+    feeds: List(feed.FeedConfig(msg)),
     /// Markdown configuration for rendering blog articles. When `None`, no blog posts are built.
     markdown_config: Option(markdown.MarkdownConfig(msg)),
     /// Output directory for the built site. Default: `"./dist"`.
@@ -78,7 +78,7 @@ pub fn new(site_url: String) -> Config(msg) {
 }
 
 /// Add an RSS feed configuration to the build.
-pub fn feed(config: Config(msg), feed: feed.FeedConfig) -> Config(msg) {
+pub fn feed(config: Config(msg), feed: feed.FeedConfig(msg)) -> Config(msg) {
   Config(..config, feeds: list.prepend(config.feeds, feed))
 }
 

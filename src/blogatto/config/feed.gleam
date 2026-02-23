@@ -23,6 +23,7 @@
 ////   )
 //// ```
 
+import blogatto/post.{type Post}
 import gleam/dict.{type Dict}
 import gleam/option.{type Option}
 import gleam/time/timestamp
@@ -32,16 +33,16 @@ import gleam/time/timestamp
 /// The `filter` function, when provided, determines which posts are included.
 /// The `serialize` function, when provided, controls how post metadata maps
 /// to feed items. When either is `None`, a default behavior is used.
-pub type FeedConfig {
+pub type FeedConfig(msg) {
   FeedConfig(
     /// Maximum character length for auto-generated article excerpts.
     excerpt_len: Int,
     /// Optional predicate to include or exclude posts from this feed.
-    filter: Option(fn(FeedMetadata) -> Bool),
+    filter: Option(fn(FeedMetadata(msg)) -> Bool),
     /// Output file path for the generated feed, relative to `output_dir` (e.g., `"/rss.xml"`).
     output: String,
     /// Optional function to convert post metadata into a feed item.
-    serialize: Option(fn(FeedMetadata) -> FeedItem),
+    serialize: Option(fn(FeedMetadata(msg)) -> FeedItem),
     /// Title displayed in the RSS channel header.
     title: String,
   )
@@ -51,14 +52,14 @@ pub type FeedConfig {
 ///
 /// This provides enough context for the user to decide whether a post should
 /// appear in a feed and how it should be represented.
-pub type FeedMetadata {
+pub type FeedMetadata(msg) {
   FeedMetadata(
     /// The article's URL path (e.g., `"/blog/my-post"`).
     path: String,
     /// An excerpt extracted from the article body, up to `excerpt_len` characters.
     excerpt: String,
-    /// All frontmatter key-value pairs from the markdown file.
-    frontmatter: Dict(String, String),
+    /// The parsed blog post with all frontmatter fields and rendered contents.
+    post: Post(msg),
   )
 }
 
