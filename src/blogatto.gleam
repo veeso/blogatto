@@ -106,7 +106,8 @@ fn feed_metadata(
   })
 }
 
-/// Construct the `SitemapBuild` data structure needed for sitemap generation. This involves taking the overall site configuration and the list of blog posts, and packaging them into a format that the sitemap builder can work with. The `SitemapBuild` type is designed to hold all necessary information for generating the sitemap, including any filter or serialize functions from the config, as well as the list of routes that should be included in the sitemap (which would typically be derived from both static pages and blog posts).
+// Build the sitemap by collecting static routes and blog post URLs,
+// then delegating to the sitemap builder.
 fn sitemap_build(
   config: config.Config(msg),
   posts: List(post.Post(msg)),

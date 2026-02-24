@@ -111,7 +111,7 @@ pub type FeedMetadata(msg) {
     excerpt: String,
     /// The parsed blog post with all frontmatter fields and rendered contents.
     post: Post(msg),
-    /// Post absolute url
+    /// The absolute URL of the post.
     url: String,
   )
 }

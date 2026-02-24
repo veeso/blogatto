@@ -10,7 +10,7 @@ import simplifile
 pub type BlogattoError {
   /// File system errors, such as issues with reading/writing files or directories.
   File(simplifile.FileError)
-  /// Invalid URI
+  /// Invalid URI encountered during URL resolution.
   InvalidUri(String)
   /// Missing required field in frontmatter
   FrontmatterMissingField(String)

@@ -1,0 +1,16 @@
+title: Blogatto
+description: A Gleam framework for building static blogs with Lustre and Markdown
+remote_theme: pages-themes/cayman@v0.2.0
+plugins:
+  - jekyll-remote-theme
+
+header_page_list:
+  - index.md
+  - getting-started.md
+  - blog-posts.md
+  - configuration.md
+  - markdown-components.md
+  - static-pages.md
+  - rss-feeds.md
+  - sitemap-and-robots.md
+  - error-handling.md
