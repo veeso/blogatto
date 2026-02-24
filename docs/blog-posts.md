@@ -33,6 +33,7 @@ Each markdown file must start with a YAML frontmatter block:
 ```markdown
 ---
 title: My First Post
+slug: my-first-post
 date: 2025-01-15 00:00:00
 description: A short description of the post
 featured_image: /images/hero.jpg
@@ -46,6 +47,7 @@ Your markdown content here...
 | Field | Format | Description |
 |-------|--------|-------------|
 | `title` | String | The post title |
+| `slug` | String | URL-friendly identifier for the post |
 | `date` | `YYYY-MM-DD HH:MM:SS` | Publication date (UTC) |
 | `description` | String | A short description or excerpt |
 
@@ -62,6 +64,7 @@ Any frontmatter keys beyond the required and optional fields are collected in `P
 ```markdown
 ---
 title: My Post
+slug: my-post
 date: 2025-01-15 00:00:00
 description: A post about Gleam
 author: Jane Doe
@@ -138,6 +141,7 @@ Non-markdown files in a post directory (images, PDFs, etc.) are automatically co
 ```markdown
 ---
 title: My Post
+slug: my-post
 date: 2025-01-15 00:00:00
 description: A post with images
 ---
@@ -154,7 +158,7 @@ After parsing, each markdown file produces a `Post(msg)` value with these fields
 | Field | Type | Description |
 |-------|------|-------------|
 | `title` | `String` | From frontmatter |
-| `slug` | `String` | From directory name |
+| `slug` | `String` | From frontmatter |
 | `url` | `String` | Absolute URL (e.g., `"https://example.com/blog/my-post"`) |
 | `date` | `Timestamp` | From frontmatter |
 | `description` | `String` | From frontmatter |

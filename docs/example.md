@@ -267,7 +267,7 @@ description: Learn how to set up your first static blog with Blogatto
 Setting up a blog with Blogatto is straightforward...
 ```
 
-Required frontmatter fields are `title`, `date`, and `description`. The `slug` field is optional — when omitted, the directory name is used. Any additional fields (e.g. `author`, `tags`) are collected into the post's `extras` dictionary.
+Required frontmatter fields are `title`, `slug`, `date`, and `description`. Any additional fields (e.g. `author`, `tags`) are collected into the post's `extras` dictionary.
 
 ## Generated output
 
