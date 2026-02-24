@@ -11,16 +11,16 @@ links = [
 ]
 
 [dependencies]
-gleam_stdlib = ">= 0.44.0 and < 2.0.0"
-maud = ">= 1.0.0 and < 2.0.0"
-lustre = ">= 5.6.0 and < 6.0.0"
-gleam_time = ">= 1.7.0 and < 2.0.0"
-frontmatter = ">= 1.0.1 and < 2.0.0"
-webls = ">= 1.6.1 and < 2.0.0"
-mork = ">= 1.11.1 and < 2.0.0"
 filepath = ">= 1.1.2 and < 2.0.0"
-simplifile = ">= 2.3.2 and < 3.0.0"
+frontmatter = ">= 1.0.1 and < 2.0.0"
+gleam_stdlib = ">= 0.44.0 and < 2.0.0"
+gleam_time = ">= 1.7.0 and < 2.0.0"
 gtempo = ">= 7.2.4 and < 8.0.0"
+lustre = ">= 5.6.0 and < 6.0.0"
+maud = ">= 1.0.0 and < 2.0.0"
+mork = ">= 1.11.1 and < 2.0.0"
+simplifile = ">= 2.3.2 and < 3.0.0"
+webls = ">= 1.6.1 and < 2.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
