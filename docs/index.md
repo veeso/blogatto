@@ -6,7 +6,11 @@ nav_order: 1
 
 # Blogatto
 
-A Gleam framework for building static blogs with Lustre and Markdown.
+[![Package Version](https://img.shields.io/hexpm/v/blogatto)](https://hex.pm/packages/blogatto)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/blogatto/)
+[![test](https://github.com/veeso/blogatto/actions/workflows/test.yml/badge.svg)](https://github.com/veeso/blogatto/actions/workflows/test.yml)
+
+A Gleam framework for building static blogs with [**Lustre**](https://hexdocs.pm/lustre/) and Markdown.
 
 Blogatto generates your entire static site from a single configuration: blog posts from markdown with frontmatter, static pages from Lustre views, RSS feeds, sitemaps, and robots.txt — all rendered via [Maud](https://hexdocs.pm/maud/) components.
 
