@@ -15,6 +15,7 @@ import filepath
 import gleam/dict.{type Dict}
 import gleam/list
 import gleam/option.{type Option}
+import gleam/order
 import gleam/result
 import gleam/string
 import gleam/time/timestamp
@@ -72,7 +73,12 @@ pub fn build(
           build_post(post_info, markdown_config)
         }),
       )
-      Ok(built_posts)
+      // Sort posts by date, newest first.
+      Ok(
+        list.sort(built_posts, fn(a, b) {
+          order.negate(timestamp.compare(a.date, b.date))
+        }),
+      )
     }
     option.None -> Ok([])
   }

@@ -42,7 +42,6 @@ import blogatto/error
 import blogatto/post.{type Post}
 import gleam/io
 import gleam/list
-import gleam/option
 import gleam/time/timestamp
 import lustre/attribute
 import lustre/element.{type Element}
@@ -74,11 +73,7 @@ pub fn main() {
     |> config.markdown(md)
     |> config.route("/", home_view)
     |> config.feed(rss)
-    |> config.sitemap(sitemap.SitemapConfig(
-      filter: None,
-      serialize: None,
-      path: "/sitemap.xml",
-    ))
+    |> config.sitemap(sitemap.new("/sitemap.xml"))
     |> config.robots(robots.RobotsConfig(
       sitemap_url: site_url <> "/sitemap.xml",
       robots: [

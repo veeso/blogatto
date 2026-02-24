@@ -20,11 +20,7 @@ import blogatto/config/sitemap
 import gleam/option.{None}
 
 let sitemap_config =
-  sitemap.SitemapConfig(
-    filter: None,
-    serialize: None,
-    path: "/sitemap.xml",
-  )
+  sitemap.new("/sitemap.xml")
 
 let cfg =
   config.new("https://example.com")
@@ -46,18 +42,14 @@ This generates `dist/sitemap.xml` with entries for every static route and blog p
 Exclude specific routes from the sitemap:
 
 ```gleam
-import gleam/option.{Some}
 import gleam/string
 
 let sitemap_config =
-  sitemap.SitemapConfig(
-    filter: Some(fn(url) {
-      // Exclude draft pages
-      !string.contains(url, "/draft")
-    }),
-    serialize: None,
-    path: "/sitemap.xml",
-  )
+  sitemap.new("/sitemap.xml")
+  |> sitemap.filter(fn(url) {
+    // Exclude draft pages
+    !string.contains(url, "/draft")
+  })
 ```
 
 ### Custom serialization
@@ -70,22 +62,19 @@ import gleam/option.{None, Some}
 import gleam/string
 
 let sitemap_config =
-  sitemap.SitemapConfig(
-    filter: None,
-    serialize: Some(fn(url) {
-      let #(priority, freq) = case string.contains(url, "/blog/") {
-        True -> #(0.7, Some(Weekly))
-        False -> #(1.0, Some(Monthly))
-      }
-      sitemap.SitemapEntry(
-        url: url,
-        priority: Some(priority),
-        last_modified: None,
-        change_frequency: freq,
-      )
-    }),
-    path: "/sitemap.xml",
-  )
+  sitemap.new("/sitemap.xml")
+  |> sitemap.serialize(fn(url) {
+    let #(priority, freq) = case string.contains(url, "/blog/") {
+      True -> #(0.7, Some(Weekly))
+      False -> #(1.0, Some(Monthly))
+    }
+    sitemap.SitemapEntry(
+      url: url,
+      priority: Some(priority),
+      last_modified: None,
+      change_frequency: freq,
+    )
+  })
 ```
 
 ### SitemapEntry fields
@@ -188,11 +177,7 @@ import gleam/option.{None}
 let site_url = "https://example.com"
 
 let sitemap_config =
-  sitemap.SitemapConfig(
-    filter: None,
-    serialize: None,
-    path: "/sitemap.xml",
-  )
+  sitemap.new("/sitemap.xml")
 
 let robots_config =
   robots.new(site_url <> "/sitemap.xml")

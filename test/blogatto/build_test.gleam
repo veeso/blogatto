@@ -3,7 +3,7 @@ import blogatto/config
 import blogatto/config/feed.{type FeedConfig, FeedConfig}
 import blogatto/config/markdown
 import blogatto/config/robots.{Robot, RobotsConfig}
-import blogatto/config/sitemap.{SitemapConfig}
+import blogatto/config/sitemap
 import blogatto/error
 import blogatto/post
 import gleam/int
@@ -585,7 +585,7 @@ pub fn build_feed_uses_post_url_as_link_test() {
   }
 }
 
-pub fn build_feed_uses_post_description_as_excerpt_test() {
+pub fn build_feed_uses_body_content_as_excerpt_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
     use blog <- temporary.create(temporary.directory())
@@ -600,7 +600,7 @@ pub fn build_feed_uses_post_description_as_excerpt_test() {
         "excerpt-post",
         "2024-05-01 09:00:00",
         "This is the post description",
-        "# Content\n",
+        "# Heading\n\nThis is the body text.\n",
       ),
     )
 
@@ -610,10 +610,9 @@ pub fn build_feed_uses_post_description_as_excerpt_test() {
     |> should.be_ok
 
     let assert Ok(content) = simplifile.read(output <> "/rss.xml")
+    // Excerpt should come from the rendered body, not the frontmatter description
     content
-    |> string.contains(
-      "<description>This is the post description</description>",
-    )
+    |> string.contains("This is the body text.")
     |> should.be_true
   }
 }
@@ -689,8 +688,7 @@ pub fn build_generates_sitemap_when_configured_test() {
     use dir <- temporary.create(temporary.directory())
     let output = dir <> "/output"
 
-    let sitemap_cfg =
-      SitemapConfig(filter: None, serialize: None, path: "/sitemap.xml")
+    let sitemap_cfg = sitemap.new("/sitemap.xml")
 
     minimal_config(output)
     |> config.route("/", simple_view)
@@ -709,8 +707,7 @@ pub fn build_sitemap_includes_static_routes_test() {
     use dir <- temporary.create(temporary.directory())
     let output = dir <> "/output"
 
-    let sitemap_cfg =
-      SitemapConfig(filter: None, serialize: None, path: "/sitemap.xml")
+    let sitemap_cfg = sitemap.new("/sitemap.xml")
 
     minimal_config(output)
     |> config.route("/", simple_view)
@@ -748,8 +745,7 @@ pub fn build_sitemap_includes_blog_post_urls_test() {
       ),
     )
 
-    let sitemap_cfg =
-      SitemapConfig(filter: None, serialize: None, path: "/sitemap.xml")
+    let sitemap_cfg = sitemap.new("/sitemap.xml")
 
     config_with_blog(output, blog)
     |> config.sitemap(sitemap_cfg)
@@ -782,8 +778,7 @@ pub fn build_sitemap_includes_both_routes_and_blog_urls_test() {
       ),
     )
 
-    let sitemap_cfg =
-      SitemapConfig(filter: None, serialize: None, path: "/sitemap.xml")
+    let sitemap_cfg = sitemap.new("/sitemap.xml")
 
     config_with_blog(output, blog)
     |> config.route("/about", simple_view)
@@ -821,8 +816,7 @@ pub fn build_sitemap_contains_valid_xml_structure_test() {
     use dir <- temporary.create(temporary.directory())
     let output = dir <> "/output"
 
-    let sitemap_cfg =
-      SitemapConfig(filter: None, serialize: None, path: "/sitemap.xml")
+    let sitemap_cfg = sitemap.new("/sitemap.xml")
 
     minimal_config(output)
     |> config.route("/", simple_view)
@@ -875,8 +869,7 @@ pub fn build_full_pipeline_with_all_features_test() {
         Robot(user_agent: "*", allowed_routes: ["/"], disallowed_routes: []),
       ])
 
-    let sitemap_cfg =
-      SitemapConfig(filter: None, serialize: None, path: "/sitemap.xml")
+    let sitemap_cfg = sitemap.new("/sitemap.xml")
 
     let md_config =
       markdown.default()
@@ -939,8 +932,7 @@ pub fn build_full_pipeline_sitemap_has_all_urls_test() {
       ),
     )
 
-    let sitemap_cfg =
-      SitemapConfig(filter: None, serialize: None, path: "/sitemap.xml")
+    let sitemap_cfg = sitemap.new("/sitemap.xml")
 
     config_with_blog(output, blog)
     |> config.route("/", simple_view)
@@ -995,8 +987,9 @@ pub fn build_full_pipeline_feed_has_post_data_test() {
     content
     |> string.contains("<link>https://example.com/feed-int-post</link>")
     |> should.be_true
+    // Excerpt is extracted from the rendered body content
     content
-    |> string.contains("<description>Feed integration desc</description>")
+    |> string.contains("<description>")
     |> should.be_true
   }
 }

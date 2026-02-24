@@ -32,7 +32,7 @@ import gleam/time/timestamp
 /// behavior is used.
 pub type FeedConfig(msg) {
   FeedConfig(
-    /// Maximum character length for auto-generated article excerpts.
+    /// Maximum character length for article excerpts in the feed.
     excerpt_len: Int,
     /// Optional predicate to include or exclude posts from this feed.
     filter: Option(fn(FeedMetadata(msg)) -> Bool),
@@ -87,7 +87,7 @@ pub type FeedMetadata(msg) {
   FeedMetadata(
     /// The article's URL path (e.g., `"/blog/my-post"`).
     path: String,
-    /// An excerpt extracted from the article body, up to `excerpt_len` characters.
+    /// Plain text excerpt extracted from the rendered article body, truncated to `excerpt_len` characters.
     excerpt: String,
     /// The parsed blog post with all frontmatter fields and rendered contents.
     post: Post(msg),
@@ -222,7 +222,7 @@ pub fn new(title: String, link: String, description: String) -> FeedConfig(msg) 
   )
 }
 
-/// Set the maximum character length for auto-generated article excerpts.
+/// Set the maximum character length for article excerpts in the feed.
 pub fn excerpt_len(config: FeedConfig(msg), len: Int) -> FeedConfig(msg) {
   FeedConfig(..config, excerpt_len: len)
 }

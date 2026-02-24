@@ -42,8 +42,7 @@ pub fn main() {
     |> feed.generator("Blogatto")
 
   // Sitemap configuration
-  let sitemap_config =
-    sitemap.SitemapConfig(filter: None, serialize: None, path: "/sitemap.xml")
+  let sitemap_config = sitemap.new("/sitemap.xml")
 
   // Robots.txt configuration
   let robots_config =

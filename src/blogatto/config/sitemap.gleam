@@ -11,14 +11,11 @@
 //// import blogatto/config/sitemap
 ////
 //// let cfg =
-////   sitemap.SitemapConfig(
-////     filter: option.None,
-////     serialize: option.None,
-////     path: "/sitemap.xml",
-////   )
+////   sitemap.new("/sitemap.xml")
+////   |> sitemap.filter(fn(url) { url != "/admin" })
 //// ```
 
-import gleam/option.{type Option}
+import gleam/option.{type Option, None, Some}
 import gleam/time/timestamp.{type Timestamp}
 
 /// Configuration for sitemap XML generation.
@@ -36,6 +33,34 @@ pub type SitemapConfig {
     /// Output file path for the sitemap, relative to `output_dir` (e.g., `"/sitemap.xml"`).
     path: String,
   )
+}
+
+// --- Builder API ---
+
+/// Create a new `SitemapConfig` with the given output path.
+///
+/// All optional fields receive sensible defaults (`None`). Use the setter
+/// functions to customize them via piping.
+pub fn new(path: String) -> SitemapConfig {
+  SitemapConfig(filter: None, serialize: None, path:)
+}
+
+/// Set the predicate used to include or exclude routes from the sitemap.
+pub fn filter(config: SitemapConfig, f: fn(String) -> Bool) -> SitemapConfig {
+  SitemapConfig(..config, filter: Some(f))
+}
+
+/// Set the function used to convert a route path into a sitemap entry.
+pub fn serialize(
+  config: SitemapConfig,
+  f: fn(String) -> SitemapEntry,
+) -> SitemapConfig {
+  SitemapConfig(..config, serialize: Some(f))
+}
+
+/// Set the output file path for the sitemap, relative to `output_dir`.
+pub fn path(config: SitemapConfig, path: String) -> SitemapConfig {
+  SitemapConfig(..config, path:)
 }
 
 /// A single entry in the sitemap XML.

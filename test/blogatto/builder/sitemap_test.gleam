@@ -1,4 +1,4 @@
-import blogatto/config/sitemap.{type SitemapEntry, SitemapConfig, SitemapEntry}
+import blogatto/config/sitemap.{SitemapEntry}
 import blogatto/error
 import blogatto/internal/builder/sitemap as sitemap_builder
 import gleam/option.{None, Some}
@@ -11,7 +11,7 @@ import temporary
 pub fn build_writes_sitemap_xml_file_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
-    let cfg = SitemapConfig(filter: None, serialize: None, path: "/sitemap.xml")
+    let cfg = sitemap.new("/sitemap.xml")
     let build =
       sitemap_builder.SitemapBuild(config: cfg, routes: ["/", "/about"])
 
@@ -27,7 +27,7 @@ pub fn build_writes_sitemap_xml_file_test() {
 pub fn build_generates_valid_xml_structure_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
-    let cfg = SitemapConfig(filter: None, serialize: None, path: "/sitemap.xml")
+    let cfg = sitemap.new("/sitemap.xml")
     let build = sitemap_builder.SitemapBuild(config: cfg, routes: ["/"])
 
     sitemap_builder.build(dir, "https://example.com", build)
@@ -51,7 +51,7 @@ pub fn build_generates_valid_xml_structure_test() {
 pub fn build_includes_all_routes_as_url_entries_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
-    let cfg = SitemapConfig(filter: None, serialize: None, path: "/sitemap.xml")
+    let cfg = sitemap.new("/sitemap.xml")
     let build =
       sitemap_builder.SitemapBuild(config: cfg, routes: [
         "/", "/about", "/blog/hello",
@@ -70,7 +70,7 @@ pub fn build_includes_all_routes_as_url_entries_test() {
 pub fn build_handles_empty_routes_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
-    let cfg = SitemapConfig(filter: None, serialize: None, path: "/sitemap.xml")
+    let cfg = sitemap.new("/sitemap.xml")
     let build = sitemap_builder.SitemapBuild(config: cfg, routes: [])
 
     sitemap_builder.build(dir, "https://example.com", build)
@@ -90,9 +90,9 @@ pub fn build_handles_empty_routes_test() {
 pub fn build_applies_custom_filter_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
-    let filter = fn(route: String) -> Bool { route != "/admin" }
     let cfg =
-      SitemapConfig(filter: Some(filter), serialize: None, path: "/sitemap.xml")
+      sitemap.new("/sitemap.xml")
+      |> sitemap.filter(fn(route) { route != "/admin" })
     let build =
       sitemap_builder.SitemapBuild(config: cfg, routes: [
         "/about", "/admin", "/blog",
@@ -111,9 +111,9 @@ pub fn build_applies_custom_filter_test() {
 pub fn build_filter_excludes_all_routes_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
-    let filter = fn(_route: String) -> Bool { False }
     let cfg =
-      SitemapConfig(filter: Some(filter), serialize: None, path: "/sitemap.xml")
+      sitemap.new("/sitemap.xml")
+      |> sitemap.filter(fn(_route) { False })
     let build =
       sitemap_builder.SitemapBuild(config: cfg, routes: ["/about", "/blog"])
 
@@ -128,20 +128,16 @@ pub fn build_filter_excludes_all_routes_test() {
 pub fn build_applies_custom_serialize_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
-    let serialize = fn(route: String) -> SitemapEntry {
-      SitemapEntry(
-        url: "https://example.com" <> route,
-        priority: Some(0.8),
-        last_modified: None,
-        change_frequency: Some(sitemap.Weekly),
-      )
-    }
     let cfg =
-      SitemapConfig(
-        filter: None,
-        serialize: Some(serialize),
-        path: "/sitemap.xml",
-      )
+      sitemap.new("/sitemap.xml")
+      |> sitemap.serialize(fn(route) {
+        SitemapEntry(
+          url: "https://example.com" <> route,
+          priority: Some(0.8),
+          last_modified: None,
+          change_frequency: Some(sitemap.Weekly),
+        )
+      })
     let build = sitemap_builder.SitemapBuild(config: cfg, routes: ["/about"])
 
     sitemap_builder.build(dir, "https://example.com", build)
@@ -163,20 +159,16 @@ pub fn build_applies_custom_serialize_test() {
 pub fn build_with_priority_in_output_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
-    let serialize = fn(route: String) -> SitemapEntry {
-      SitemapEntry(
-        url: route,
-        priority: Some(1.0),
-        last_modified: None,
-        change_frequency: None,
-      )
-    }
     let cfg =
-      SitemapConfig(
-        filter: None,
-        serialize: Some(serialize),
-        path: "/sitemap.xml",
-      )
+      sitemap.new("/sitemap.xml")
+      |> sitemap.serialize(fn(route) {
+        SitemapEntry(
+          url: route,
+          priority: Some(1.0),
+          last_modified: None,
+          change_frequency: None,
+        )
+      })
     let build = sitemap_builder.SitemapBuild(config: cfg, routes: ["/"])
 
     sitemap_builder.build(dir, "https://example.com", build)
@@ -192,20 +184,16 @@ pub fn build_with_priority_in_output_test() {
 pub fn build_with_last_modified_in_output_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
-    let serialize = fn(route: String) -> SitemapEntry {
-      SitemapEntry(
-        url: route,
-        priority: None,
-        last_modified: Some(timestamp.from_unix_seconds(1_700_000_000)),
-        change_frequency: None,
-      )
-    }
     let cfg =
-      SitemapConfig(
-        filter: None,
-        serialize: Some(serialize),
-        path: "/sitemap.xml",
-      )
+      sitemap.new("/sitemap.xml")
+      |> sitemap.serialize(fn(route) {
+        SitemapEntry(
+          url: route,
+          priority: None,
+          last_modified: Some(timestamp.from_unix_seconds(1_700_000_000)),
+          change_frequency: None,
+        )
+      })
     let build = sitemap_builder.SitemapBuild(config: cfg, routes: ["/"])
 
     sitemap_builder.build(dir, "https://example.com", build)
@@ -242,20 +230,16 @@ fn check_frequency(
   case frequencies {
     [] -> Nil
     [#(freq, expected_str), ..rest] -> {
-      let serialize = fn(_route: String) -> SitemapEntry {
-        SitemapEntry(
-          url: "/",
-          priority: None,
-          last_modified: None,
-          change_frequency: Some(freq),
-        )
-      }
       let cfg =
-        SitemapConfig(
-          filter: None,
-          serialize: Some(serialize),
-          path: "/sitemap.xml",
-        )
+        sitemap.new("/sitemap.xml")
+        |> sitemap.serialize(fn(_route) {
+          SitemapEntry(
+            url: "/",
+            priority: None,
+            last_modified: None,
+            change_frequency: Some(freq),
+          )
+        })
       let build = sitemap_builder.SitemapBuild(config: cfg, routes: ["/"])
 
       sitemap_builder.build(dir, "https://example.com", build)
@@ -274,12 +258,7 @@ fn check_frequency(
 pub fn build_creates_subdirectories_for_nested_path_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
-    let cfg =
-      SitemapConfig(
-        filter: None,
-        serialize: None,
-        path: "/sitemaps/sitemap.xml",
-      )
+    let cfg = sitemap.new("/sitemaps/sitemap.xml")
     let build = sitemap_builder.SitemapBuild(config: cfg, routes: ["/"])
 
     sitemap_builder.build(dir, "https://example.com", build)
@@ -294,21 +273,17 @@ pub fn build_creates_subdirectories_for_nested_path_test() {
 pub fn build_with_filter_and_serialize_combined_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
-    let filter = fn(route: String) -> Bool { route != "/private" }
-    let serialize = fn(route: String) -> SitemapEntry {
-      SitemapEntry(
-        url: "https://example.com" <> route,
-        priority: Some(0.5),
-        last_modified: None,
-        change_frequency: Some(sitemap.Monthly),
-      )
-    }
     let cfg =
-      SitemapConfig(
-        filter: Some(filter),
-        serialize: Some(serialize),
-        path: "/sitemap.xml",
-      )
+      sitemap.new("/sitemap.xml")
+      |> sitemap.filter(fn(route) { route != "/private" })
+      |> sitemap.serialize(fn(route) {
+        SitemapEntry(
+          url: "https://example.com" <> route,
+          priority: Some(0.5),
+          last_modified: None,
+          change_frequency: Some(sitemap.Monthly),
+        )
+      })
     let build =
       sitemap_builder.SitemapBuild(config: cfg, routes: [
         "/about", "/private", "/blog",
@@ -333,7 +308,7 @@ pub fn build_with_filter_and_serialize_combined_test() {
 pub fn build_returns_error_for_invalid_site_url_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
-    let cfg = SitemapConfig(filter: None, serialize: None, path: "/sitemap.xml")
+    let cfg = sitemap.new("/sitemap.xml")
     let build = sitemap_builder.SitemapBuild(config: cfg, routes: ["/"])
 
     // uri.merge fails when the base URI has no scheme/host

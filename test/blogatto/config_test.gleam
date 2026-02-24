@@ -188,8 +188,7 @@ pub fn route_view_produces_expected_element_test() {
 }
 
 pub fn sitemap_sets_sitemap_config_test() {
-  let sm =
-    sitemap.SitemapConfig(filter: None, serialize: None, path: "/sitemap.xml")
+  let sm = sitemap.new("/sitemap.xml")
   let cfg =
     config.new("https://example.com")
     |> config.sitemap(sm)
@@ -228,8 +227,7 @@ pub fn route_overwrites_duplicate_key_test() {
 pub fn builder_pipeline_preserves_all_settings_test() {
   let md = markdown.default()
   let robots_cfg = robots.new("https://example.com/sitemap.xml")
-  let sm =
-    sitemap.SitemapConfig(filter: None, serialize: None, path: "/sitemap.xml")
+  let sm = sitemap.new("/sitemap.xml")
   let feed_cfg = feed.FeedConfig(..sample_feed_config(), title: "Blog")
 
   let cfg =

@@ -1,13 +1,12 @@
 import blogatto/config/sitemap.{
-  Always, Daily, Hourly, Monthly, Never, SitemapConfig, SitemapEntry, Weekly,
-  Yearly,
+  Always, Daily, Hourly, Monthly, Never, SitemapEntry, Weekly, Yearly,
 }
 import gleam/option.{None, Some}
 import gleam/time/timestamp
 import gleeunit/should
 
-pub fn sitemap_config_construction_with_defaults_test() {
-  let cfg = SitemapConfig(filter: None, serialize: None, path: "/sitemap.xml")
+pub fn sitemap_config_new_sets_defaults_test() {
+  let cfg = sitemap.new("/sitemap.xml")
 
   cfg.filter |> should.equal(None)
   cfg.serialize |> should.equal(None)
@@ -15,17 +14,17 @@ pub fn sitemap_config_construction_with_defaults_test() {
 }
 
 pub fn sitemap_config_with_filter_test() {
-  let filter = fn(route: String) { route != "/admin" }
   let cfg =
-    SitemapConfig(filter: Some(filter), serialize: None, path: "/sitemap.xml")
+    sitemap.new("/sitemap.xml")
+    |> sitemap.filter(fn(route) { route != "/admin" })
 
   cfg.filter |> should.be_some
 }
 
 pub fn sitemap_config_filter_invocation_test() {
-  let filter = fn(route: String) { route != "/admin" }
   let cfg =
-    SitemapConfig(filter: Some(filter), serialize: None, path: "/sitemap.xml")
+    sitemap.new("/sitemap.xml")
+    |> sitemap.filter(fn(route) { route != "/admin" })
 
   let assert Some(f) = cfg.filter
   f("/about") |> should.be_true
@@ -33,39 +32,31 @@ pub fn sitemap_config_filter_invocation_test() {
 }
 
 pub fn sitemap_config_with_serialize_test() {
-  let serialize = fn(route: String) {
-    SitemapEntry(
-      url: "https://example.com" <> route,
-      priority: Some(0.8),
-      last_modified: None,
-      change_frequency: Some(Weekly),
-    )
-  }
   let cfg =
-    SitemapConfig(
-      filter: None,
-      serialize: Some(serialize),
-      path: "/sitemap.xml",
-    )
+    sitemap.new("/sitemap.xml")
+    |> sitemap.serialize(fn(route) {
+      SitemapEntry(
+        url: "https://example.com" <> route,
+        priority: Some(0.8),
+        last_modified: None,
+        change_frequency: Some(Weekly),
+      )
+    })
 
   cfg.serialize |> should.be_some
 }
 
 pub fn sitemap_config_serialize_invocation_test() {
-  let serialize = fn(route: String) {
-    SitemapEntry(
-      url: "https://example.com" <> route,
-      priority: Some(0.8),
-      last_modified: None,
-      change_frequency: Some(Weekly),
-    )
-  }
   let cfg =
-    SitemapConfig(
-      filter: None,
-      serialize: Some(serialize),
-      path: "/sitemap.xml",
-    )
+    sitemap.new("/sitemap.xml")
+    |> sitemap.serialize(fn(route) {
+      SitemapEntry(
+        url: "https://example.com" <> route,
+        priority: Some(0.8),
+        last_modified: None,
+        change_frequency: Some(Weekly),
+      )
+    })
 
   let assert Some(s) = cfg.serialize
   let entry = s("/about")
@@ -74,6 +65,14 @@ pub fn sitemap_config_serialize_invocation_test() {
   entry.priority |> should.equal(Some(0.8))
   entry.last_modified |> should.equal(None)
   entry.change_frequency |> should.equal(Some(Weekly))
+}
+
+pub fn sitemap_config_path_overrides_test() {
+  let cfg =
+    sitemap.new("/sitemap.xml")
+    |> sitemap.path("/custom-sitemap.xml")
+
+  cfg.path |> should.equal("/custom-sitemap.xml")
 }
 
 pub fn sitemap_entry_with_all_fields_test() {
