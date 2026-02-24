@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Blog posts
-nav_order: 3
+nav_order: 4
 ---
 
 # Blog posts

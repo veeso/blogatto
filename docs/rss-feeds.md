@@ -1,7 +1,7 @@
 ---
 layout: default
 title: RSS feeds
-nav_order: 7
+nav_order: 8
 ---
 
 # RSS feeds

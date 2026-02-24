@@ -8,6 +8,7 @@ nav_order: 1
 
 [![Package Version](https://img.shields.io/hexpm/v/blogatto)](https://hex.pm/packages/blogatto)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/blogatto/)
+[![conventional-commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
 [![test](https://github.com/veeso/blogatto/actions/workflows/test.yml/badge.svg)](https://github.com/veeso/blogatto/actions/workflows/test.yml)
 
 A Gleam framework for building static blogs with [**Lustre**](https://hexdocs.pm/lustre/) and Markdown.
@@ -45,6 +46,7 @@ The output is a fully static site ready to deploy to any static hosting provider
 | Guide | Description |
 |-------|-------------|
 | [Getting started](getting-started) | Installation, project setup, and your first build |
+| [Example blog](example) | Walkthrough of the complete example project |
 | [Blog posts](blog-posts) | Directory structure, frontmatter, multilingual support |
 | [Configuration](configuration) | Full configuration reference |
 | [Markdown components](markdown-components) | Customizing markdown rendering |

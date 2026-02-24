@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Markdown components
-nav_order: 5
+nav_order: 6
 ---
 
 # Markdown components
