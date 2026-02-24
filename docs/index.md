@@ -4,6 +4,8 @@ title: Blogatto
 nav_order: 1
 ---
 
+# Blogatto
+
 A Gleam framework for building static blogs with Lustre and Markdown.
 
 Blogatto generates your entire static site from a single configuration: blog posts from markdown with frontmatter, static pages from Lustre views, RSS feeds, sitemaps, and robots.txt — all rendered via [Maud](https://hexdocs.pm/maud/) components.

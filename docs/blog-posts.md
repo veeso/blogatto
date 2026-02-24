@@ -4,6 +4,8 @@ title: Blog posts
 nav_order: 3
 ---
 
+# Blog posts
+
 Blogatto discovers blog posts from markdown files with YAML frontmatter. This guide covers the directory convention, frontmatter fields, multilingual support, and post assets.
 
 ## Directory-per-post convention

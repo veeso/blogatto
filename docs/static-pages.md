@@ -4,6 +4,8 @@ title: Static pages
 nav_order: 6
 ---
 
+# Static pages
+
 Static pages are non-blog HTML pages generated from Lustre view functions. Use them for homepages, about pages, archives, or any page that isn't a markdown blog post.
 
 ## Adding routes

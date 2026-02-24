@@ -4,6 +4,8 @@ title: Markdown components
 nav_order: 5
 ---
 
+# Markdown components
+
 Blogatto renders markdown through [Maud](https://hexdocs.pm/maud/) components — view functions that control how each markdown element becomes HTML. You can override any component to add classes, attributes, or entirely custom markup.
 
 ## How it works
