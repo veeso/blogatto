@@ -332,10 +332,10 @@ fn markdown_html_path(
 /// Compute the absolute URL for a blog post.
 ///
 /// Combines `site_url` with the optional `route_prefix`, optional language,
-/// and slug. For example, given `site_url = "https://example.com"`,
-/// `route_prefix = Some("blog")`, `slug = "my-post"`, and
-/// `language = Some("it")`, the result is
-/// `"https://example.com/blog/it/my-post"`.
+/// and slug, always ending with a trailing slash. For example, given
+/// `site_url = "https://example.com"`, `route_prefix = Some("blog")`,
+/// `slug = "my-post"`, and `language = Some("it")`, the result is
+/// `"https://example.com/blog/it/my-post/"`.
 fn post_url(
   site_url: String,
   route_prefix: Option(String),
@@ -355,7 +355,7 @@ fn post_url(
     option.Some(lang) -> relative <> "/" <> lang
     option.None -> relative
   }
-  base <> relative <> "/" <> slug
+  base <> relative <> "/" <> slug <> "/"
 }
 
 /// Helper function to parse the frontmatter of a markdown file and extract the required fields (title, slug, date, description) along with any additional fields.

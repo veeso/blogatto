@@ -580,7 +580,7 @@ pub fn build_feed_uses_post_url_as_link_test() {
 
     let assert Ok(content) = simplifile.read(output <> "/rss.xml")
     content
-    |> string.contains("<link>https://example.com/url-post</link>")
+    |> string.contains("<link>https://example.com/url-post/</link>")
     |> should.be_true
   }
 }
@@ -754,7 +754,7 @@ pub fn build_sitemap_includes_blog_post_urls_test() {
 
     let assert Ok(content) = simplifile.read(output <> "/sitemap.xml")
     content
-    |> string.contains("<loc>https://example.com/sitemap-post</loc>")
+    |> string.contains("<loc>https://example.com/sitemap-post/</loc>")
     |> should.be_true
   }
 }
@@ -791,7 +791,7 @@ pub fn build_sitemap_includes_both_routes_and_blog_urls_test() {
     |> string.contains("<loc>https://example.com/about</loc>")
     |> should.be_true
     content
-    |> string.contains("<loc>https://example.com/both-post</loc>")
+    |> string.contains("<loc>https://example.com/both-post/</loc>")
     |> should.be_true
   }
 }
@@ -951,7 +951,7 @@ pub fn build_full_pipeline_sitemap_has_all_urls_test() {
     |> should.be_true
     // Blog post URL
     content
-    |> string.contains("<loc>https://example.com/integrated-post</loc>")
+    |> string.contains("<loc>https://example.com/integrated-post/</loc>")
     |> should.be_true
   }
 }
@@ -985,7 +985,7 @@ pub fn build_full_pipeline_feed_has_post_data_test() {
     |> string.contains("<title>Feed Integration</title>")
     |> should.be_true
     content
-    |> string.contains("<link>https://example.com/feed-int-post</link>")
+    |> string.contains("<link>https://example.com/feed-int-post/</link>")
     |> should.be_true
     // Excerpt is extracted from the rendered body content
     content

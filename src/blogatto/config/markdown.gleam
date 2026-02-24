@@ -139,6 +139,11 @@ pub fn markdown_path(
 /// When set to `"blog"`, posts are written to
 /// `output_dir/blog/{slug}/index.html` (or `output_dir/blog/{lang}/{slug}/index.html`
 /// for localized posts). When not set, posts go directly under `output_dir`.
+///
+/// This prefix also affects the absolute URLs generated for each post
+/// (used in RSS feeds and sitemaps). For example, with a site URL of
+/// `"https://example.com"` and a route prefix of `"blog"`, post URLs
+/// become `"https://example.com/blog/{slug}/"`.
 pub fn route_prefix(
   config: MarkdownConfig(msg),
   prefix: String,
