@@ -14,34 +14,14 @@
 //// import blogatto/config/feed
 ////
 //// let rss =
-////   feed.FeedConfig(
-////     excerpt_len: 200,
-////     filter: option.None,
-////     output: "/rss.xml",
-////     serialize: option.None,
-////     title: "My Blog",
-////     link: "https://example.com",
-////     description: "My personal blog",
-////     language: option.Some("en-us"),
-////     copyright: option.None,
-////     managing_editor: option.None,
-////     web_master: option.None,
-////     pub_date: option.None,
-////     last_build_date: option.None,
-////     categories: [],
-////     generator: option.None,
-////     docs: option.None,
-////     cloud: option.None,
-////     ttl: option.None,
-////     image: option.None,
-////     text_input: option.None,
-////     skip_hours: [],
-////     skip_days: [],
-////   )
+////   feed.new("My Blog", "https://example.com", "My personal blog")
+////   |> feed.language("en-us")
+////   |> feed.generator("Blogatto")
 //// ```
 
 import blogatto/post.{type Post}
-import gleam/option.{type Option}
+import gleam/list
+import gleam/option.{type Option, None, Some}
 import gleam/time/timestamp
 
 /// Configuration for a single RSS feed output.
@@ -207,4 +187,149 @@ pub type FeedItem {
     /// Globally unique identifier for this feed item.
     guid: Option(String),
   )
+}
+
+// --- Builder API ---
+
+/// Create a new `FeedConfig` with the three required RSS 2.0 channel fields.
+///
+/// All optional fields receive sensible defaults (`None`, empty lists, or
+/// standard values). Use the setter functions to customize them via piping.
+pub fn new(title: String, link: String, description: String) -> FeedConfig(msg) {
+  FeedConfig(
+    excerpt_len: 200,
+    filter: None,
+    output: "/rss.xml",
+    serialize: None,
+    title:,
+    link:,
+    description:,
+    language: None,
+    copyright: None,
+    managing_editor: None,
+    web_master: None,
+    pub_date: None,
+    last_build_date: None,
+    categories: [],
+    generator: None,
+    docs: None,
+    cloud: None,
+    ttl: None,
+    image: None,
+    text_input: None,
+    skip_hours: [],
+    skip_days: [],
+  )
+}
+
+/// Set the maximum character length for auto-generated article excerpts.
+pub fn excerpt_len(config: FeedConfig(msg), len: Int) -> FeedConfig(msg) {
+  FeedConfig(..config, excerpt_len: len)
+}
+
+/// Set the predicate used to include or exclude posts from this feed.
+pub fn filter(
+  config: FeedConfig(msg),
+  f: fn(FeedMetadata(msg)) -> Bool,
+) -> FeedConfig(msg) {
+  FeedConfig(..config, filter: Some(f))
+}
+
+/// Set the output file path for the generated feed, relative to `output_dir`.
+pub fn output(config: FeedConfig(msg), path: String) -> FeedConfig(msg) {
+  FeedConfig(..config, output: path)
+}
+
+/// Set the function used to convert post metadata into a feed item.
+pub fn serialize(
+  config: FeedConfig(msg),
+  f: fn(FeedMetadata(msg)) -> FeedItem,
+) -> FeedConfig(msg) {
+  FeedConfig(..config, serialize: Some(f))
+}
+
+/// Set the language code for the channel (e.g., `"en-us"`).
+pub fn language(config: FeedConfig(msg), lang: String) -> FeedConfig(msg) {
+  FeedConfig(..config, language: Some(lang))
+}
+
+/// Set the copyright notice for the channel content.
+pub fn copyright(config: FeedConfig(msg), text: String) -> FeedConfig(msg) {
+  FeedConfig(..config, copyright: Some(text))
+}
+
+/// Set the email address for the managing editor.
+pub fn managing_editor(
+  config: FeedConfig(msg),
+  email: String,
+) -> FeedConfig(msg) {
+  FeedConfig(..config, managing_editor: Some(email))
+}
+
+/// Set the email address for the webmaster.
+pub fn web_master(config: FeedConfig(msg), email: String) -> FeedConfig(msg) {
+  FeedConfig(..config, web_master: Some(email))
+}
+
+/// Set the publication date of the channel content.
+pub fn pub_date(
+  config: FeedConfig(msg),
+  ts: timestamp.Timestamp,
+) -> FeedConfig(msg) {
+  FeedConfig(..config, pub_date: Some(ts))
+}
+
+/// Set the last time the channel content changed.
+pub fn last_build_date(
+  config: FeedConfig(msg),
+  ts: timestamp.Timestamp,
+) -> FeedConfig(msg) {
+  FeedConfig(..config, last_build_date: Some(ts))
+}
+
+/// Add a category tag to the channel. Prepends to the existing list.
+pub fn category(config: FeedConfig(msg), cat: String) -> FeedConfig(msg) {
+  FeedConfig(..config, categories: list.prepend(config.categories, cat))
+}
+
+/// Set the program name used to generate the channel.
+pub fn generator(config: FeedConfig(msg), name: String) -> FeedConfig(msg) {
+  FeedConfig(..config, generator: Some(name))
+}
+
+/// Set a URL pointing to the documentation for the RSS format.
+pub fn docs(config: FeedConfig(msg), url: String) -> FeedConfig(msg) {
+  FeedConfig(..config, docs: Some(url))
+}
+
+/// Set the cloud service configuration for channel update notifications.
+pub fn cloud(config: FeedConfig(msg), cloud: Cloud) -> FeedConfig(msg) {
+  FeedConfig(..config, cloud: Some(cloud))
+}
+
+/// Set the time-to-live: number of minutes the channel can be cached.
+pub fn ttl(config: FeedConfig(msg), minutes: Int) -> FeedConfig(msg) {
+  FeedConfig(..config, ttl: Some(minutes))
+}
+
+/// Set the image to display with the channel.
+pub fn image(config: FeedConfig(msg), image: Image) -> FeedConfig(msg) {
+  FeedConfig(..config, image: Some(image))
+}
+
+/// Set the text input area to display with the channel.
+pub fn text_input(config: FeedConfig(msg), input: TextInput) -> FeedConfig(msg) {
+  FeedConfig(..config, text_input: Some(input))
+}
+
+/// Add an hour (0-23) during which aggregators should skip updating.
+/// Prepends to the existing list.
+pub fn skip_hour(config: FeedConfig(msg), hour: Int) -> FeedConfig(msg) {
+  FeedConfig(..config, skip_hours: list.prepend(config.skip_hours, hour))
+}
+
+/// Add a day of the week during which aggregators should skip updating.
+/// Prepends to the existing list.
+pub fn skip_day(config: FeedConfig(msg), day: Weekday) -> FeedConfig(msg) {
+  FeedConfig(..config, skip_days: list.prepend(config.skip_days, day))
 }

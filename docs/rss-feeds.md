@@ -4,6 +4,8 @@ title: RSS feeds
 nav_order: 7
 ---
 
+# RSS feeds
+
 Blogatto generates RSS 2.0 feeds from your blog posts. You can configure multiple feeds with different filters (e.g., one per language) and customize how posts are serialized into feed items.
 
 ## Basic setup
@@ -11,33 +13,11 @@ Blogatto generates RSS 2.0 feeds from your blog posts. You can configure multipl
 ```gleam
 import blogatto/config
 import blogatto/config/feed
-import gleam/option.{None, Some}
 
 let rss =
-  feed.FeedConfig(
-    excerpt_len: 200,
-    filter: None,
-    output: "/rss.xml",
-    serialize: None,
-    title: "My Blog",
-    link: "https://example.com",
-    description: "My personal blog",
-    language: Some("en-us"),
-    copyright: None,
-    managing_editor: None,
-    web_master: None,
-    pub_date: None,
-    last_build_date: None,
-    categories: [],
-    generator: Some("Blogatto"),
-    docs: None,
-    cloud: None,
-    ttl: None,
-    image: None,
-    text_input: None,
-    skip_hours: [],
-    skip_days: [],
-  )
+  feed.new("My Blog", "https://example.com", "My personal blog")
+  |> feed.language("en-us")
+  |> feed.generator("Blogatto")
 
 let cfg =
   config.new("https://example.com")
@@ -48,59 +28,52 @@ This generates `dist/rss.xml` containing all blog posts with auto-generated exce
 
 ## FeedConfig fields
 
-### Required fields
+### Required fields (passed to `feed.new()`)
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `title` | `String` | Channel title |
 | `link` | `String` | Website URL |
 | `description` | `String` | Channel description |
-| `output` | `String` | Output path relative to `output_dir` (e.g., `"/rss.xml"`) |
-| `excerpt_len` | `Int` | Maximum character length for auto-generated excerpts |
 
-### Optional channel fields
+### Optional fields (set via builder functions)
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `language` | `Option(String)` | Language code (e.g., `"en-us"`) |
-| `copyright` | `Option(String)` | Copyright notice |
-| `managing_editor` | `Option(String)` | Editor email |
-| `web_master` | `Option(String)` | Webmaster email |
-| `pub_date` | `Option(Timestamp)` | Channel publication date |
-| `last_build_date` | `Option(Timestamp)` | Last build timestamp |
-| `categories` | `List(String)` | Channel category tags |
-| `generator` | `Option(String)` | Generator program name |
-| `docs` | `Option(String)` | URL to RSS format documentation |
-| `cloud` | `Option(Cloud)` | Cloud service for update notifications |
-| `ttl` | `Option(Int)` | Cache time-to-live in minutes |
-| `image` | `Option(Image)` | Channel image |
-| `text_input` | `Option(TextInput)` | Channel text input field |
-| `skip_hours` | `List(Int)` | Hours (0-23) to skip updates |
-| `skip_days` | `List(Weekday)` | Days to skip updates |
-
-### Filtering and serialization
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `filter` | `Option(fn(FeedMetadata(msg)) -> Bool)` | Include/exclude posts |
-| `serialize` | `Option(fn(FeedMetadata(msg)) -> FeedItem)` | Custom item serialization |
+| Field | Setter | Default | Description |
+|-------|--------|---------|-------------|
+| `output` | `feed.output()` | `"/rss.xml"` | Output path relative to `output_dir` |
+| `excerpt_len` | `feed.excerpt_len()` | `200` | Maximum character length for auto-generated excerpts |
+| `language` | `feed.language()` | `None` | Language code (e.g., `"en-us"`) |
+| `copyright` | `feed.copyright()` | `None` | Copyright notice |
+| `managing_editor` | `feed.managing_editor()` | `None` | Editor email |
+| `web_master` | `feed.web_master()` | `None` | Webmaster email |
+| `pub_date` | `feed.pub_date()` | `None` | Channel publication date |
+| `last_build_date` | `feed.last_build_date()` | `None` | Last build timestamp |
+| `categories` | `feed.category()` | `[]` | Channel category tags (prepends) |
+| `generator` | `feed.generator()` | `None` | Generator program name |
+| `docs` | `feed.docs()` | `None` | URL to RSS format documentation |
+| `cloud` | `feed.cloud()` | `None` | Cloud service for update notifications |
+| `ttl` | `feed.ttl()` | `None` | Cache time-to-live in minutes |
+| `image` | `feed.image()` | `None` | Channel image |
+| `text_input` | `feed.text_input()` | `None` | Channel text input field |
+| `skip_hours` | `feed.skip_hour()` | `[]` | Hours (0-23) to skip updates (prepends) |
+| `skip_days` | `feed.skip_day()` | `[]` | Days to skip updates (prepends) |
+| `filter` | `feed.filter()` | `None` | Include/exclude posts |
+| `serialize` | `feed.serialize()` | `None` | Custom item serialization |
 
 ## Filtering posts
 
 Use the `filter` function to control which posts appear in a feed. The function receives `FeedMetadata` containing the post, its URL path, and an auto-generated excerpt:
 
 ```gleam
-import gleam/option.{Some}
+import gleam/option
 
 // Only include English posts
 let rss =
-  feed.FeedConfig(
-    ..base_config,
-    filter: Some(fn(meta: feed.FeedMetadata(Nil)) {
-      meta.post.language == option.None
-      || meta.post.language == Some("en")
-    }),
-  )
+  feed.new("My Blog", "https://example.com", "My personal blog")
+  |> feed.filter(fn(meta: feed.FeedMetadata(Nil)) {
+    meta.post.language == option.None
+    || meta.post.language == option.Some("en")
+  })
 ```
 
 ## Custom serialization
@@ -112,28 +85,26 @@ import gleam/dict
 import gleam/option.{None, Some}
 
 let rss =
-  feed.FeedConfig(
-    ..base_config,
-    serialize: Some(fn(meta: feed.FeedMetadata(Nil)) {
-      let author =
-        dict.get(meta.post.extras, "author")
-        |> result.map(Some)
-        |> result.unwrap(None)
+  feed.new("My Blog", "https://example.com", "My personal blog")
+  |> feed.serialize(fn(meta: feed.FeedMetadata(Nil)) {
+    let author =
+      dict.get(meta.post.extras, "author")
+      |> result.map(Some)
+      |> result.unwrap(None)
 
-      feed.FeedItem(
-        title: meta.post.title,
-        description: meta.excerpt,
-        link: Some(meta.url),
-        author: author,
-        comments: None,
-        source: None,
-        pub_date: Some(meta.post.date),
-        categories: [],
-        enclosure: None,
-        guid: Some(meta.url),
-      )
-    }),
-  )
+    feed.FeedItem(
+      title: meta.post.title,
+      description: meta.excerpt,
+      link: Some(meta.url),
+      author: author,
+      comments: None,
+      source: None,
+      pub_date: Some(meta.post.date),
+      categories: [],
+      enclosure: None,
+      guid: Some(meta.url),
+    )
+  })
 ```
 
 ## Multiple feeds
@@ -142,27 +113,20 @@ Call `config.feed()` multiple times to generate separate feeds:
 
 ```gleam
 let en_feed =
-  feed.FeedConfig(
-    ..base_config,
-    output: "/rss.xml",
-    title: "My Blog (English)",
-    language: Some("en-us"),
-    filter: Some(fn(meta) {
-      meta.post.language == option.None
-      || meta.post.language == Some("en")
-    }),
-  )
+  feed.new("My Blog (English)", "https://example.com", "My personal blog")
+  |> feed.language("en-us")
+  |> feed.filter(fn(meta) {
+    meta.post.language == option.None
+    || meta.post.language == option.Some("en")
+  })
 
 let it_feed =
-  feed.FeedConfig(
-    ..base_config,
-    output: "/rss-it.xml",
-    title: "Il mio Blog (Italiano)",
-    language: Some("it"),
-    filter: Some(fn(meta) {
-      meta.post.language == Some("it")
-    }),
-  )
+  feed.new("Il mio Blog (Italiano)", "https://example.com", "Il mio blog personale")
+  |> feed.output("/rss-it.xml")
+  |> feed.language("it")
+  |> feed.filter(fn(meta) {
+    meta.post.language == option.Some("it")
+  })
 
 let cfg =
   config.new("https://example.com")

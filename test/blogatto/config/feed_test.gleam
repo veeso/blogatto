@@ -1,6 +1,4 @@
-import blogatto/config/feed.{
-  type FeedMetadata, FeedConfig, FeedItem, FeedMetadata,
-}
+import blogatto/config/feed.{type FeedMetadata, FeedItem, FeedMetadata}
 import blogatto/post.{Post}
 import gleam/dict
 import gleam/option.{None, Some}
@@ -23,30 +21,7 @@ fn sample_feed_item() -> feed.FeedItem {
 }
 
 fn sample_feed_config() -> feed.FeedConfig(msg) {
-  FeedConfig(
-    excerpt_len: 200,
-    filter: None,
-    output: "/rss.xml",
-    serialize: None,
-    title: "My Blog",
-    link: "https://example.com",
-    description: "A sample blog",
-    language: None,
-    copyright: None,
-    managing_editor: None,
-    web_master: None,
-    pub_date: None,
-    last_build_date: None,
-    categories: [],
-    generator: None,
-    docs: None,
-    cloud: None,
-    ttl: None,
-    image: None,
-    text_input: None,
-    skip_hours: [],
-    skip_days: [],
-  )
+  feed.new("My Blog", "https://example.com", "A sample blog")
 }
 
 fn sample_post() -> post.Post(msg) {
@@ -91,29 +66,23 @@ pub fn feed_config_construction_with_defaults_test() {
 }
 
 pub fn feed_config_with_filter_test() {
-  let filter = fn(meta: FeedMetadata(msg)) { meta.path != "/draft" }
+  let f = fn(meta: FeedMetadata(msg)) { meta.path != "/draft" }
   let cfg =
-    FeedConfig(
-      ..sample_feed_config(),
-      excerpt_len: 100,
-      filter: Some(filter),
-      output: "/feed.xml",
-      title: "Filtered",
-    )
+    feed.new("Filtered", "https://example.com", "A sample blog")
+    |> feed.excerpt_len(100)
+    |> feed.filter(f)
+    |> feed.output("/feed.xml")
 
   cfg.filter |> should.be_some
 }
 
 pub fn feed_config_filter_invocation_test() {
-  let filter = fn(meta: FeedMetadata(msg)) { meta.path != "/draft" }
+  let f = fn(meta: FeedMetadata(msg)) { meta.path != "/draft" }
   let cfg =
-    FeedConfig(
-      ..sample_feed_config(),
-      excerpt_len: 100,
-      filter: Some(filter),
-      output: "/feed.xml",
-      title: "Filtered",
-    )
+    feed.new("Filtered", "https://example.com", "A sample blog")
+    |> feed.excerpt_len(100)
+    |> feed.filter(f)
+    |> feed.output("/feed.xml")
 
   let assert Some(f) = cfg.filter
   let published =
@@ -136,7 +105,7 @@ pub fn feed_config_filter_invocation_test() {
 }
 
 pub fn feed_config_with_serialize_test() {
-  let serialize = fn(meta: FeedMetadata(msg)) {
+  let s = fn(meta: FeedMetadata(msg)) {
     FeedItem(
       title: meta.post.title,
       description: meta.excerpt,
@@ -151,18 +120,15 @@ pub fn feed_config_with_serialize_test() {
     )
   }
   let cfg =
-    FeedConfig(
-      ..sample_feed_config(),
-      excerpt_len: 150,
-      serialize: Some(serialize),
-      title: "With Serializer",
-    )
+    feed.new("With Serializer", "https://example.com", "A sample blog")
+    |> feed.excerpt_len(150)
+    |> feed.serialize(s)
 
   cfg.serialize |> should.be_some
 }
 
 pub fn feed_config_serialize_invocation_test() {
-  let serialize = fn(meta: FeedMetadata(msg)) {
+  let s = fn(meta: FeedMetadata(msg)) {
     FeedItem(
       title: meta.post.title,
       description: meta.excerpt,
@@ -177,12 +143,9 @@ pub fn feed_config_serialize_invocation_test() {
     )
   }
   let cfg =
-    FeedConfig(
-      ..sample_feed_config(),
-      excerpt_len: 150,
-      serialize: Some(serialize),
-      title: "With Serializer",
-    )
+    feed.new("With Serializer", "https://example.com", "A sample blog")
+    |> feed.excerpt_len(150)
+    |> feed.serialize(s)
 
   let assert Some(s) = cfg.serialize
   let meta =
@@ -253,17 +216,19 @@ pub fn feed_config_with_channel_fields_test() {
       height: Some(31),
     )
   let cfg =
-    FeedConfig(
-      ..sample_feed_config(),
-      language: Some("en-us"),
-      copyright: Some("2026 Example"),
-      managing_editor: Some("editor@example.com"),
-      categories: ["tech", "blog"],
-      ttl: Some(60),
-      image: Some(img),
-      skip_hours: [0, 1, 2],
-      skip_days: [feed.Saturday, feed.Sunday],
-    )
+    sample_feed_config()
+    |> feed.language("en-us")
+    |> feed.copyright("2026 Example")
+    |> feed.managing_editor("editor@example.com")
+    |> feed.category("blog")
+    |> feed.category("tech")
+    |> feed.ttl(60)
+    |> feed.image(img)
+    |> feed.skip_hour(2)
+    |> feed.skip_hour(1)
+    |> feed.skip_hour(0)
+    |> feed.skip_day(feed.Sunday)
+    |> feed.skip_day(feed.Saturday)
 
   cfg.language |> should.equal(Some("en-us"))
   cfg.copyright |> should.equal(Some("2026 Example"))
@@ -287,4 +252,104 @@ pub fn feed_item_with_enclosure_test() {
 
   item.enclosure |> should.be_some
   item.categories |> should.equal(["tech"])
+}
+
+pub fn feed_new_sets_required_fields_test() {
+  let cfg = feed.new("Title", "https://example.com", "Desc")
+
+  cfg.title |> should.equal("Title")
+  cfg.link |> should.equal("https://example.com")
+  cfg.description |> should.equal("Desc")
+}
+
+pub fn feed_new_sets_defaults_test() {
+  let cfg = feed.new("T", "L", "D")
+
+  cfg.excerpt_len |> should.equal(200)
+  cfg.filter |> should.equal(None)
+  cfg.output |> should.equal("/rss.xml")
+  cfg.serialize |> should.equal(None)
+  cfg.language |> should.equal(None)
+  cfg.copyright |> should.equal(None)
+  cfg.managing_editor |> should.equal(None)
+  cfg.web_master |> should.equal(None)
+  cfg.pub_date |> should.equal(None)
+  cfg.last_build_date |> should.equal(None)
+  cfg.categories |> should.equal([])
+  cfg.generator |> should.equal(None)
+  cfg.docs |> should.equal(None)
+  cfg.cloud |> should.equal(None)
+  cfg.ttl |> should.equal(None)
+  cfg.image |> should.equal(None)
+  cfg.text_input |> should.equal(None)
+  cfg.skip_hours |> should.equal([])
+  cfg.skip_days |> should.equal([])
+}
+
+pub fn feed_builder_setters_test() {
+  let ts = timestamp.from_unix_seconds(1_700_000_000)
+  let cl =
+    feed.Cloud(
+      domain: "rpc.example.com",
+      port: 80,
+      path: "/rpc",
+      register_procedure: "notify",
+      protocol: "http-post",
+    )
+  let img =
+    feed.Image(
+      url: "https://example.com/logo.png",
+      title: "Logo",
+      link: "https://example.com",
+      description: None,
+      width: None,
+      height: None,
+    )
+  let ti =
+    feed.TextInput(
+      title: "Search",
+      description: "Search the feed",
+      name: "q",
+      link: "https://example.com/search",
+    )
+
+  let cfg =
+    feed.new("Blog", "https://example.com", "A blog")
+    |> feed.excerpt_len(300)
+    |> feed.output("/atom.xml")
+    |> feed.language("it")
+    |> feed.copyright("2026")
+    |> feed.managing_editor("ed@example.com")
+    |> feed.web_master("wm@example.com")
+    |> feed.pub_date(ts)
+    |> feed.last_build_date(ts)
+    |> feed.category("gleam")
+    |> feed.category("blog")
+    |> feed.generator("Blogatto")
+    |> feed.docs("https://www.rssboard.org/rss-specification")
+    |> feed.cloud(cl)
+    |> feed.ttl(120)
+    |> feed.image(img)
+    |> feed.text_input(ti)
+    |> feed.skip_hour(3)
+    |> feed.skip_hour(4)
+    |> feed.skip_day(feed.Monday)
+
+  cfg.excerpt_len |> should.equal(300)
+  cfg.output |> should.equal("/atom.xml")
+  cfg.language |> should.equal(Some("it"))
+  cfg.copyright |> should.equal(Some("2026"))
+  cfg.managing_editor |> should.equal(Some("ed@example.com"))
+  cfg.web_master |> should.equal(Some("wm@example.com"))
+  cfg.pub_date |> should.equal(Some(ts))
+  cfg.last_build_date |> should.equal(Some(ts))
+  cfg.categories |> should.equal(["blog", "gleam"])
+  cfg.generator |> should.equal(Some("Blogatto"))
+  cfg.docs |> should.equal(Some("https://www.rssboard.org/rss-specification"))
+  cfg.cloud |> should.equal(Some(cl))
+  cfg.ttl |> should.equal(Some(120))
+  cfg.image |> should.equal(Some(img))
+  cfg.text_input |> should.equal(Some(ti))
+  cfg.skip_hours |> should.equal([4, 3])
+  cfg.skip_days |> should.equal([feed.Monday])
 }

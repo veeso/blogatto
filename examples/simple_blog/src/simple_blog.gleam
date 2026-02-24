@@ -15,7 +15,7 @@ import blogatto/error
 import blogatto/post.{type Post}
 import gleam/io
 import gleam/list
-import gleam/option.{None, Some}
+import gleam/option
 import gleam/time/timestamp
 import lustre/attribute
 import lustre/element.{type Element}
@@ -33,30 +33,13 @@ pub fn main() {
 
   // RSS feed configuration
   let rss =
-    feed.FeedConfig(
-      excerpt_len: 200,
-      filter: None,
-      output: "/rss.xml",
-      serialize: None,
-      title: "Simple Blog",
-      link: site_url,
-      description: "A simple example blog built with Blogatto",
-      language: Some("en-us"),
-      copyright: None,
-      managing_editor: None,
-      web_master: None,
-      pub_date: None,
-      last_build_date: None,
-      categories: [],
-      generator: Some("Blogatto"),
-      docs: None,
-      cloud: None,
-      ttl: None,
-      image: None,
-      text_input: None,
-      skip_hours: [],
-      skip_days: [],
+    feed.new(
+      "Simple Blog",
+      site_url,
+      "A simple example blog built with Blogatto",
     )
+    |> feed.language("en-us")
+    |> feed.generator("Blogatto")
 
   // Sitemap configuration
   let sitemap_config =

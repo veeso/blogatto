@@ -4,6 +4,10 @@ description = "A Gleam framework for building static blogs with Lustre and Markd
 repository = { type = "github", user = "veeso", repo = "blogatto" }
 licenses = ["MIT"]
 target = "erlang"
+links = [
+  { title = "Documentation", href = "https://blogat.to" },
+  { title = "Codeberg", href = "https://codeberg.org/veeso/blogatto" },
+]
 
 [dependencies]
 gleam_stdlib = ">= 0.44.0 and < 2.0.0"

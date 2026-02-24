@@ -6,15 +6,15 @@
 [![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/blogatto/)
 [![test](https://github.com/veeso/blogatto/actions/workflows/test.yml/badge.svg)](https://github.com/veeso/blogatto/actions/workflows/test.yml)
 
-A Gleam framework for building static blogs with Lustre and Markdown.
+A Gleam framework for building static blogs with [**Lustre**](https://hexdocs.pm/lustre/) and Markdown.
 
-Blogatto generates your entire static site from a single configuration: blog posts from markdown with frontmatter, static pages from Lustre views, RSS feeds, sitemaps, and robots.txt — all rendered via [Maud](https://hexdocs.pm/maud/) components.
+Blogatto generates your entire static site from a single configuration: blog posts from markdown with frontmatter, static pages from [Lustre](https://hexdocs.pm/lustre/) views, RSS feeds, sitemaps, and robots.txt — all rendered via [Maud](https://hexdocs.pm/maud/) components.
 
 ## Features
 
 - Blog posts from markdown files with YAML frontmatter
 - Multilingual posts via `index-{lang}.md` file naming convention
-- Static pages from Lustre view functions
+- Static pages from [Lustre](https://hexdocs.pm/lustre/) view functions
 - RSS feed generation with customizable filtering and serialization
 - Sitemap XML generation with alternate language links
 - Robots.txt generation
@@ -26,6 +26,7 @@ Blogatto generates your entire static site from a single configuration: blog pos
 
 ```sh
 gleam add blogatto@1
+gleam add lustre@5
 ```
 
 ## Quick start
@@ -33,236 +34,96 @@ gleam add blogatto@1
 ```gleam
 import blogatto
 import blogatto/config
+import blogatto/config/feed
 import blogatto/config/markdown
-
-pub fn main() {
-  let md =
-    markdown.default()
-    |> markdown.markdown_path("./blog")
-
-  let cfg =
-    config.new("https://example.com")
-    |> config.output_dir("./dist")
-    |> config.static_dir("./static")
-    |> config.markdown(md)
-
-  let assert Ok(Nil) = blogatto.build(cfg)
-}
-```
-
-## Blog post structure
-
-Blog posts follow a directory-per-post convention with optional language variants:
-
-```text
-blog/
-  my-first-post/
-    index.md            # Default language
-    index-it.md         # Italian variant
-    index-en.md         # English variant
-    cover.jpg           # Assets copied alongside HTML
-  another-post/
-    index.md
-```
-
-Each markdown file must have frontmatter with these required fields:
-
-```markdown
----
-title: My First Post
-date: 2025-01-15 00:00:00
-description: A short description of the post
-featured_image: /images/hero.jpg
----
-
-Your markdown content here...
-```
-
-| Field | Required | Description |
-|-------|----------|-------------|
-| `title` | Yes | The post title |
-| `date` | Yes | Publication date in `YYYY-MM-DD HH:MM:SS` format (UTC) |
-| `description` | Yes | A short description or excerpt |
-| `featured_image` | No | URL or path to a featured image |
-
-- **Slug** is derived from the directory name (e.g., `my-first-post`)
-- **Language** is derived from the filename: `index.md` is the default, `index-it.md` is Italian
-- **Assets** — non-markdown files in a post directory (images, etc.) are copied to the output alongside the generated HTML, so relative links in markdown work as-is
-- Additional frontmatter keys beyond the ones above are available in `Post.extras`
-
-## Configuration
-
-### Markdown
-
-Set up markdown rendering with Maud components and paths to search for posts:
-
-```gleam
-import blogatto/config/markdown
-
-let md =
-  markdown.default()
-  |> markdown.markdown_path("./blog")
-```
-
-Use `route_prefix` to place blog posts under a URL prefix (e.g., `/blog/{slug}/`):
-
-```gleam
-let md =
-  markdown.default()
-  |> markdown.markdown_path("./blog")
-  |> markdown.route_prefix("blog")
-```
-
-Optionally override the default blog post template:
-
-```gleam
-import blogatto/config/markdown
+import blogatto/config/robots
+import blogatto/config/sitemap
+import blogatto/error
 import blogatto/post.{type Post}
-import lustre/element/html
-
-let md =
-  markdown.default()
-  |> markdown.markdown_path("./blog")
-  |> markdown.template(fn(post: Post(_)) {
-    html.html([], [
-      html.head([], [html.title([], post.title)]),
-      html.body([], post.contents),
-    ])
-  })
-```
-
-### Static routes
-
-Add static pages by mapping URL paths to Lustre view functions. Each view function receives the full list of blog posts, so pages can display recent articles, featured posts, etc.:
-
-```gleam
-import blogatto/config
-import blogatto/post.{type Post}
+import gleam/io
+import gleam/list
+import gleam/option
+import gleam/time/timestamp
+import lustre/attribute
 import lustre/element.{type Element}
 import lustre/element/html
 
-let cfg =
-  config.new("https://example.com")
-  |> config.route("/", home_view)
-  |> config.route("/about", fn(_posts) { about_view() })
+const site_url = "https://example.com"
+
+pub fn main() {
+  // Markdown config with custom heading component
+  let md =
+    markdown.default()
+    |> markdown.markdown_path("./blog")
+    |> markdown.route_prefix("blog")
+    |> markdown.h1(fn(id, children) {
+      html.h1([attribute.id(id), attribute.class("post-title")], children)
+    })
+
+  // RSS feed
+  let rss =
+    feed.new("My Blog", site_url, "My personal blog")
+    |> feed.language("en-us")
+    |> feed.generator("Blogatto")
+
+  // Build configuration
+  let cfg =
+    config.new(site_url)
+    |> config.output_dir("./dist")
+    |> config.static_dir("./static")
+    |> config.markdown(md)
+    |> config.route("/", home_view)
+    |> config.feed(rss)
+    |> config.sitemap(sitemap.SitemapConfig(
+      filter: None,
+      serialize: None,
+      path: "/sitemap.xml",
+    ))
+    |> config.robots(robots.RobotsConfig(
+      sitemap_url: site_url <> "/sitemap.xml",
+      robots: [
+        robots.Robot(
+          user_agent: "*",
+          allowed_routes: ["/"],
+          disallowed_routes: [],
+        ),
+      ],
+    ))
+
+  case blogatto.build(cfg) {
+    Ok(Nil) -> io.println("Site built successfully!")
+    Error(err) -> io.println("Build failed: " <> error.describe_error(err))
+  }
+}
 
 fn home_view(posts: List(Post(Nil))) -> Element(Nil) {
+  let sorted =
+    list.sort(posts, fn(a, b) { timestamp.compare(b.date, a.date) })
+
   html.html([], [
+    html.head([], [html.title([], "My Blog")]),
     html.body([], [
-      html.h1([], [element.text("Home")]),
-      // Use posts to list recent articles, etc.
+      html.h1([], [element.text("My Blog")]),
+      html.ul(
+        [],
+        list.map(sorted, fn(p) {
+          html.li([], [
+            html.a([attribute.href("/blog/" <> p.slug)], [
+              element.text(p.title),
+            ]),
+          ])
+        }),
+      ),
     ]),
   ])
 }
 ```
 
-### RSS feeds
+## Documentation
 
-Configure one or more RSS feeds with full RSS 2.0 channel support:
+Full documentation is available at [blogat.to](https://blogat.to), covering blog post structure, configuration, markdown components, static pages, RSS feeds, sitemaps, and error handling.
 
-```gleam
-import blogatto/config
-import blogatto/config/feed
-import gleam/option.{None, Some}
-
-let rss =
-  feed.FeedConfig(
-    excerpt_len: 200,
-    filter: None,
-    output: "/rss.xml",
-    serialize: None,
-    title: "My Blog",
-    link: "https://example.com",
-    description: "My personal blog",
-    language: Some("en-us"),
-    copyright: None,
-    managing_editor: None,
-    web_master: None,
-    pub_date: None,
-    last_build_date: None,
-    categories: [],
-    generator: Some("Blogatto"),
-    docs: None,
-    cloud: None,
-    ttl: None,
-    image: None,
-    text_input: None,
-    skip_hours: [],
-    skip_days: [],
-  )
-
-let cfg =
-  config.new("https://example.com")
-  |> config.feed(rss)
-```
-
-### Sitemap
-
-Enable sitemap generation with optional filtering:
-
-```gleam
-import blogatto/config
-import blogatto/config/sitemap
-import gleam/option.{None}
-
-let sitemap_config =
-  sitemap.SitemapConfig(
-    filter: None,
-    serialize: None,
-    path: "/sitemap.xml",
-  )
-
-let cfg =
-  config.new("https://example.com")
-  |> config.sitemap(sitemap_config)
-```
-
-### Robots.txt
-
-Generate a `robots.txt` with crawl policies and a sitemap reference:
-
-```gleam
-import blogatto/config
-import blogatto/config/robots
-
-let robots_config =
-  robots.new("https://example.com/sitemap.xml")
-  |> robots.robot(robots.Robot(
-    user_agent: "*",
-    allowed_routes: ["/"],
-    disallowed_routes: [],
-  ))
-
-let cfg =
-  config.new("https://example.com")
-  |> config.robots(robots_config)
-```
-
-## Error handling
-
-All build functions return `Result(Nil, BlogattoError)`. Use `error.describe_error()` for human-readable messages:
-
-```gleam
-import blogatto
-import blogatto/error
-
-case blogatto.build(cfg) {
-  Ok(Nil) -> io.println("Site built successfully!")
-  Error(err) -> io.println("Build failed: " <> error.describe_error(err))
-}
-```
-
-## Build pipeline
-
-Calling `blogatto.build(config)` executes these steps:
-
-1. Clean and recreate the output directory
-2. Copy static assets (if `static_dir` is configured)
-3. Generate robots.txt (if configured)
-4. Parse markdown files, extract frontmatter, render blog post pages via Maud components, and copy post assets
-5. Render static pages from route view functions
-6. Generate RSS feeds
-7. Generate sitemap XML
+API reference is on [HexDocs](https://hexdocs.pm/blogatto/).
 
 ## Development
 
@@ -271,8 +132,6 @@ gleam build  # Compile the project
 gleam test   # Run the tests
 gleam format src test  # Format code
 ```
-
-Further documentation can be found at <https://hexdocs.pm/blogatto>.
 
 ## License
 
