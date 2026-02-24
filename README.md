@@ -115,6 +115,19 @@ fn home_view(posts: List(Post(Nil))) -> Element(Nil) {
 }
 ```
 
+Running `gleam build` will generate the `dist` directory with the following structure:
+
+```
+dist/
+├── blog/
+│   └── my-post/
+│       └── index.html
+├── index.html
+├── robots.txt
+├── sitemap.xml
+└── feed.xml
+```
+
 ## Documentation
 
 Full documentation is available at [blogat.to](https://blogat.to), covering blog post structure, configuration, markdown components, static pages, RSS feeds, sitemaps, and error handling.
