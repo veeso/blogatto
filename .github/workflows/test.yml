@@ -21,3 +21,7 @@ jobs:
       - run: gleam deps download
       - run: gleam test
       - run: gleam format --check src test
+      - name: build example
+        run: |
+          cd examples/simple_blog
+          gleam run
