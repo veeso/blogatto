@@ -1,6 +1,6 @@
 # Blogatto
 
-![logo](./logo.png)
+![logo](https://blogat.to/logo.png)
 
 [![Package Version](https://img.shields.io/hexpm/v/blogatto)](https://hex.pm/packages/blogatto)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/blogatto/)
