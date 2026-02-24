@@ -1,10 +1,8 @@
 ---
 layout: default
-title: Home
+title: Blogatto
 nav_order: 1
 ---
-
-# Blogatto
 
 A Gleam framework for building static blogs with Lustre and Markdown.
 

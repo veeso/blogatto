@@ -4,8 +4,6 @@ title: Sitemap and robots.txt
 nav_order: 8
 ---
 
-# Sitemap and robots.txt
-
 Blogatto can generate a sitemap XML file and a `robots.txt` file for search engine optimization.
 
 ## Sitemap

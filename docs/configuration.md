@@ -4,8 +4,6 @@ title: Configuration
 nav_order: 4
 ---
 
-# Configuration
-
 Blogatto uses a builder pattern for configuration. Start with `config.new(site_url)` and pipe through setter functions to configure each feature.
 
 ## Config type

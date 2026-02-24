@@ -4,8 +4,6 @@ title: RSS feeds
 nav_order: 7
 ---
 
-# RSS feeds
-
 Blogatto generates RSS 2.0 feeds from your blog posts. You can configure multiple feeds with different filters (e.g., one per language) and customize how posts are serialized into feed items.
 
 ## Basic setup

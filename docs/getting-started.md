@@ -4,8 +4,6 @@ title: Getting started
 nav_order: 2
 ---
 
-# Getting started
-
 This guide walks you through installing Blogatto and building your first static blog.
 
 ## Prerequisites
