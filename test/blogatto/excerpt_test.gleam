@@ -98,7 +98,7 @@ pub fn extract_trims_leading_and_trailing_whitespace_test() {
 
 // --- Truncation ---
 
-pub fn extract_truncates_to_max_len_test() {
+pub fn extract_truncates_single_word_to_max_len_test() {
   let elements = [element.text("abcdefghij")]
 
   excerpt.extract(elements, 5)
@@ -112,11 +112,39 @@ pub fn extract_returns_full_text_when_shorter_than_max_len_test() {
   |> should.equal("short")
 }
 
+pub fn extract_truncates_at_word_boundary_test() {
+  let elements = [element.text("hello beautiful world")]
+
+  // max_len 13 would cut into "world" — should back up to "hello"
+  // "hello beautif" is 13 chars, mid-word, so drop last partial word
+  excerpt.extract(elements, 13)
+  |> should.equal("hello")
+}
+
+pub fn extract_truncates_at_exact_word_boundary_test() {
+  let elements = [element.text("hello beautiful world")]
+
+  // max_len 15 = "hello beautiful" exactly, next char is " " → word boundary
+  excerpt.extract(elements, 15)
+  |> should.equal("hello beautiful")
+}
+
+pub fn extract_does_not_break_html_entities_test() {
+  // Lustre escapes ' to &#39; in HTML output, so the plain text contains
+  // "couldn&#39;t". Word-boundary truncation keeps the whole word intact.
+  let elements = [element.text("I couldn't believe it was real")]
+
+  let result = excerpt.extract(elements, 20)
+  // The complete entity &#39; must be preserved, not truncated to &#
+  result |> string.contains("&#39;") |> should.be_true
+}
+
 pub fn extract_truncates_after_stripping_tags_test() {
   let elements = [
     html.p([], [element.text("abcdefghijklmnop")]),
   ]
 
+  // Single word — no space to back up to, sliced at max_len
   excerpt.extract(elements, 10)
   |> should.equal("abcdefghij")
 }
@@ -183,10 +211,12 @@ pub fn extract_deeply_nested_elements_test() {
 }
 
 pub fn extract_long_content_only_processes_needed_portion_test() {
-  // Build a long text and verify truncation works correctly
+  // Build a long text and verify truncation respects word boundaries
   let long_text = string.repeat("word ", 1000)
   let elements = [element.text(long_text)]
 
   let result = excerpt.extract(elements, 20)
-  string.length(result) |> should.equal(20)
+  { string.length(result) <= 20 } |> should.be_true
+  // Should not end with a partial word
+  result |> string.ends_with(" ") |> should.be_false
 }
