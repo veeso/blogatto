@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.2
+
+Released on 2026-02-25
+
+- Fixed:
+  - truncate excerpts at word boundaries to avoid broken HTML entities (#2)
+
 ## 1.0.1
 
 Released on 2026-02-25
