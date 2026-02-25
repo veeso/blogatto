@@ -47,7 +47,10 @@ fn build_feed(
     list.map(metadata, fn(m) {
       feed_config.FeedMetadata(
         ..m,
-        excerpt: excerpt.truncate_at_word_boundary(m.excerpt, config.excerpt_len),
+        excerpt: excerpt.truncate_at_word_boundary(
+          m.excerpt,
+          config.excerpt_len,
+        ),
       )
     })
 
