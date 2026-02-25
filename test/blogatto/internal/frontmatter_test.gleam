@@ -98,6 +98,44 @@ pub fn parse_content_returns_error_when_no_frontmatter_test() {
   |> should.equal(error.FrontmatterMissing)
 }
 
+pub fn parse_strips_double_quotes_from_values_test() {
+  "title: \"Hello World\"\ndescription: \"A first post\""
+  |> frontmatter.parse()
+  |> should.be_ok()
+  |> should.equal(
+    dict.from_list([
+      #("title", "Hello World"),
+      #("description", "A first post"),
+    ]),
+  )
+}
+
+pub fn parse_strips_single_quotes_from_values_test() {
+  "title: 'Hello World'\ndescription: 'A first post'"
+  |> frontmatter.parse()
+  |> should.be_ok()
+  |> should.equal(
+    dict.from_list([
+      #("title", "Hello World"),
+      #("description", "A first post"),
+    ]),
+  )
+}
+
+pub fn parse_keeps_mismatched_quotes_test() {
+  "title: \"Hello World'"
+  |> frontmatter.parse()
+  |> should.be_ok()
+  |> should.equal(dict.from_list([#("title", "\"Hello World'")]))
+}
+
+pub fn parse_keeps_value_with_only_opening_quote_test() {
+  "title: \"Hello World"
+  |> frontmatter.parse()
+  |> should.be_ok()
+  |> should.equal(dict.from_list([#("title", "\"Hello World")]))
+}
+
 pub fn parse_content_handles_empty_frontmatter_block_test() {
   "---\n---\n# Body\n"
   |> frontmatter.parse_content()

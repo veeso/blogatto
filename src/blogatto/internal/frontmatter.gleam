@@ -6,6 +6,8 @@
 //// operates on already-extracted raw frontmatter text. Empty lines and
 //// comment lines (starting with `#`) are skipped. Each non-skipped line
 //// must contain a `:` separator; lines without one produce an error.
+//// Values surrounded by matching double (`"`) or single (`'`) quotes
+//// have the quotes stripped automatically.
 
 import blogatto/error
 import frontmatter as fm_extractor
@@ -64,7 +66,17 @@ pub fn parse(raw: String) -> Result(Dict(String, String), error.BlogattoError) {
 /// Parse a single frontmatter line into a key-value tuple.
 fn parse_line(line: String) -> Result(#(String, String), error.BlogattoError) {
   case string.split_once(line, ":") {
-    Ok(#(key, value)) -> Ok(#(string.trim(key), string.trim(value)))
+    Ok(#(key, value)) ->
+      Ok(#(string.trim(key), value |> string.trim() |> strip_quotes()))
     Error(Nil) -> Error(error.FrontmatterInvalidLine(line))
+  }
+}
+
+/// Remove matching surrounding quotes (double or single) from a string.
+fn strip_quotes(value: String) -> String {
+  case string.first(value), string.last(value) {
+    Ok("\""), Ok("\"") | Ok("'"), Ok("'") ->
+      value |> string.drop_start(1) |> string.drop_end(1)
+    _, _ -> value
   }
 }
