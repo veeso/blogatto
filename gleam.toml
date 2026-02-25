@@ -1,5 +1,5 @@
 name = "blogatto"
-version = "1.0.0"
+version = "1.0.1"
 description = "A Gleam framework for building static blogs with Lustre and Markdown. Generates HTML pages, RSS feeds, sitemaps, and robots.txt from markdown files with frontmatter, with multilingual support."
 repository = { type = "github", user = "veeso", repo = "blogatto" }
 licenses = ["MIT"]

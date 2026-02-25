@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.1
+
+Released on 2026-02-25
+
+- CI:
+  - build example in ci
+- Documentation:
+  - document slug as required frontmatter field
+- Fixed:
+  - strip matching quotes from frontmatter values
+
 ## 1.0.0
 
 Released on 2026-02-24
