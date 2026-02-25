@@ -2,11 +2,11 @@
 
 import blogatto/config/feed as feed_config
 import blogatto/error
+import blogatto/internal/excerpt
 import blogatto/internal/path
 import gleam/list
 import gleam/option
 import gleam/result
-import gleam/string
 import simplifile
 import webls/rss
 
@@ -42,12 +42,15 @@ fn build_feed(
   let filter_fn = option.unwrap(config.filter, or: default_filter)
   let serialize_fn = option.unwrap(config.serialize, or: default_serialize)
 
-  // Truncate each excerpt to the configured excerpt_len.
+  // Truncate each excerpt to the configured excerpt_len on a word boundary.
   let metadata =
     list.map(metadata, fn(m) {
       feed_config.FeedMetadata(
         ..m,
-        excerpt: string.slice(m.excerpt, 0, config.excerpt_len),
+        excerpt: excerpt.truncate_at_word_boundary(
+          m.excerpt,
+          config.excerpt_len,
+        ),
       )
     })
 

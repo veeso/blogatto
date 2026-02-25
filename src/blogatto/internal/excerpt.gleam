@@ -7,7 +7,7 @@ import lustre/element
 
 /// Extract a plain-text excerpt from rendered Lustre elements.
 /// Renders to HTML, strips tags, collapses whitespace, and truncates
-/// to `max_len` characters.
+/// to at most `max_len` characters on a word boundary.
 pub fn extract(elements: List(element.Element(msg)), max_len: Int) -> String {
   elements
   |> list.map(element.to_string)
@@ -17,7 +17,39 @@ pub fn extract(elements: List(element.Element(msg)), max_len: Int) -> String {
   |> strip_html_tags()
   |> collapse_whitespace()
   |> string.trim()
-  |> string.slice(0, max_len)
+  |> truncate_at_word_boundary(max_len)
+}
+
+/// Truncate a string to at most `max_len` characters without breaking words.
+/// If the text exceeds `max_len`, it is cut back to the last space boundary.
+/// When no space exists (single long word), the text is returned as-is up to
+/// `max_len` characters.
+pub fn truncate_at_word_boundary(text: String, max_len: Int) -> String {
+  case string.length(text) <= max_len {
+    True -> text
+    False -> {
+      let sliced = string.slice(text, 0, max_len)
+      // Check whether the cut falls on a word boundary.
+      let next_char = string.slice(text, max_len, 1)
+      case next_char == " " || next_char == "" {
+        // Already at a word boundary.
+        True -> string.trim_end(sliced)
+        // Mid-word — back up to the last space.
+        False -> {
+          case string.split(sliced, " ") {
+            // Single word with no spaces — keep the slice as-is.
+            [_single] -> sliced
+            parts -> {
+              parts
+              |> list.take(list.length(parts) - 1)
+              |> string.join(" ")
+              |> string.trim_end()
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 /// Remove HTML tags from a string, keeping only text content.
