@@ -164,7 +164,7 @@ let md =
   |> markdown.markdown_path("./blog")
   |> markdown.template(post_template)
 
-fn post_template(post: Post(Nil)) -> Element(Nil) {
+fn post_template(post: Post(Nil), _all_posts: List(Post(Nil))) -> Element(Nil) {
   let lang = option.unwrap(post.language, "en")
 
   html.html([attribute.lang(lang)], [
@@ -189,4 +189,4 @@ fn post_template(post: Post(Nil)) -> Element(Nil) {
 }
 ```
 
-The template receives a fully parsed `Post` with rendered `contents`. When no template is set, Blogatto uses a minimal default that wraps the title and contents in a basic HTML page.
+The template receives a fully parsed `Post` with rendered `contents`, and the list of all other posts (useful for related posts, navigation, etc.). When no template is set, Blogatto uses a minimal default that wraps the title and contents in a basic HTML page.

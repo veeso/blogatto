@@ -60,7 +60,7 @@ pub fn markdown_path_prepends_multiple_paths_test() {
 // --- template ---
 
 pub fn template_sets_template_function_test() {
-  let tmpl = fn(_post) { html.div([], [html.text("custom")]) }
+  let tmpl = fn(_post, _all_posts) { html.div([], [html.text("custom")]) }
   let cfg =
     markdown.default()
     |> markdown.template(tmpl)

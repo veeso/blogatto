@@ -28,7 +28,7 @@ Blogatto generates your entire static site from a single configuration: blog pos
 ## Installation
 
 ```sh
-gleam add blogatto@1
+gleam add blogatto@2
 gleam add lustre@5
 ```
 
