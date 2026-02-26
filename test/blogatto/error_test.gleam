@@ -22,6 +22,12 @@ pub fn describe_frontmatter_missing_field_error_test() {
   |> should.equal("Frontmatter missing required field: title")
 }
 
+pub fn describe_dev_error_error_test() {
+  error.DevServer("something went wrong")
+  |> error.describe_error()
+  |> should.equal("Development server error: something went wrong")
+}
+
 pub fn describe_frontmatter_invalid_date_error_test() {
   error.FrontmatterInvalidDate("not-a-date")
   |> error.describe_error()
