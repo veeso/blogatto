@@ -31,6 +31,7 @@ fn sample_post() -> post.Post(msg) {
     url: "https://example.com/hello",
     date: timestamp.from_unix_seconds(1_700_000_000),
     description: "A post",
+    excerpt: "A post",
     language: None,
     featured_image: None,
     contents: [],
@@ -41,7 +42,6 @@ fn sample_post() -> post.Post(msg) {
 pub fn feed_config_construction_with_defaults_test() {
   let cfg = sample_feed_config()
 
-  cfg.excerpt_len |> should.equal(200)
   cfg.filter |> should.equal(None)
   cfg.output |> should.equal("/rss.xml")
   cfg.serialize |> should.equal(None)
@@ -69,7 +69,6 @@ pub fn feed_config_with_filter_test() {
   let f = fn(meta: FeedMetadata(msg)) { meta.path != "/draft" }
   let cfg =
     feed.new("Filtered", "https://example.com", "A sample blog")
-    |> feed.excerpt_len(100)
     |> feed.filter(f)
     |> feed.output("/feed.xml")
 
@@ -80,7 +79,6 @@ pub fn feed_config_filter_invocation_test() {
   let f = fn(meta: FeedMetadata(msg)) { meta.path != "/draft" }
   let cfg =
     feed.new("Filtered", "https://example.com", "A sample blog")
-    |> feed.excerpt_len(100)
     |> feed.filter(f)
     |> feed.output("/feed.xml")
 
@@ -88,14 +86,12 @@ pub fn feed_config_filter_invocation_test() {
   let published =
     FeedMetadata(
       path: "/blog/post",
-      excerpt: "Hello",
       post: sample_post(),
       url: "https://example.com/blog/post",
     )
   let draft =
     FeedMetadata(
       path: "/draft",
-      excerpt: "WIP",
       post: sample_post(),
       url: "https://example.com/draft",
     )
@@ -108,7 +104,7 @@ pub fn feed_config_with_serialize_test() {
   let s = fn(meta: FeedMetadata(msg)) {
     FeedItem(
       title: meta.post.title,
-      description: meta.excerpt,
+      description: meta.post.excerpt,
       link: Some("https://example.com" <> meta.path),
       author: None,
       comments: None,
@@ -121,7 +117,6 @@ pub fn feed_config_with_serialize_test() {
   }
   let cfg =
     feed.new("With Serializer", "https://example.com", "A sample blog")
-    |> feed.excerpt_len(150)
     |> feed.serialize(s)
 
   cfg.serialize |> should.be_some
@@ -131,7 +126,7 @@ pub fn feed_config_serialize_invocation_test() {
   let s = fn(meta: FeedMetadata(msg)) {
     FeedItem(
       title: meta.post.title,
-      description: meta.excerpt,
+      description: meta.post.excerpt,
       link: Some("https://example.com" <> meta.path),
       author: None,
       comments: None,
@@ -144,14 +139,12 @@ pub fn feed_config_serialize_invocation_test() {
   }
   let cfg =
     feed.new("With Serializer", "https://example.com", "A sample blog")
-    |> feed.excerpt_len(150)
     |> feed.serialize(s)
 
   let assert Some(s) = cfg.serialize
   let meta =
     FeedMetadata(
       path: "/blog/hello",
-      excerpt: "A post",
       post: sample_post(),
       url: "https://example.com/blog/hello",
     )
@@ -170,6 +163,7 @@ pub fn feed_metadata_construction_test() {
       url: "https://example.com/blog/hello",
       date: timestamp.from_unix_seconds(1_700_000_000),
       description: "A post",
+      excerpt: "An excerpt",
       language: Some("en"),
       featured_image: Some("./featured.jpeg"),
       contents: [],
@@ -178,13 +172,11 @@ pub fn feed_metadata_construction_test() {
   let meta =
     FeedMetadata(
       path: "/blog/hello",
-      excerpt: "An excerpt",
       post: p,
       url: "https://example.com/blog/hello",
     )
 
   meta.path |> should.equal("/blog/hello")
-  meta.excerpt |> should.equal("An excerpt")
   meta.post.title |> should.equal("Hello")
   meta.post.featured_image |> should.equal(Some("./featured.jpeg"))
   meta.post.extras |> dict.get("lang") |> should.equal(Ok("en"))
@@ -265,7 +257,6 @@ pub fn feed_new_sets_required_fields_test() {
 pub fn feed_new_sets_defaults_test() {
   let cfg = feed.new("T", "L", "D")
 
-  cfg.excerpt_len |> should.equal(200)
   cfg.filter |> should.equal(None)
   cfg.output |> should.equal("/rss.xml")
   cfg.serialize |> should.equal(None)
@@ -315,7 +306,6 @@ pub fn feed_builder_setters_test() {
 
   let cfg =
     feed.new("Blog", "https://example.com", "A blog")
-    |> feed.excerpt_len(300)
     |> feed.output("/atom.xml")
     |> feed.language("it")
     |> feed.copyright("2026")
@@ -335,7 +325,6 @@ pub fn feed_builder_setters_test() {
     |> feed.skip_hour(4)
     |> feed.skip_day(feed.Monday)
 
-  cfg.excerpt_len |> should.equal(300)
   cfg.output |> should.equal("/atom.xml")
   cfg.language |> should.equal(Some("it"))
   cfg.copyright |> should.equal(Some("2026"))
