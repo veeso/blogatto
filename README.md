@@ -23,6 +23,7 @@ Blogatto generates your entire static site from a single configuration: blog pos
 - Static asset copying
 - Custom Maud components for markdown rendering
 - Configurable blog post templates
+- Dev server with file watching, auto-rebuild, and live reload
 
 ## Installation
 
@@ -129,9 +130,58 @@ dist/
 └── feed.xml
 ```
 
+## Dev server
+
+Blogatto includes a built-in development server that watches your source files for changes, automatically rebuilds the site, and live-reloads the browser via SSE.
+
+Create a separate dev entrypoint module (e.g., `src/dev.gleam`):
+
+```gleam
+import blogatto/dev
+import blogatto/error
+import gleam/io
+import my_blog // your module that exposes your blogatto config
+
+pub fn main() {
+  let cfg = my_blog.config()
+
+  case
+    cfg
+    |> dev.new()
+    |> dev.build_command("gleam run -m my_blog")
+    |> dev.port(3000)
+    |> dev.start()
+  {
+    Ok(Nil) -> io.println("Dev server stopped.")
+    Error(err) -> io.println("Dev server error: " <> error.describe_error(err))
+  }
+}
+```
+
+Run with: `gleam run -m dev`
+
+The dev server will:
+
+1. Perform an initial build by running the configured build command
+2. Serve the output directory over HTTP at `http://127.0.0.1:3000`
+3. Watch `src/`, markdown paths, and static assets for changes
+4. Debounce rapid file changes (~300ms) and rebuild automatically
+5. Live-reload the browser on successful rebuilds
+
+### Configuration
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `build_command` | `"gleam run"` | Shell command to rebuild the site |
+| `port` | `3000` | HTTP server port |
+| `host` | `"127.0.0.1"` | Bind address |
+| `live_reload` | `True` | Inject live-reload script into HTML responses |
+
+> **Note for Linux users**: The file watcher requires `inotify-tools` to be installed.
+
 ## Documentation
 
-Full documentation is available at [blogat.to](https://blogat.to), covering blog post structure, configuration, markdown components, static pages, RSS feeds, sitemaps, and error handling.
+Full documentation is available at [blogat.to](https://blogat.to), covering blog post structure, configuration, markdown components, static pages, RSS feeds, sitemaps, dev server, and error handling.
 
 API reference is on [HexDocs](https://hexdocs.pm/blogatto/).
 

@@ -13,12 +13,15 @@ Blogatto ships with a complete working example at [`examples/simple_blog`](https
 ```text
 examples/simple_blog/
   src/
-    simple_blog.gleam     # Build script
+    simple_blog.gleam           # Build script
+    simple_blog/
+      blog.gleam                # Shared config
+      dev.gleam                 # Dev server entrypoint
   blog/
     hello-world/
-      index.md            # Blog post
+      index.md                  # Blog post
     getting-started/
-      index.md            # Blog post
+      index.md                  # Blog post
   gleam.toml
 ```
 
@@ -40,7 +43,7 @@ blogatto = ">= 1.0.0 and < 2.0.0"
 
 ## Build script
 
-The build script lives in `src/simple_blog.gleam`. It configures every Blogatto feature: markdown rendering, routes, RSS, sitemap, and robots.txt.
+The build configuration lives in `src/simple_blog/blog.gleam` as a shared module, used by both the build script (`src/simple_blog.gleam`) and the dev server (`src/simple_blog/dev.gleam`).
 
 ### Markdown configuration
 
@@ -294,3 +297,34 @@ gleam run
 ```
 
 The site is written to `./dist`. Open `dist/index.html` in a browser to see the homepage with links to both blog posts.
+
+## Running the dev server
+
+The example also includes a dev server entrypoint at `src/simple_blog/dev.gleam`:
+
+```gleam
+import blogatto/dev
+import blogatto/error
+import gleam/io
+import simple_blog/blog
+
+pub fn main() {
+  case
+    blog.config()
+    |> dev.new()
+    |> dev.start()
+  {
+    Ok(Nil) -> io.println("Dev server stopped.")
+    Error(err) -> io.println("Dev server error: " <> error.describe_error(err))
+  }
+}
+```
+
+Run it with:
+
+```sh
+cd examples/simple_blog
+gleam run -m simple_blog/dev
+```
+
+This starts a local server at `http://127.0.0.1:3000` that watches for file changes, rebuilds the site, and live-reloads the browser. See [Dev server](dev-server) for full documentation.
