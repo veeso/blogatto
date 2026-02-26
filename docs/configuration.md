@@ -146,6 +146,7 @@ let md =
   markdown.default()
   |> markdown.markdown_path("./blog")
   |> markdown.route_prefix("blog")
+  |> markdown.excerpt_len(300)
   |> markdown.template(post_template)
 
 let cfg =

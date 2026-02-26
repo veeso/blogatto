@@ -162,6 +162,7 @@ After parsing, each markdown file produces a `Post(msg)` value with these fields
 | `url` | `String` | Absolute URL (e.g., `"https://example.com/blog/my-post"`) |
 | `date` | `Timestamp` | From frontmatter |
 | `description` | `String` | From frontmatter |
+| `excerpt` | `String` | Auto-generated plain-text excerpt from rendered content, truncated to `excerpt_len` characters |
 | `language` | `Option(String)` | `None` for default, `Some("it")` for variants |
 | `featured_image` | `Option(String)` | From frontmatter, if provided |
 | `contents` | `List(Element(msg))` | Rendered markdown as Lustre elements |

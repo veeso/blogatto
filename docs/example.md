@@ -182,7 +182,7 @@ Key points:
 The template function wraps each blog post's rendered markdown in a full HTML page:
 
 ```gleam
-fn blog_post_template(p: Post(Nil)) -> Element(Nil) {
+fn blog_post_template(p: Post(Nil), _all_posts: List(Post(Nil))) -> Element(Nil) {
   let lang = option.unwrap(p.language, "en")
 
   html.html([attribute.lang(lang)], [
@@ -227,6 +227,7 @@ fn blog_post_template(p: Post(Nil)) -> Element(Nil) {
 Key points:
 
 - `p.language` is `None` for the default language and `Some("it")` for localized variants — here it falls back to `"en"`
+- `_all_posts` gives access to all other posts (useful for related posts, navigation, etc.)
 - `p.contents` is a `List(Element(Nil))` containing the rendered markdown — just drop it into a container element
 - The template adds a navigation link back to the homepage
 - SEO metadata (`title`, `description`) is set from the post's frontmatter fields

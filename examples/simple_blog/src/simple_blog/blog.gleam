@@ -114,7 +114,7 @@ fn home_view(posts: List(Post(Nil))) -> Element(Nil) {
 
 /// Blog post template: renders a full HTML page for a single blog post
 /// with a navigation link back to the homepage.
-fn blog_post_template(p: Post(Nil)) -> Element(Nil) {
+fn blog_post_template(p: Post(Nil), _all_posts: List(Post(Nil))) -> Element(Nil) {
   let lang = option.unwrap(p.language, "en")
 
   html.html([attribute.lang(lang)], [

@@ -24,7 +24,7 @@ let cfg =
   |> config.feed(rss)
 ```
 
-This generates `dist/rss.xml` containing all blog posts with auto-generated excerpts of up to 200 characters.
+This generates `dist/rss.xml` containing all blog posts with auto-generated excerpts. The excerpt length is controlled by `markdown.excerpt_len()` (default: 200 characters).
 
 ## FeedConfig fields
 
