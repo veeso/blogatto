@@ -11,7 +11,6 @@ import lustre/element/html
 
 fn sample_feed_config() -> feed.FeedConfig(msg) {
   feed.FeedConfig(
-    excerpt_len: 200,
     filter: None,
     output: "/rss.xml",
     serialize: None,
@@ -105,7 +104,6 @@ pub fn feed_prepends_multiple_feeds_test() {
   let feed2 =
     feed.FeedConfig(
       ..sample_feed_config(),
-      excerpt_len: 150,
       output: "/rss-it.xml",
       title: "Italian",
     )

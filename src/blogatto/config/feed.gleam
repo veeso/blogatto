@@ -32,8 +32,6 @@ import gleam/time/timestamp
 /// behavior is used.
 pub type FeedConfig(msg) {
   FeedConfig(
-    /// Maximum character length for article excerpts in the feed.
-    excerpt_len: Int,
     /// Optional predicate to include or exclude posts from this feed.
     filter: Option(fn(FeedMetadata(msg)) -> Bool),
     /// Output file path for the generated feed, relative to `output_dir` (e.g., `"/rss.xml"`).
@@ -87,8 +85,6 @@ pub type FeedMetadata(msg) {
   FeedMetadata(
     /// The article's URL path (e.g., `"/blog/my-post"`).
     path: String,
-    /// Plain text excerpt extracted from the rendered article body, truncated to `excerpt_len` characters.
-    excerpt: String,
     /// The parsed blog post with all frontmatter fields and rendered contents.
     post: Post(msg),
     /// The absolute URL of the post.
@@ -197,7 +193,6 @@ pub type FeedItem {
 /// standard values). Use the setter functions to customize them via piping.
 pub fn new(title: String, link: String, description: String) -> FeedConfig(msg) {
   FeedConfig(
-    excerpt_len: 200,
     filter: None,
     output: "/rss.xml",
     serialize: None,
@@ -220,11 +215,6 @@ pub fn new(title: String, link: String, description: String) -> FeedConfig(msg) 
     skip_hours: [],
     skip_days: [],
   )
-}
-
-/// Set the maximum character length for article excerpts in the feed.
-pub fn excerpt_len(config: FeedConfig(msg), len: Int) -> FeedConfig(msg) {
-  FeedConfig(..config, excerpt_len: len)
 }
 
 /// Set the predicate used to include or exclude posts from this feed.

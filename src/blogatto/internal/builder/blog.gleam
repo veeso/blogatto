@@ -8,6 +8,7 @@ import blogatto/config
 import blogatto/config/markdown
 import blogatto/error
 import blogatto/internal/date
+import blogatto/internal/excerpt
 import blogatto/internal/frontmatter
 import blogatto/internal/path
 import blogatto/post
@@ -265,6 +266,10 @@ fn parse_post(
       frontmatter.slug,
       markdown_file,
     )
+  let excerpt =
+    rendered_components
+    |> excerpt.extract(markdown_config.excerpt_len)
+    |> excerpt.truncate_at_word_boundary(markdown_config.excerpt_len)
   // finally return the PostInfo with all the data needed to build the post page and link it in the feed and sitemap
   Ok(PostInfo(
     html_path: html_path,
@@ -277,6 +282,7 @@ fn parse_post(
       date: frontmatter.date,
       description: frontmatter.description,
       featured_image: frontmatter.featured_image,
+      excerpt:,
       language: markdown_file.language,
       extras: frontmatter.extras,
       contents: rendered_components,

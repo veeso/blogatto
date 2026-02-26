@@ -19,6 +19,7 @@ fn sample_post() -> Post(msg) {
     url: "https://example.com/blog/hello-world",
     date: timestamp.from_unix_seconds(1_700_000_000),
     description: "A first post",
+    excerpt: "This is the excerpt of the post",
     language: None,
     featured_image: None,
     contents: [],
@@ -29,7 +30,6 @@ fn sample_post() -> Post(msg) {
 fn sample_metadata() -> FeedMetadata(msg) {
   FeedMetadata(
     path: "/blog/hello-world",
-    excerpt: "This is the excerpt of the post",
     post: sample_post(),
     url: "https://example.com/blog/hello-world",
   )
@@ -37,7 +37,6 @@ fn sample_metadata() -> FeedMetadata(msg) {
 
 fn minimal_config(output: String) -> FeedConfig(msg) {
   FeedConfig(
-    excerpt_len: 200,
     filter: None,
     output: output,
     serialize: None,
@@ -178,7 +177,6 @@ pub fn build_with_defaults_includes_all_posts_test() {
     let post1 = sample_metadata()
     let post2 =
       FeedMetadata(
-        ..post1,
         path: "/blog/second-post",
         url: "https://example.com/blog/second-post",
         post: Post(..sample_post(), title: "Second Post", slug: "second-post"),
@@ -257,7 +255,6 @@ pub fn build_applies_custom_filter_test() {
     let included = sample_metadata()
     let excluded =
       FeedMetadata(
-        ..sample_metadata(),
         path: "/blog/excluded",
         url: "https://example.com/blog/excluded",
         post: Post(..sample_post(), title: "Excluded Post", slug: "excluded"),
@@ -339,7 +336,7 @@ pub fn build_with_filter_and_serialize_combined_test() {
     let serialize = fn(meta: FeedMetadata(msg)) -> FeedItem {
       FeedItem(
         title: "[RSS] " <> meta.post.title,
-        description: meta.excerpt,
+        description: meta.post.excerpt,
         link: Some(meta.url),
         author: None,
         comments: None,
@@ -359,7 +356,6 @@ pub fn build_with_filter_and_serialize_combined_test() {
     let published = sample_metadata()
     let draft =
       FeedMetadata(
-        ..sample_metadata(),
         path: "/blog/draft",
         url: "https://example.com/blog/draft",
         post: Post(..sample_post(), title: "Draft Post", slug: "draft"),
@@ -768,7 +764,7 @@ pub fn build_with_item_having_author_test() {
     let serialize = fn(meta: FeedMetadata(msg)) -> FeedItem {
       FeedItem(
         title: meta.post.title,
-        description: meta.excerpt,
+        description: meta.post.excerpt,
         link: None,
         author: Some("john@example.com"),
         comments: None,
@@ -798,7 +794,7 @@ pub fn build_with_item_having_comments_and_source_test() {
     let serialize = fn(meta: FeedMetadata(msg)) -> FeedItem {
       FeedItem(
         title: meta.post.title,
-        description: meta.excerpt,
+        description: meta.post.excerpt,
         link: None,
         author: None,
         comments: Some("https://example.com/blog/hello-world#comments"),
@@ -833,7 +829,7 @@ pub fn build_with_item_having_enclosure_test() {
     let serialize = fn(meta: FeedMetadata(msg)) -> FeedItem {
       FeedItem(
         title: meta.post.title,
-        description: meta.excerpt,
+        description: meta.post.excerpt,
         link: None,
         author: None,
         comments: None,
@@ -873,7 +869,7 @@ pub fn build_with_item_having_categories_test() {
     let serialize = fn(meta: FeedMetadata(msg)) -> FeedItem {
       FeedItem(
         title: meta.post.title,
-        description: meta.excerpt,
+        description: meta.post.excerpt,
         link: None,
         author: None,
         comments: None,
@@ -910,7 +906,6 @@ pub fn build_with_all_channel_fields_test() {
     use dir <- temporary.create(temporary.directory())
     let cfg =
       FeedConfig(
-        excerpt_len: 200,
         filter: None,
         output: "/rss.xml",
         serialize: None,
@@ -1001,11 +996,11 @@ pub fn build_includes_multiple_posts_as_separate_items_test() {
     let meta2 =
       FeedMetadata(
         path: "/blog/second",
-        excerpt: "Second excerpt",
         post: Post(
           ..sample_post(),
           title: "Second",
           slug: "second",
+          excerpt: "Second excerpt",
           date: timestamp.from_unix_seconds(1_700_100_000),
         ),
         url: "https://example.com/blog/second",
@@ -1013,11 +1008,11 @@ pub fn build_includes_multiple_posts_as_separate_items_test() {
     let meta3 =
       FeedMetadata(
         path: "/blog/third",
-        excerpt: "Third excerpt",
         post: Post(
           ..sample_post(),
           title: "Third",
           slug: "third",
+          excerpt: "Third excerpt",
           date: timestamp.from_unix_seconds(1_700_200_000),
         ),
         url: "https://example.com/blog/third",

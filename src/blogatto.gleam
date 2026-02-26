@@ -36,10 +36,8 @@ import blogatto/internal/builder/pages
 import blogatto/internal/builder/robots
 import blogatto/internal/builder/sitemap
 import blogatto/internal/builder/static
-import blogatto/internal/excerpt
 import blogatto/post
 import gleam/dict
-import gleam/int
 import gleam/list
 import gleam/option
 import gleam/result
@@ -81,8 +79,7 @@ pub fn build(config: config.Config(msg)) -> Result(Nil, error.BlogattoError) {
   // Step 5: Render static pages.
   use _ <- result.try(pages.build(config, posts))
   // Step 6: Generate RSS feed.
-  let max_excerpt_len = max_excerpt_len(config.feeds)
-  let feed_metadata = feed_metadata(posts, max_excerpt_len)
+  let feed_metadata = feed_metadata(posts)
   use _ <- result.try(feed.build(config.output_dir, config.feeds, feed_metadata))
   // Step 7: Generate sitemap.xml.
   use _ <- result.try(sitemap_build(config, posts))
@@ -90,26 +87,18 @@ pub fn build(config: config.Config(msg)) -> Result(Nil, error.BlogattoError) {
   Ok(Nil)
 }
 
-/// Find the largest `excerpt_len` across all configured feeds so we know
-/// how much text to extract from each post body.
-fn max_excerpt_len(feeds: List(feed_config.FeedConfig(msg))) -> Int {
-  list.fold(feeds, 0, fn(acc, f) { int.max(acc, f.excerpt_len) })
-}
-
 /// Transform the list of blog posts into the metadata format needed for
-/// feed generation. The excerpt is extracted from the rendered post body
-/// as plain text (HTML tags stripped), limited to `max_len` characters.
+/// feed generation.
 fn feed_metadata(
   posts: List(post.Post(msg)),
-  max_len: Int,
 ) -> List(feed_config.FeedMetadata(msg)) {
   list.map(posts, fn(p) {
     let path =
       uri.parse(p.url)
       |> result.map(fn(u) { u.path })
       |> result.unwrap(or: p.url)
-    let excerpt = excerpt.extract(p.contents, max_len)
-    feed_config.FeedMetadata(path:, excerpt:, post: p, url: p.url)
+
+    feed_config.FeedMetadata(path:, post: p, url: p.url)
   })
 }
 

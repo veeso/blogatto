@@ -41,7 +41,6 @@ This generates `dist/rss.xml` containing all blog posts with auto-generated exce
 | Field | Setter | Default | Description |
 |-------|--------|---------|-------------|
 | `output` | `feed.output()` | `"/rss.xml"` | Output path relative to `output_dir` |
-| `excerpt_len` | `feed.excerpt_len()` | `200` | Maximum character length for auto-generated excerpts |
 | `language` | `feed.language()` | `None` | Language code (e.g., `"en-us"`) |
 | `copyright` | `feed.copyright()` | `None` | Copyright notice |
 | `managing_editor` | `feed.managing_editor()` | `None` | Editor email |
@@ -62,7 +61,7 @@ This generates `dist/rss.xml` containing all blog posts with auto-generated exce
 
 ## Filtering posts
 
-Use the `filter` function to control which posts appear in a feed. The function receives `FeedMetadata` containing the post, its URL path, and an auto-generated excerpt:
+Use the `filter` function to control which posts appear in a feed. The function receives `FeedMetadata` containing the post and its URL path:
 
 ```gleam
 import gleam/option
@@ -94,7 +93,7 @@ let rss =
 
     feed.FeedItem(
       title: meta.post.title,
-      description: meta.excerpt,
+      description: meta.post.excerpt,
       link: Some(meta.url),
       author: author,
       comments: None,
@@ -141,8 +140,7 @@ The `FeedMetadata(msg)` type passed to `filter` and `serialize` functions:
 | Field | Type | Description |
 |-------|------|-------------|
 | `path` | `String` | URL path (e.g., `"/blog/my-post"`) |
-| `excerpt` | `String` | Auto-generated excerpt up to `excerpt_len` characters |
-| `post` | `Post(msg)` | The full parsed blog post |
+| `post` | `Post(msg)` | The full parsed blog post (includes `excerpt` field) |
 | `url` | `String` | The absolute URL of the post |
 
 ## FeedItem

@@ -75,7 +75,6 @@ fn config_with_blog(output_dir: String, blog_dir: String) -> config.Config(msg) 
 
 fn minimal_feed_config(output: String) -> FeedConfig(msg) {
   FeedConfig(
-    excerpt_len: 200,
     filter: None,
     output: output,
     serialize: None,
