@@ -53,6 +53,7 @@ The output is a fully static site ready to deploy to any static hosting provider
 | [Static pages](static-pages) | Routes, view functions, and using post data |
 | [RSS feeds](rss-feeds) | Feed configuration, filtering, and serialization |
 | [Sitemap and robots.txt](sitemap-and-robots) | Sitemap and crawler configuration |
+| [Dev server](dev-server) | File watching, auto-rebuild, and live reload |
 | [Error handling](error-handling) | Error types and recovery patterns |
 
 ## API reference
