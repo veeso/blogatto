@@ -1,5 +1,38 @@
 # Changelog
 
+## 2.0.0
+
+Released on 2026-02-26
+
+### ⚠ Breaking Changes
+
+- move excerpt from FeedMetadata to Post, excerpt_len from FeedConfig to MarkdownConfig
+  > Post(msg) now has a required `excerpt` field.
+FeedMetadata no longer has an `excerpt` field. FeedConfig no longer
+has an `excerpt_len` field — use `markdown.excerpt_len()` instead.
+- pass all posts to blog post template function
+  > pass all posts to blog post template function
+
+### Added
+
+- add dev server with file watching, live rebuild, and HTTP serving
+- 💥 move excerpt from FeedMetadata to Post, excerpt_len from FeedConfig to MarkdownConfig
+  > Excerpt is now computed at post-build time and exposed directly on
+  > Post(msg), making it available in route view functions (e.g. blog
+  > listing pages) rather than only during feed generation.
+  >
+  > excerpt_len configuration moves from FeedConfig to MarkdownConfig
+  > since it controls how post content is processed during the markdown
+  > build step.
+- 💥 pass all posts to blog post template function
+  > The template function signature changes from `fn(Post(msg)) -> Element(msg)`
+  > to `fn(Post(msg), List(Post(msg))) -> Element(msg)`, enabling templates to
+  > access all other posts for related posts, navigation, etc.
+
+### Documentation
+
+- add dev server documentation page
+
 ## 1.0.2
 
 Released on 2026-02-25
