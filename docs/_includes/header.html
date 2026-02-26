@@ -24,8 +24,8 @@
             {%- endif -%}
           {%- endfor -%}
 
-          {%- if site.github_username -%}
-          <a class="page-link" href="https://github.com/{{ site.github_username | cgi_escape | escape }}" title="GitHub">
+          {%- if site.github_url -%}
+          <a class="page-link" href="{{ site.github_url | escape }}" title="GitHub">
             <svg class="svg-icon" style="vertical-align: middle;"><use xlink:href="{{ '/assets/minima-social-icons.svg#github' | relative_url }}"></use></svg>
           </a>
           {%- endif -%}

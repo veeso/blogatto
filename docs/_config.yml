@@ -1,6 +1,8 @@
 title: Blogatto
 description: A Gleam framework for building static blogs with Lustre and Markdown
+url: https://veeso.github.io
+baseurl: /blogatto
 theme: minima
-image: /og_preview.jpeg
-github_username: veeso
+image: /blogatto/og_preview.jpeg
+github_url: https://github.com/veeso/blogatto
 codeberg_url: https://codeberg.org/veeso/blogatto
