@@ -2,7 +2,6 @@
 
 import blogatto/config/feed as feed_config
 import blogatto/error
-import blogatto/internal/excerpt
 import blogatto/internal/path
 import gleam/list
 import gleam/option
@@ -42,18 +41,6 @@ fn build_feed(
   let filter_fn = option.unwrap(config.filter, or: default_filter)
   let serialize_fn = option.unwrap(config.serialize, or: default_serialize)
 
-  // Truncate each excerpt to the configured excerpt_len on a word boundary.
-  let metadata =
-    list.map(metadata, fn(m) {
-      feed_config.FeedMetadata(
-        ..m,
-        excerpt: excerpt.truncate_at_word_boundary(
-          m.excerpt,
-          config.excerpt_len,
-        ),
-      )
-    })
-
   let feed_items =
     metadata
     |> list.filter_map(fn(post_metadata) {
@@ -82,7 +69,7 @@ fn default_serialize(
 ) -> feed_config.FeedItem {
   feed_config.FeedItem(
     title: metadata.post.title,
-    description: metadata.excerpt,
+    description: metadata.post.excerpt,
     link: option.Some(metadata.url),
     author: option.None,
     comments: option.None,

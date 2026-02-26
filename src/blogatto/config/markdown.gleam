@@ -85,6 +85,8 @@ pub type MarkdownConfig(msg) {
   MarkdownConfig(
     /// Components used for rendering markdown AST nodes into Lustre elements.
     components: Components(msg),
+    /// Maximum character length for auto-generated post excerpts. (default: 200)
+    excerpt_len: Int,
     /// Directories to recursively search for markdown post directories.
     paths: List(String),
     /// URL prefix for blog post output paths. When `None`, posts are written
@@ -103,6 +105,7 @@ pub type MarkdownConfig(msg) {
 pub fn default() -> MarkdownConfig(msg) {
   MarkdownConfig(
     components: default_components(),
+    excerpt_len: 200,
     paths: [],
     route_prefix: None,
     template: None,
@@ -121,6 +124,11 @@ pub fn components(
   components: Components(msg),
 ) -> MarkdownConfig(msg) {
   MarkdownConfig(..config, components:)
+}
+
+/// Set the maximum character length for auto-generated post excerpts.
+pub fn excerpt_len(config: MarkdownConfig(msg), len: Int) -> MarkdownConfig(msg) {
+  MarkdownConfig(..config, excerpt_len: len)
 }
 
 /// Add a directory path to search for markdown post directories.
