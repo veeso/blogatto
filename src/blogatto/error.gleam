@@ -20,6 +20,8 @@ pub type BlogattoError {
   FrontmatterInvalidLine(String)
   /// Missing Frontmatter
   FrontmatterMissing
+  /// Dev server error
+  DevServer(String)
 }
 
 /// Convert an error into a human-readable description.
@@ -34,5 +36,6 @@ pub fn describe_error(error: BlogattoError) -> String {
     FrontmatterInvalidLine(line) ->
       "Frontmatter contains invalid line: " <> line
     FrontmatterMissing -> "Markdown file is missing frontmatter"
+    DevServer(msg) -> "Development server error: " <> msg
   }
 }
