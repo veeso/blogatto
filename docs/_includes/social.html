@@ -1,0 +1,4 @@
+<ul class="social-media-list">
+  {%- if site.github_username -%}<li><a href="https://github.com/{{ site.github_username | cgi_escape | escape }}"><svg class="svg-icon"><use xlink:href="{{ '/assets/minima-social-icons.svg#github' | relative_url }}"></use></svg> <span class="username">{{ site.github_username | escape }}</span></a></li>{%- endif -%}
+  {%- if site.codeberg_url -%}<li><a href="{{ site.codeberg_url | escape }}"><svg class="svg-icon" viewBox="0 0 16 16"><path fill="#2185D0" d="M11.955.49A5 5 0 0 0 8 0C5.628 0 3.572 1.6 2.876 3.834c-.008.026-.01.054-.018.08C1.728 4.555.875 5.483.875 6.592c0 .262.05.513.14.742-.09.254-.14.527-.14.81 0 .91.498 1.702 1.234 2.128L8 16l5.891-5.728a2.611 2.611 0 0 0 1.234-2.128c0-.283-.05-.556-.14-.81.09-.229.14-.48.14-.742 0-1.533-1.458-2.768-3.17-2.768z"/></svg> <span class="username">Codeberg</span></a></li>{%- endif -%}
+</ul>
