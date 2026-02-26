@@ -27,10 +27,10 @@ There is no single-test runner flag in gleeunit; to run a specific test module, 
 - **`blogatto`** — Main entry point. Exposes `build(Config(msg)) -> Result(Nil, BuildError)` which orchestrates the entire build pipeline.
 - **`blogatto/config`** — Configuration builder (`Config(msg)` generic type) with functional composition. Routes are defined via `config.route(path, view)` where the view function receives the list of parsed blog posts (`List(Post(msg))`).
   - `config/feed` — RSS feed configuration (`FeedConfig`, `FeedMetadata`, `FeedItem`)
-  - `config/markdown` — Markdown rendering config: Maud components, markdown search paths, and optional blog post template override
+  - `config/markdown` — Markdown rendering config: Maud components, markdown search paths, excerpt length, and optional blog post template override
   - `config/sitemap` — Sitemap generation config (`SitemapConfig`, `SitemapEntry`, `ChangeFrequency`)
   - `config/robots` — Robots.txt generation config
-- **`blogatto/post`** — `Post(msg)` type representing a parsed blog post with title, slug, date, description, language, optional featured image, rendered contents, and extras dict.
+- **`blogatto/post`** — `Post(msg)` type representing a parsed blog post with title, slug, date, description, excerpt, language, optional featured image, rendered contents, and extras dict.
 
 ### Internal Modules (not public API)
 
@@ -48,7 +48,7 @@ There is no single-test runner flag in gleeunit; to run a specific test module, 
 1. **Clean** — Delete and recreate `output_dir`
 2. **Copy static assets** — If `static_dir` is set, copy contents to `output_dir`
 3. **Build robots.txt** — If configured, generate via webls
-4. **Build blog pages** — Walk `markdown_config.paths`, find `index.md`/`index-{lang}.md` per directory, extract frontmatter, render via Maud components, construct `Post(msg)` values, write HTML pages via `markdown_config.template` (or default template) to `output_dir/{slug}/index.html` or `output_dir/{slug}/index-{lang}.html`. Copy non-markdown assets (images, etc.) from each post's source directory to the output post directory. Produces `List(Post(msg))` used by subsequent steps.
+4. **Build blog pages** — Walk `markdown_config.paths`, find `index.md`/`index-{lang}.md` per directory, extract frontmatter, render via Maud components, generate plain-text excerpt (truncated to `markdown_config.excerpt_len`), construct `Post(msg)` values, write HTML pages via `markdown_config.template` (or default template, which receives both the current post and all other posts) to `output_dir/{slug}/index.html` or `output_dir/{slug}/index-{lang}.html`. Copy non-markdown assets (images, etc.) from each post's source directory to the output post directory. Produces `List(Post(msg))` used by subsequent steps.
 5. **Build static pages** — For each route in `config.routes`, call the view function with the `List(Post(msg))` from step 4, write HTML
 6. **Build feeds** — For each `FeedConfig`, filter/serialize posts into RSS via webls
 7. **Build sitemap** — If configured, collect all routes and blog post URLs, apply filter/serialize, generate XML

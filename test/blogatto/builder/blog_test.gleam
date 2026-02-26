@@ -84,7 +84,7 @@ fn prefixed_config(
 fn config_with_template(
   output_dir: String,
   blog_dir: String,
-  tmpl: fn(post.Post(msg)) -> element.Element(msg),
+  tmpl: fn(post.Post(msg), List(post.Post(msg))) -> element.Element(msg),
 ) -> config.Config(msg) {
   let md_config =
     markdown.default()
@@ -735,7 +735,10 @@ pub fn build_with_custom_template_applies_template_test() {
       ),
     )
 
-    let custom_template = fn(p: post.Post(msg)) -> element.Element(msg) {
+    let custom_template = fn(
+      p: post.Post(msg),
+      _all_posts: List(post.Post(msg)),
+    ) -> element.Element(msg) {
       html.html([], [
         html.head([], [html.title([], p.title)]),
         html.body([], [

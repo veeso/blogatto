@@ -71,7 +71,11 @@ pub fn build(
       use posts <- result.try(parse_all_posts_dir(config, markdown_config))
       use built_posts <- result.try(
         list.try_map(posts, fn(post_info) {
-          build_post(post_info, markdown_config)
+          let other_posts =
+            posts
+            |> list.filter(fn(p) { p.post.slug != post_info.post.slug })
+            |> list.map(fn(p) { p.post })
+          build_post(post_info, markdown_config, other_posts)
         }),
       )
       // Sort posts by date, newest first.
@@ -92,6 +96,7 @@ pub fn build(
 fn build_post(
   post_info: PostInfo(msg),
   markdown_config: markdown.MarkdownConfig(msg),
+  all_posts: List(post.Post(msg)),
 ) -> Result(post.Post(msg), error.BlogattoError) {
   // create the output directory for the post if it doesn't exist
   use _ <- result.try(
@@ -104,7 +109,7 @@ fn build_post(
     option.unwrap(markdown_config.template, or: default_template)
   let html_content =
     post_info.post
-    |> render_template()
+    |> render_template(all_posts)
     |> element.to_document_string()
   // write the HTML file
   use _ <- result.try(
@@ -130,7 +135,10 @@ fn build_post(
 /// Default template to use to wrap the rendered markdown content of a blog post.
 /// Uses the post's language for the `lang` attribute (falls back to `"en"`),
 /// includes a viewport meta tag, and preloads the featured image when present.
-fn default_template(post: post.Post(msg)) -> element.Element(msg) {
+fn default_template(
+  post: post.Post(msg),
+  _all_posts: List(post.Post(msg)),
+) -> element.Element(msg) {
   let lang = option.unwrap(post.language, "en")
   html.html([attribute.lang(lang)], [
     html.head([], [

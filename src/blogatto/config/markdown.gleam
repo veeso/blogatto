@@ -94,9 +94,9 @@ pub type MarkdownConfig(msg) {
     /// posts are written to `output_dir/blog/{slug}/index.html`.
     route_prefix: Option(String),
     /// Optional custom template for rendering a blog post page.
-    /// Receives the parsed `Post` and returns a full page element.
+    /// Receives the parsed `Post`, and all the other posts, and returns a full page element.
     /// When `None`, Blogatto uses a minimal default template.
-    template: Option(fn(Post(msg)) -> Element(msg)),
+    template: Option(fn(Post(msg), List(Post(msg))) -> Element(msg)),
   )
 }
 
@@ -162,11 +162,11 @@ pub fn route_prefix(
 /// Set a custom template function for rendering blog post pages.
 ///
 /// The template receives a fully parsed `Post` (with rendered contents)
-/// and returns the complete page element. When not set, Blogatto uses
+/// and all the other posts, and returns the complete page element. When not set, Blogatto uses
 /// a minimal default template with the post title and contents.
 pub fn template(
   config: MarkdownConfig(msg),
-  template: fn(Post(msg)) -> Element(msg),
+  template: fn(Post(msg), List(Post(msg))) -> Element(msg),
 ) -> MarkdownConfig(msg) {
   MarkdownConfig(..config, template: option.Some(template))
 }
