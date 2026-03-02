@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.0.1
+
+Released on 2026-03-02
+
+### Fixed
+
+- **dev_server:** dev server now redirects with 301 on paths without trailing slash (e.g. `/blog` => `/blog/`)
+  > since Blogatto always expects path to have a trailing slash the returned path should always have the trailing slash. Also, currently the dev server returned 404 on a path without trailing slash, instead of serving the page.
+
 ## 2.0.0
 
 Released on 2026-02-26
