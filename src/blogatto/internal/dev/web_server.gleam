@@ -55,11 +55,10 @@ fn handle_request(
       case string.contains(path, "..") {
         True -> not_found()
         False -> {
-          let is_html_page =
-            string.ends_with(path, "/") || string.ends_with(path, ".html")
-          case is_html_page {
-            True -> serve_page(server.output_dir, path, server.live_reload)
-            False -> serve_asset(server.output_dir, path)
+          case classify_path(path) {
+            Page -> serve_page(server.output_dir, path, server.live_reload)
+            Asset -> serve_asset(server.output_dir, path)
+            Redirect(to) -> redirect(to)
           }
         }
       }
@@ -195,4 +194,33 @@ pub fn mime_type_for_path(path: String) -> String {
     Ok(ext) -> marceau.extension_to_mime_type(ext)
     Error(_) -> "application/octet-stream"
   }
+}
+
+type PathKind {
+  Page
+  Asset
+  Redirect(to: String)
+}
+
+/// Classify a request path into a page, asset, or redirect.
+/// Paths ending with `/` or `.html` are pages. Paths without a dot
+/// (e.g. `/about`) are redirected to the same path with a trailing slash
+/// so that relative URLs in the served HTML resolve correctly.
+fn classify_path(path: String) -> PathKind {
+  case string.ends_with(path, "/"), string.ends_with(path, ".html") {
+    True, _ -> Page
+    _, True -> Page
+    _, _ ->
+      case string.contains(path, ".") {
+        True -> Asset
+        False -> Redirect(path <> "/")
+      }
+  }
+}
+
+fn redirect(to location: String) -> Response(ResponseData) {
+  301
+  |> response.new()
+  |> response.set_header("Location", location)
+  |> response.set_body(mist.Bytes(bytes_tree.new()))
 }
