@@ -113,6 +113,11 @@ pub fn mime_type_unknown_extension_test() {
 @external(erlang, "blogatto_test_http_ffi", "http_get")
 fn http_get(url: String) -> Result(#(Int, String, String), String)
 
+@external(erlang, "blogatto_test_http_ffi", "http_get_no_redirect")
+fn http_get_no_redirect(
+  url: String,
+) -> Result(#(Int, String, String, String), String)
+
 /// Helper to build a localhost URL for the test server.
 fn url(port: Int, path: String) -> String {
   "http://127.0.0.1:" <> int.to_string(port) <> path
@@ -299,6 +304,31 @@ pub fn serve_html_page_has_no_cache_headers_test() {
 
     let assert Ok(#(status, _, _)) = http_get(url(port, "/"))
     status |> should.equal(200)
+
+    stop_server(pids)
+    Ok(Nil)
+  }
+}
+
+pub fn serve_nested_page_without_trailing_slash_redirects_test() {
+  let port = 49_161
+  let assert Ok(_) = {
+    use output_dir <- temporary.create(temporary.directory())
+    let assert Ok(_) = simplifile.create_directory_all(output_dir <> "/about")
+    let assert Ok(_) =
+      simplifile.write(
+        output_dir <> "/about/index.html",
+        "<html><body><p>About</p></body></html>",
+      )
+
+    let pids = start_server(output_dir, port, True)
+    process.sleep(100)
+
+    // Without trailing slash should redirect to /about/
+    let assert Ok(#(status, _, location, _)) =
+      http_get_no_redirect(url(port, "/about"))
+    status |> should.equal(301)
+    location |> should.equal("/about/")
 
     stop_server(pids)
     Ok(Nil)
