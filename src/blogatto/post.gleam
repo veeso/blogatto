@@ -56,3 +56,24 @@ pub type Post(msg) {
     extras: Dict(String, String),
   )
 }
+
+/// Post metadata is used to provide the user the information to implement a custom route builder for the posts.
+pub type PostMetadata {
+  PostMetadata(
+    /// The post title, extracted from the `title` frontmatter field.
+    title: String,
+    /// URL-friendly identifier derived from the post's directory name.
+    slug: String,
+    /// Publication date extracted from the `date` frontmatter field.
+    date: timestamp.Timestamp,
+    /// Short description extracted from the `description` frontmatter field.
+    description: String,
+    /// The language of this post variant, or `None` for the default language.
+    /// Derived from the filename: `index-it.md` produces `Some("it")`.
+    language: Option(String),
+    /// The featured image URL extracted from the `featured_image` frontmatter field, or `None` if not provided.
+    featured_image: Option(String),
+    /// Additional frontmatter keys beyond the required fields.
+    extras: Dict(String, String),
+  )
+}

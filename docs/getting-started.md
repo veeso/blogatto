@@ -18,7 +18,7 @@ This guide walks you through installing Blogatto and building your first static 
 Add Blogatto to your Gleam project:
 
 ```sh
-gleam add blogatto@1
+gleam add blogatto@3
 ```
 
 ## Project structure

@@ -96,6 +96,40 @@ fn config_with_template(
   |> config.markdown(md_config)
 }
 
+/// Config with a custom route_builder.
+fn route_builder_config(
+  output_dir: String,
+  blog_dir: String,
+  builder: fn(post.PostMetadata) -> String,
+) -> config.Config(msg) {
+  let md_config =
+    markdown.default()
+    |> markdown.markdown_path(blog_dir)
+    |> markdown.route_builder(builder)
+
+  config.new("https://example.com")
+  |> config.output_dir(output_dir)
+  |> config.markdown(md_config)
+}
+
+/// Config with both route_prefix and route_builder (builder should win).
+fn route_builder_with_prefix_config(
+  output_dir: String,
+  blog_dir: String,
+  prefix: String,
+  builder: fn(post.PostMetadata) -> String,
+) -> config.Config(msg) {
+  let md_config =
+    markdown.default()
+    |> markdown.markdown_path(blog_dir)
+    |> markdown.route_prefix(prefix)
+    |> markdown.route_builder(builder)
+
+  config.new("https://example.com")
+  |> config.output_dir(output_dir)
+  |> config.markdown(md_config)
+}
+
 fn create_post_dir(blog_dir: String, slug: String) -> String {
   let post_dir = blog_dir <> "/" <> slug
   let assert Ok(_) = simplifile.create_directory_all(post_dir)
@@ -1409,5 +1443,237 @@ pub fn build_route_prefix_copies_assets_under_prefix_test() {
     simplifile.read(assets_dir <> "/photo.png")
     |> should.be_ok
     |> should.equal("image-bytes")
+  }
+}
+
+// --- route_builder ---
+
+pub fn build_with_route_builder_places_html_at_custom_path_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+
+    let post_dir = create_post_dir(blog, "rb-post")
+    write_markdown(
+      post_dir,
+      "index.md",
+      markdown_content(
+        "Route Builder Post",
+        "rb-post",
+        "2024-01-15 10:00:00",
+        "A custom routed post",
+        "# Hello\n",
+      ),
+    )
+
+    let builder = fn(metadata: post.PostMetadata) -> String {
+      "/custom/" <> metadata.slug <> "/"
+    }
+
+    route_builder_config(dir, blog, builder)
+    |> blog_builder.build()
+    |> should.be_ok
+
+    let html_path =
+      path.join(dir, "custom")
+      |> path.join("rb-post")
+      |> path.join("index.html")
+
+    simplifile.is_file(html_path)
+    |> should.be_ok
+    |> should.be_true
+  }
+}
+
+pub fn build_with_route_builder_sets_correct_post_url_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+
+    let post_dir = create_post_dir(blog, "url-post")
+    write_markdown(
+      post_dir,
+      "index.md",
+      markdown_content(
+        "URL Post",
+        "url-post",
+        "2024-01-15 10:00:00",
+        "Post with custom URL",
+        "# Hello\n",
+      ),
+    )
+
+    let builder = fn(metadata: post.PostMetadata) -> String {
+      "/articles/" <> metadata.slug <> "/"
+    }
+
+    let assert [built_post] =
+      route_builder_config(dir, blog, builder)
+      |> blog_builder.build()
+      |> should.be_ok
+
+    built_post.url
+    |> should.equal("https://example.com/articles/url-post/")
+  }
+}
+
+pub fn build_with_route_builder_ignores_route_prefix_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+
+    let post_dir = create_post_dir(blog, "ignore-prefix")
+    write_markdown(
+      post_dir,
+      "index.md",
+      markdown_content(
+        "Ignore Prefix",
+        "ignore-prefix",
+        "2024-01-15 10:00:00",
+        "Route builder should win over prefix",
+        "# Hello\n",
+      ),
+    )
+
+    let builder = fn(metadata: post.PostMetadata) -> String {
+      "/custom/" <> metadata.slug <> "/"
+    }
+
+    // Both prefix and builder set; builder should take precedence
+    route_builder_with_prefix_config(dir, blog, "blog", builder)
+    |> blog_builder.build()
+    |> should.be_ok
+
+    // HTML should be at /custom/ignore-prefix/, NOT /blog/ignore-prefix/
+    let custom_path =
+      path.join(dir, "custom")
+      |> path.join("ignore-prefix")
+      |> path.join("index.html")
+
+    simplifile.is_file(custom_path)
+    |> should.be_ok
+    |> should.be_true
+
+    // The prefixed path should NOT exist
+    let prefixed_path =
+      expected_prefixed_html_path(dir, "blog", "ignore-prefix")
+
+    simplifile.is_file(prefixed_path)
+    |> should.be_ok
+    |> should.be_false
+  }
+}
+
+pub fn build_with_route_builder_adds_trailing_slash_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+
+    let post_dir = create_post_dir(blog, "no-slash")
+    write_markdown(
+      post_dir,
+      "index.md",
+      markdown_content(
+        "No Slash",
+        "no-slash",
+        "2024-01-15 10:00:00",
+        "Builder returns path without trailing slash",
+        "# Hello\n",
+      ),
+    )
+
+    // Return path WITHOUT trailing slash
+    let builder = fn(metadata: post.PostMetadata) -> String {
+      "/posts/" <> metadata.slug
+    }
+
+    let assert [built_post] =
+      route_builder_config(dir, blog, builder)
+      |> blog_builder.build()
+      |> should.be_ok
+
+    // URL should still have trailing slash
+    built_post.url
+    |> should.equal("https://example.com/posts/no-slash/")
+  }
+}
+
+pub fn build_with_route_builder_adds_leading_slash_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+
+    let post_dir = create_post_dir(blog, "no-lead")
+    write_markdown(
+      post_dir,
+      "index.md",
+      markdown_content(
+        "No Lead Slash",
+        "no-lead",
+        "2024-01-15 10:00:00",
+        "Builder returns path without leading slash",
+        "# Hello\n",
+      ),
+    )
+
+    // Return path WITHOUT leading slash
+    let builder = fn(metadata: post.PostMetadata) -> String {
+      "posts/" <> metadata.slug <> "/"
+    }
+
+    let assert [built_post] =
+      route_builder_config(dir, blog, builder)
+      |> blog_builder.build()
+      |> should.be_ok
+
+    // URL should have leading slash (no malformed URL)
+    built_post.url
+    |> should.equal("https://example.com/posts/no-lead/")
+  }
+}
+
+pub fn build_with_route_builder_using_language_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+
+    let post_dir = create_post_dir(blog, "lang-rb")
+    write_markdown(
+      post_dir,
+      "index-it.md",
+      markdown_content(
+        "Ciao",
+        "lang-rb",
+        "2024-01-15 10:00:00",
+        "Italian post with route builder",
+        "# Ciao\n",
+      ),
+    )
+
+    let builder = fn(metadata: post.PostMetadata) -> String {
+      let lang = case metadata.language {
+        option.Some(lang) -> lang <> "/"
+        option.None -> ""
+      }
+      "/" <> lang <> "blog/" <> metadata.slug <> "/"
+    }
+
+    let assert [built_post] =
+      route_builder_config(dir, blog, builder)
+      |> blog_builder.build()
+      |> should.be_ok
+
+    built_post.url
+    |> should.equal("https://example.com/it/blog/lang-rb/")
+
+    let html_path =
+      path.join(dir, "it")
+      |> path.join("blog")
+      |> path.join("lang-rb")
+      |> path.join("index.html")
+
+    simplifile.is_file(html_path)
+    |> should.be_ok
+    |> should.be_true
   }
 }

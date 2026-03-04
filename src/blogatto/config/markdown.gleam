@@ -18,7 +18,7 @@
 ////   })
 //// ```
 
-import blogatto/post.{type Post}
+import blogatto/post.{type Post, type PostMetadata}
 import gleam/list
 import gleam/option.{type Option, None}
 import lustre/element.{type Element}
@@ -93,6 +93,12 @@ pub type MarkdownConfig(msg) {
     /// directly under `output_dir/{slug}/index.html`. When `Some("blog")`,
     /// posts are written to `output_dir/blog/{slug}/index.html`.
     route_prefix: Option(String),
+    /// Function to customize the blog post URL.
+    /// It receives the `PostMetadata` and returns the URL path for that post (e.g., `"/my-post/"` or `"/it/my-post/"`).
+    /// When set `route_prefix` is IGNORED! This allows you to have full control over the post URLs,
+    /// including the ability to place them outside of the route prefix or to use a completely different URL structure.
+    /// If not provided the default builder will be used (i.e. `/{route_prefix?}/{lang}/{slug}/` or `/{route_prefix?}/{slug}/` if language is `None`).
+    route_builder: Option(fn(PostMetadata) -> String),
     /// Optional custom template for rendering a blog post page.
     /// Receives the parsed `Post`, and all the other posts, and returns a full page element.
     /// When `None`, Blogatto uses a minimal default template.
@@ -101,13 +107,14 @@ pub type MarkdownConfig(msg) {
 }
 
 /// Create a default `MarkdownConfig` with default components,
-/// no search paths, no route prefix, and no custom template.
+/// no search paths, no route prefix, no custom route builder, and no custom template.
 pub fn default() -> MarkdownConfig(msg) {
   MarkdownConfig(
     components: default_components(),
     excerpt_len: 200,
     paths: [],
     route_prefix: None,
+    route_builder: None,
     template: None,
   )
 }
@@ -157,6 +164,23 @@ pub fn route_prefix(
   prefix: String,
 ) -> MarkdownConfig(msg) {
   MarkdownConfig(..config, route_prefix: option.Some(prefix))
+}
+
+/// Set a custom route builder function for blog post URLs.
+/// 
+/// The route builder receives the `PostMetadata` and returns the URL path for that post (e.g., `"/my-post/"` or `"/it/my-post/"`).
+/// Do not add `index.html` to the returned path.
+/// 
+/// When set, the `route_prefix` field is IGNORED!
+/// This allows you to have full control over the post URLs,
+/// including the ability to place them outside of the route prefix or to use a completely different URL structure.
+/// 
+/// If not provided the default builder will be used (i.e. `/{route_prefix?}/{lang}/{slug}/` or `/{route_prefix?}/{slug}/` if language is `None`).
+pub fn route_builder(
+  config: MarkdownConfig(msg),
+  builder: fn(PostMetadata) -> String,
+) -> MarkdownConfig(msg) {
+  MarkdownConfig(..config, route_builder: option.Some(builder))
 }
 
 /// Set a custom template function for rendering blog post pages.

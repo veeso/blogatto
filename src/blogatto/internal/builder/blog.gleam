@@ -246,13 +246,27 @@ fn parse_post(
 ) -> Result(PostInfo(msg), error.BlogattoError) {
   // parse frontmatter
   use frontmatter <- result.try(parse_frontmatter(markdown_file.content))
-  let html_path =
-    markdown_html_path(
-      config.output_dir,
-      markdown_config.route_prefix,
-      frontmatter.slug,
-      markdown_file,
+
+  // build post metadata
+  let post_metadata =
+    post.PostMetadata(
+      title: frontmatter.title,
+      slug: frontmatter.slug,
+      date: frontmatter.date,
+      description: frontmatter.description,
+      featured_image: frontmatter.featured_image,
+      language: markdown_file.language,
+      extras: frontmatter.extras,
     )
+
+  let url_path =
+    post_url_path(
+      markdown_config.route_prefix,
+      markdown_config.route_builder,
+      post_metadata,
+    )
+  let html_path = markdown_html_path(config.output_dir, url_path)
+  let url = post_url(config.site_url, url_path)
 
   // assets dir is the parent of the HTML file
   let assets_dir = path.parent(html_path)
@@ -266,14 +280,6 @@ fn parse_post(
       options,
       to_maud_components(markdown_config.components),
     )
-  // compute the absolute URL for this post
-  let url =
-    post_url(
-      config.site_url,
-      markdown_config.route_prefix,
-      frontmatter.slug,
-      markdown_file,
-    )
   let excerpt =
     rendered_components
     |> excerpt.extract(markdown_config.excerpt_len)
@@ -284,15 +290,15 @@ fn parse_post(
     assets_dir: assets_dir,
     assets: assets,
     post: post.Post(
-      title: frontmatter.title,
-      slug: frontmatter.slug,
+      title: post_metadata.title,
+      slug: post_metadata.slug,
       url: url,
-      date: frontmatter.date,
-      description: frontmatter.description,
-      featured_image: frontmatter.featured_image,
+      date: post_metadata.date,
+      description: post_metadata.description,
+      featured_image: post_metadata.featured_image,
       excerpt:,
-      language: markdown_file.language,
-      extras: frontmatter.extras,
+      language: post_metadata.language,
+      extras: post_metadata.extras,
       contents: rendered_components,
     ),
   ))
@@ -312,64 +318,81 @@ fn read_markdown_file(
   Ok(MarkdownFile(file_path, content, language))
 }
 
-/// Determine the output HTML path for a given markdown file.
-///
-/// The output path starts with `output_dir`, optionally followed by the
-/// `route_prefix` (e.g., `"blog"`), then a language subdirectory for
-/// localized posts, the slug, and finally `index.html`.
-///
-/// For instance given `output_dir = "./dist"`, `route_prefix = Some("blog")`,
-/// `slug = "my-post"`, and `language = Some("en")`, the result is
-/// `"./dist/blog/en/my-post/index.html"`.
-///
-/// When `route_prefix` is `None`, the prefix segment is omitted:
-/// `"./dist/my-post/index.html"` or `"./dist/en/my-post/index.html"`.
-fn markdown_html_path(
-  output_dir: String,
+/// Compute the URL path for a blog post based on the optional route prefix, optional route builder, and post metadata.
+/// 
+/// This function returns the URL path relative to the site root, which is used for linking the post in the feed and sitemap, and for computing the output HTML path.
+fn post_url_path(
   route_prefix: Option(String),
-  slug: String,
-  file: MarkdownFile,
+  route_builder: Option(fn(post.PostMetadata) -> String),
+  metadata: post.PostMetadata,
 ) -> String {
-  let base = case route_prefix {
-    option.Some(prefix) -> path.join(output_dir, prefix)
-    option.None -> output_dir
+  case route_builder {
+    option.Some(builder) -> post_url_path_from_route_builder(builder, metadata)
+    option.None -> post_url_path_from_prefix(route_prefix, metadata)
   }
-  let base = case file.language {
-    option.Some(lang) -> path.join(base, lang)
-    option.None -> base
+}
+
+/// Compute the URL path for a blog post based on the route builder and post metadata.
+/// 
+/// The output of the `route_builder` is used as-is with some sanitization: if it doesn't end with a trailing slash, one is added.
+fn post_url_path_from_route_builder(
+  route_builder: fn(post.PostMetadata) -> String,
+  post_metadata: post.PostMetadata,
+) -> String {
+  let url =
+    post_metadata
+    |> route_builder
+    |> string.trim
+    |> string.replace("index.html", "")
+
+  let url = case string.starts_with(url, "/") {
+    True -> url
+    False -> "/" <> url
   }
-  base
-  |> path.join(slug)
+
+  case string.ends_with(url, "/") {
+    True -> url
+    False -> url <> "/"
+  }
+}
+
+/// Compute the URL path for a blog post based on the optional route prefix and post metadata.
+/// 
+/// The URL path is constructed using the optional `route_prefix`, optional language subdirectory, slug,
+/// and always ends with a trailing slash. For example, given `route_prefix = Some("blog")`,
+/// `slug = "my-post"`, and `language = None`, the result is `"/blog/my-post/"`.
+fn post_url_path_from_prefix(
+  route_prefix: Option(String),
+  post_metadata: post.PostMetadata,
+) -> String {
+  let prefix = case route_prefix {
+    option.Some(prefix) -> "/" <> prefix
+    option.None -> ""
+  }
+  let lang = case post_metadata.language {
+    option.Some(lang) -> "/" <> lang
+    option.None -> ""
+  }
+  prefix <> lang <> "/" <> post_metadata.slug <> "/"
+}
+
+/// Determine the output HTML path for a blog post based on the output directory and its URL path from the site root.
+fn markdown_html_path(output_dir: String, path: String) -> String {
+  output_dir
+  |> path.join(path)
   |> path.join("index.html")
 }
 
 /// Compute the absolute URL for a blog post.
 ///
-/// Combines `site_url` with the optional `route_prefix`, optional language,
-/// and slug, always ending with a trailing slash. For example, given
-/// `site_url = "https://example.com"`, `route_prefix = Some("blog")`,
-/// `slug = "my-post"`, and `language = Some("it")`, the result is
-/// `"https://example.com/blog/it/my-post/"`.
-fn post_url(
-  site_url: String,
-  route_prefix: Option(String),
-  slug: String,
-  file: MarkdownFile,
-) -> String {
+/// Combines `site_url` with the URL path from the site root.
+fn post_url(site_url: String, path: String) -> String {
   // Strip trailing slash from site_url to avoid double slashes.
   let base = case string.ends_with(site_url, "/") {
     True -> string.drop_end(site_url, 1)
     False -> site_url
   }
-  let relative = case route_prefix {
-    option.Some(prefix) -> "/" <> prefix
-    option.None -> ""
-  }
-  let relative = case file.language {
-    option.Some(lang) -> relative <> "/" <> lang
-    option.None -> relative
-  }
-  base <> relative <> "/" <> slug <> "/"
+  base <> path
 }
 
 /// Helper function to parse the frontmatter of a markdown file and extract the required fields (title, slug, date, description) along with any additional fields.
