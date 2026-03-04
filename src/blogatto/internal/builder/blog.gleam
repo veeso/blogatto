@@ -25,7 +25,7 @@ import lustre/element
 import lustre/element/html
 import maud
 import maud/components as maud_components
-import mork
+import mork/document as mork_document
 import simplifile
 
 type PostInfo(msg) {
@@ -271,13 +271,10 @@ fn parse_post(
   // assets dir is the parent of the HTML file
   let assets_dir = path.parent(html_path)
   // render markdown to Lustre via Maud components
-  let options =
-    mork.configure()
-    |> mork.strip_frontmatter(True)
   let rendered_components =
     maud.render_markdown(
       markdown_file.content,
-      options,
+      mork_options(markdown_config.options),
       to_maud_components(markdown_config.components),
     )
   let excerpt =
@@ -498,4 +495,18 @@ fn from_maud_alignment(
     maud_components.Center -> markdown.Center
     maud_components.Right -> markdown.Right
   }
+}
+
+/// Convert blogatto `markdown.Options` to mork `mork_document.Options`.
+fn mork_options(options: markdown.Options) -> mork_document.Options {
+  mork_document.Options(
+    // we already parse frontmatter separately, so we can tell mork to ignore it
+    strip_frontmatter: True,
+    footnotes: options.footnotes,
+    heading_ids: options.heading_ids,
+    tables: options.tables,
+    tasklists: options.tasklists,
+    emojis: options.emojis_shortcodes,
+    autolinks: options.autolinks,
+  )
 }

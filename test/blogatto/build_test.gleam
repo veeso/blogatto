@@ -1065,3 +1065,89 @@ pub fn build_returns_error_for_invalid_output_dir_parent_test() {
 
   let assert Error(error.File(_)) = result
 }
+
+// --- Markdown options integration ---
+
+pub fn build_with_custom_options_renders_table_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+    let output = dir <> "/output"
+
+    let post_dir = create_post_dir(blog, "opts-table")
+    write_markdown(
+      post_dir,
+      "index.md",
+      markdown_content(
+        "Options Table",
+        "opts-table",
+        "2024-01-15 10:00:00",
+        "Table with custom options",
+        "| A | B |\n| - | - |\n| 1 | 2 |\n",
+      ),
+    )
+
+    let md_config =
+      markdown.default()
+      |> markdown.markdown_path(blog)
+      |> markdown.options(markdown.Options(
+        footnotes: True,
+        heading_ids: False,
+        tables: True,
+        tasklists: True,
+        emojis_shortcodes: True,
+        autolinks: True,
+      ))
+
+    config.new("https://example.com")
+    |> config.output_dir(output)
+    |> config.markdown(md_config)
+    |> blogatto.build()
+    |> should.be_ok
+
+    let assert Ok(content) = simplifile.read(output <> "/opts-table/index.html")
+    content |> string.contains("<table>") |> should.be_true
+  }
+}
+
+pub fn build_with_tables_disabled_skips_table_rendering_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+    let output = dir <> "/output"
+
+    let post_dir = create_post_dir(blog, "no-tbl")
+    write_markdown(
+      post_dir,
+      "index.md",
+      markdown_content(
+        "No Table",
+        "no-tbl",
+        "2024-01-15 10:00:00",
+        "Table disabled",
+        "| A | B |\n| - | - |\n| 1 | 2 |\n",
+      ),
+    )
+
+    let md_config =
+      markdown.default()
+      |> markdown.markdown_path(blog)
+      |> markdown.options(markdown.Options(
+        footnotes: True,
+        heading_ids: False,
+        tables: False,
+        tasklists: True,
+        emojis_shortcodes: True,
+        autolinks: True,
+      ))
+
+    config.new("https://example.com")
+    |> config.output_dir(output)
+    |> config.markdown(md_config)
+    |> blogatto.build()
+    |> should.be_ok
+
+    let assert Ok(content) = simplifile.read(output <> "/no-tbl/index.html")
+    content |> string.contains("<table>") |> should.be_false
+  }
+}

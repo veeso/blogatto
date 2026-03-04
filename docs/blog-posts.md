@@ -203,6 +203,40 @@ description: A post with images
 
 If `photo.jpg` is in the same directory as `index.md`, it will be copied to the output and the relative link will resolve correctly.
 
+## Markdown parsing options
+
+Blogatto exposes markdown parsing options that control which extensions are enabled. Use `markdown.options()` to override the defaults returned by `markdown.default_options()`:
+
+```gleam
+import blogatto/config/markdown
+
+let opts = markdown.Options(
+  footnotes: True,
+  heading_ids: True,
+  tables: True,
+  tasklists: True,
+  emojis_shortcodes: True,
+  autolinks: True,
+)
+
+let md = markdown.default()
+  |> markdown.markdown_path("./blog")
+  |> markdown.options(opts)
+```
+
+### Options reference
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| `footnotes` | `True` | Enable [footnote](https://help.obsidian.md/syntax#Footnotes) parsing |
+| `heading_ids` | `False` | Add `id` attributes to all headings (enables [custom heading IDs](https://www.markdownguide.org/extended-syntax/#heading-ids)) |
+| `tables` | `True` | Enable [GFM table](https://help.obsidian.md/advanced-syntax#Tables) parsing |
+| `tasklists` | `True` | Enable [task list](https://github.github.com/gfm/#task-list-items-extension-) checkbox parsing |
+| `emojis_shortcodes` | `True` | Convert emoji shortcodes (e.g., `:smile:`) to Unicode emojis |
+| `autolinks` | `True` | Automatically convert plain URLs into clickable links |
+
+All options default to `True` except `heading_ids`, which defaults to `False`. To get the default options explicitly, use `markdown.default_options()`.
+
 ## The Post type
 
 After parsing, each markdown file produces a `Post(msg)` value with these fields:

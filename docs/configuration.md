@@ -78,6 +78,29 @@ config.new("https://example.com")
 |> config.markdown(md)
 ```
 
+#### Markdown parsing options
+
+The `MarkdownConfig` includes an `Options` record that controls which markdown extensions are enabled during parsing. Use `markdown.options()` to override the defaults:
+
+```gleam
+import blogatto/config/markdown
+
+let opts = markdown.Options(
+  footnotes: True,
+  heading_ids: True,
+  tables: True,
+  tasklists: True,
+  emojis_shortcodes: True,
+  autolinks: True,
+)
+
+let md = markdown.default()
+  |> markdown.markdown_path("./blog")
+  |> markdown.options(opts)
+```
+
+See [Markdown parsing options](blog-posts#markdown-parsing-options) for details on each option.
+
 #### Markdown routing options
 
 The `MarkdownConfig` controls how blog post URLs are generated. You can use either `route_prefix` or `route_builder` (not both — `route_builder` takes precedence):
