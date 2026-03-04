@@ -112,6 +112,22 @@ fn route_builder_config(
   |> config.markdown(md_config)
 }
 
+/// Config with custom markdown options.
+fn config_with_options(
+  output_dir: String,
+  blog_dir: String,
+  options: markdown.Options,
+) -> config.Config(msg) {
+  let md_config =
+    markdown.default()
+    |> markdown.markdown_path(blog_dir)
+    |> markdown.options(options)
+
+  config.new("https://example.com")
+  |> config.output_dir(output_dir)
+  |> config.markdown(md_config)
+}
+
 /// Config with both route_prefix and route_builder (builder should win).
 fn route_builder_with_prefix_config(
   output_dir: String,
@@ -1675,5 +1691,206 @@ pub fn build_with_route_builder_using_language_test() {
     simplifile.is_file(html_path)
     |> should.be_ok
     |> should.be_true
+  }
+}
+
+// --- Markdown options integration ---
+
+pub fn build_with_default_options_renders_table_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+    let output = dir <> "/output"
+
+    let post_dir = create_post_dir(blog, "table-post")
+    write_markdown(
+      post_dir,
+      "index.md",
+      markdown_content(
+        "Table Post",
+        "table-post",
+        "2024-01-15 10:00:00",
+        "A post with a table",
+        "| Header 1 | Header 2 |\n| -------- | -------- |\n| Cell 1   | Cell 2   |\n",
+      ),
+    )
+
+    let assert [built_post] =
+      minimal_config(output, blog)
+      |> blog_builder.build()
+      |> should.be_ok
+
+    let html =
+      built_post.contents
+      |> list.map(element.to_string)
+      |> string.join("")
+
+    html |> string.contains("<table>") |> should.be_true
+    html |> string.contains("<th") |> should.be_true
+    html |> string.contains("<td") |> should.be_true
+  }
+}
+
+pub fn build_with_tables_disabled_does_not_render_table_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+    let output = dir <> "/output"
+
+    let post_dir = create_post_dir(blog, "no-table")
+    write_markdown(
+      post_dir,
+      "index.md",
+      markdown_content(
+        "No Table",
+        "no-table",
+        "2024-01-15 10:00:00",
+        "Table markdown with tables disabled",
+        "| Header 1 | Header 2 |\n| -------- | -------- |\n| Cell 1   | Cell 2   |\n",
+      ),
+    )
+
+    let opts =
+      markdown.Options(
+        footnotes: True,
+        heading_ids: False,
+        tables: False,
+        tasklists: True,
+        emojis_shortcodes: True,
+        autolinks: True,
+      )
+
+    let assert [built_post] =
+      config_with_options(output, blog, opts)
+      |> blog_builder.build()
+      |> should.be_ok
+
+    let html =
+      built_post.contents
+      |> list.map(element.to_string)
+      |> string.join("")
+
+    html |> string.contains("<table>") |> should.be_false
+  }
+}
+
+pub fn build_with_heading_ids_enabled_adds_ids_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+    let output = dir <> "/output"
+
+    let post_dir = create_post_dir(blog, "heading-ids")
+    write_markdown(
+      post_dir,
+      "index.md",
+      markdown_content(
+        "Heading IDs",
+        "heading-ids",
+        "2024-01-15 10:00:00",
+        "Post with heading IDs enabled",
+        "## My Section\n\nSome text.\n",
+      ),
+    )
+
+    let opts =
+      markdown.Options(
+        footnotes: True,
+        heading_ids: True,
+        tables: True,
+        tasklists: True,
+        emojis_shortcodes: True,
+        autolinks: True,
+      )
+
+    let assert [built_post] =
+      config_with_options(output, blog, opts)
+      |> blog_builder.build()
+      |> should.be_ok
+
+    let html =
+      built_post.contents
+      |> list.map(element.to_string)
+      |> string.join("")
+
+    // heading_ids: True should produce an id attribute on h2
+    html |> string.contains("id=\"") |> should.be_true
+    html |> string.contains("<h2") |> should.be_true
+  }
+}
+
+pub fn build_with_tasklists_enabled_renders_checkboxes_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+    let output = dir <> "/output"
+
+    let post_dir = create_post_dir(blog, "tasklist-post")
+    write_markdown(
+      post_dir,
+      "index.md",
+      markdown_content(
+        "Tasklist Post",
+        "tasklist-post",
+        "2024-01-15 10:00:00",
+        "A post with task lists",
+        "- [x] Done\n- [ ] Todo\n",
+      ),
+    )
+
+    let assert [built_post] =
+      minimal_config(output, blog)
+      |> blog_builder.build()
+      |> should.be_ok
+
+    let html =
+      built_post.contents
+      |> list.map(element.to_string)
+      |> string.join("")
+
+    html |> string.contains("type=\"checkbox\"") |> should.be_true
+  }
+}
+
+pub fn build_with_tasklists_disabled_does_not_render_checkboxes_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+    let output = dir <> "/output"
+
+    let post_dir = create_post_dir(blog, "no-tasklist")
+    write_markdown(
+      post_dir,
+      "index.md",
+      markdown_content(
+        "No Tasklist",
+        "no-tasklist",
+        "2024-01-15 10:00:00",
+        "Task list markdown with tasklists disabled",
+        "- [x] Done\n- [ ] Todo\n",
+      ),
+    )
+
+    let opts =
+      markdown.Options(
+        footnotes: True,
+        heading_ids: False,
+        tables: True,
+        tasklists: False,
+        emojis_shortcodes: True,
+        autolinks: True,
+      )
+
+    let assert [built_post] =
+      config_with_options(output, blog, opts)
+      |> blog_builder.build()
+      |> should.be_ok
+
+    let html =
+      built_post.contents
+      |> list.map(element.to_string)
+      |> string.join("")
+
+    html |> string.contains("type=\"checkbox\"") |> should.be_false
   }
 }

@@ -24,6 +24,41 @@ import gleam/option.{type Option, None}
 import lustre/element.{type Element}
 import maud/components as maud_components
 
+/// Configuration for discovering and rendering blog articles from markdown files.
+///
+/// The `components` field specifies the components used to render each markdown
+/// AST node (headings, paragraphs, code blocks, etc.).
+/// The `paths` field lists directories to recursively search for markdown post directories.
+/// The `route_prefix` field sets the URL prefix under which blog posts are placed
+/// in the output directory (e.g., `"blog"` produces `output_dir/blog/{slug}/index.html`).
+/// The `template` field optionally overrides the default blog post page template.
+pub type MarkdownConfig(msg) {
+  MarkdownConfig(
+    /// Components used for rendering markdown AST nodes into Lustre elements.
+    components: Components(msg),
+    /// Maximum character length for auto-generated post excerpts. (default: 200)
+    excerpt_len: Int,
+    /// Markdown rendering options
+    options: Options,
+    /// Directories to recursively search for markdown post directories.
+    paths: List(String),
+    /// URL prefix for blog post output paths. When `None`, posts are written
+    /// directly under `output_dir/{slug}/index.html`. When `Some("blog")`,
+    /// posts are written to `output_dir/blog/{slug}/index.html`.
+    route_prefix: Option(String),
+    /// Function to customize the blog post URL.
+    /// It receives the `PostMetadata` and returns the URL path for that post (e.g., `"/my-post/"` or `"/it/my-post/"`).
+    /// When set `route_prefix` is IGNORED! This allows you to have full control over the post URLs,
+    /// including the ability to place them outside of the route prefix or to use a completely different URL structure.
+    /// If not provided the default builder will be used (i.e. `/{route_prefix?}/{lang}/{slug}/` or `/{route_prefix?}/{slug}/` if language is `None`).
+    route_builder: Option(fn(PostMetadata) -> String),
+    /// Optional custom template for rendering a blog post page.
+    /// Receives the parsed `Post`, and all the other posts, and returns a full page element.
+    /// When `None`, Blogatto uses a minimal default template.
+    template: Option(fn(Post(msg), List(Post(msg))) -> Element(msg)),
+  )
+}
+
 /// Text alignment for table cells.
 pub type Alignment {
   /// Left-aligned text (the default for most table cells).
@@ -73,36 +108,30 @@ pub type Components(msg) {
   )
 }
 
-/// Configuration for discovering and rendering blog articles from markdown files.
-///
-/// The `components` field specifies the components used to render each markdown
-/// AST node (headings, paragraphs, code blocks, etc.).
-/// The `paths` field lists directories to recursively search for markdown post directories.
-/// The `route_prefix` field sets the URL prefix under which blog posts are placed
-/// in the output directory (e.g., `"blog"` produces `output_dir/blog/{slug}/index.html`).
-/// The `template` field optionally overrides the default blog post page template.
-pub type MarkdownConfig(msg) {
-  MarkdownConfig(
-    /// Components used for rendering markdown AST nodes into Lustre elements.
-    components: Components(msg),
-    /// Maximum character length for auto-generated post excerpts. (default: 200)
-    excerpt_len: Int,
-    /// Directories to recursively search for markdown post directories.
-    paths: List(String),
-    /// URL prefix for blog post output paths. When `None`, posts are written
-    /// directly under `output_dir/{slug}/index.html`. When `Some("blog")`,
-    /// posts are written to `output_dir/blog/{slug}/index.html`.
-    route_prefix: Option(String),
-    /// Function to customize the blog post URL.
-    /// It receives the `PostMetadata` and returns the URL path for that post (e.g., `"/my-post/"` or `"/it/my-post/"`).
-    /// When set `route_prefix` is IGNORED! This allows you to have full control over the post URLs,
-    /// including the ability to place them outside of the route prefix or to use a completely different URL structure.
-    /// If not provided the default builder will be used (i.e. `/{route_prefix?}/{lang}/{slug}/` or `/{route_prefix?}/{slug}/` if language is `None`).
-    route_builder: Option(fn(PostMetadata) -> String),
-    /// Optional custom template for rendering a blog post page.
-    /// Receives the parsed `Post`, and all the other posts, and returns a full page element.
-    /// When `None`, Blogatto uses a minimal default template.
-    template: Option(fn(Post(msg), List(Post(msg))) -> Element(msg)),
+/// Options for markdown parsing and rendering.
+pub type Options {
+  Options(
+    /// Enable footnote parsing. (Default: True)
+    /// 
+    /// <https://help.obsidian.md/syntax#Footnotes>
+    footnotes: Bool,
+    /// Custom IDs for headings. Enabling this will add IDs to all headings regardless of whether an explicit ID was provided or not. (Default: False)
+    /// 
+    /// <https://www.markdownguide.org/extended-syntax/#heading-ids>
+    heading_ids: Bool,
+    /// Enable table parsing. (Default: True)
+    /// 
+    /// <https://help.obsidian.md/advanced-syntax#Tables>
+    tables: Bool,
+    /// Enable task list parsing. (Default: True)
+    /// 
+    /// <https://github.github.com/gfm/#task-list-items-extension->
+    tasklists: Bool,
+    /// Emoji shortcodes (e.g., `:smile:`) are converted to Unicode emojis. (Default: True)
+    emojis_shortcodes: Bool,
+    /// Automatically convert plain URLs into clickable links, even without
+    /// angle brackets or explicit link syntax. (Default: True)
+    autolinks: Bool,
   )
 }
 
@@ -112,10 +141,30 @@ pub fn default() -> MarkdownConfig(msg) {
   MarkdownConfig(
     components: default_components(),
     excerpt_len: 200,
+    options: default_options(),
     paths: [],
     route_prefix: None,
     route_builder: None,
     template: None,
+  )
+}
+
+/// Return the default markdown parsing options, with:
+/// 
+/// - Footnotes enabled
+/// - Heading IDs disabled
+/// - Table parsing enabled
+/// - Task list parsing enabled
+/// - Emoji shortcodes enabled
+/// - Extended autolinks enabled
+pub fn default_options() -> Options {
+  Options(
+    footnotes: True,
+    heading_ids: False,
+    tables: True,
+    tasklists: True,
+    emojis_shortcodes: True,
+    autolinks: True,
   )
 }
 
@@ -147,6 +196,14 @@ pub fn markdown_path(
   path: String,
 ) -> MarkdownConfig(msg) {
   MarkdownConfig(..config, paths: list.prepend(config.paths, path))
+}
+
+/// Set markdown parsing options.
+pub fn options(
+  config: MarkdownConfig(msg),
+  options: Options,
+) -> MarkdownConfig(msg) {
+  MarkdownConfig(..config, options:)
 }
 
 /// Set the URL prefix used for blog post output paths.

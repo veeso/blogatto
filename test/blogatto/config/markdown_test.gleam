@@ -31,6 +31,30 @@ pub fn default_has_no_route_prefix_test() {
   |> should.equal(None)
 }
 
+pub fn default_options_test() {
+  let cfg = markdown.default()
+  cfg.options
+  |> should.equal(markdown.default_options())
+
+  cfg.options.autolinks
+  |> should.equal(True)
+
+  cfg.options.footnotes
+  |> should.equal(True)
+
+  cfg.options.emojis_shortcodes
+  |> should.equal(True)
+
+  cfg.options.heading_ids
+  |> should.equal(False)
+
+  cfg.options.tables
+  |> should.equal(True)
+
+  cfg.options.tasklists
+  |> should.equal(True)
+}
+
 pub fn default_components_renders_paragraph_test() {
   let comps = markdown.default_components()
   let result = comps.p([html.text("hello")])
@@ -45,6 +69,50 @@ pub fn default_components_renders_h1_test() {
   result
   |> element.to_string
   |> should.equal("<h1 id=\"title\">Title</h1>")
+}
+
+// --- excerpt_len ---
+
+pub fn excerpt_len_overrides_default_test() {
+  let cfg =
+    markdown.default()
+    |> markdown.excerpt_len(100)
+
+  cfg.excerpt_len
+  |> should.equal(100)
+}
+
+// --- template ---
+
+pub fn template_overrides_default_test() {
+  let tmpl = fn(_post, _all_posts) { html.div([], [html.text("custom")]) }
+  let cfg =
+    markdown.default()
+    |> markdown.template(tmpl)
+
+  cfg.template
+  |> should.be_some
+}
+
+// --- options ---
+
+pub fn options_overrides_defaults_test() {
+  let custom_options =
+    markdown.Options(
+      autolinks: False,
+      footnotes: False,
+      emojis_shortcodes: False,
+      heading_ids: True,
+      tables: False,
+      tasklists: False,
+    )
+
+  let cfg =
+    markdown.default()
+    |> markdown.options(custom_options)
+
+  cfg.options
+  |> should.equal(custom_options)
 }
 
 //  --- route_prefix ---
