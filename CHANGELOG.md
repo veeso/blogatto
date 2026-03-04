@@ -1,5 +1,26 @@
 # Changelog
 
+## 3.0.0
+
+Released on 2026-03-04
+
+### Added
+
+- add route_builder to MarkdownConfig for custom blog post routing
+  > Add an optional route_builder function to MarkdownConfig that allows
+  > users to fully customize the output path and URL for each blog post.
+  > When set, the route_prefix field is ignored, giving full control over
+  > post URLs for date-based, category-based, or any custom URL scheme.
+  >
+  > Introduces PostMetadata type in blogatto/post with frontmatter-derived
+  > fields available at routing time (excludes url, excerpt, contents).
+- expose mork markdown parsing options via MarkdownConfig
+  > Add Options type to MarkdownConfig allowing users to enable/disable
+  > markdown extensions (tables, footnotes, heading IDs, task lists, emoji
+  > shortcodes, autolinks). Defaults match mork's defaults with tables and
+  > most extensions enabled. Updates blog builder to use mork_document.Options
+  > directly instead of the deprecated mork.configure() builder API.
+
 ## 2.0.1
 
 Released on 2026-03-02
