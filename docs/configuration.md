@@ -66,7 +66,7 @@ For example, `./static/css/style.css` becomes `./dist/css/style.css`.
 
 ### `config.markdown(config, markdown_config)`
 
-Set the markdown configuration for blog post rendering. See [Markdown components](markdown-components) for details on `MarkdownConfig`.
+Set the markdown configuration for blog post rendering. See [Markdown components](markdown-components) for component customization and [Blog posts](blog-posts) for routing details.
 
 ```gleam
 import blogatto/config/markdown
@@ -77,6 +77,15 @@ let md = markdown.default()
 config.new("https://example.com")
 |> config.markdown(md)
 ```
+
+#### Markdown routing options
+
+The `MarkdownConfig` controls how blog post URLs are generated. You can use either `route_prefix` or `route_builder` (not both — `route_builder` takes precedence):
+
+- **`markdown.route_prefix(config, prefix)`** — set a static URL prefix for all posts (e.g., `"blog"` produces `/blog/{slug}/`)
+- **`markdown.route_builder(config, builder)`** — set a function that receives `PostMetadata` and returns a custom URL path per post
+
+See [Custom routing with `route_builder`](blog-posts#custom-routing-with-route_builder) for examples.
 
 ### `config.route(config, path, view)`
 

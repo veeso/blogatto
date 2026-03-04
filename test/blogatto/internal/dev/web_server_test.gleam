@@ -124,7 +124,7 @@ fn url(port: Int, path: String) -> String {
 }
 
 pub fn serve_html_page_test() {
-  let port = 49_152
+  let port = 20_152
   let assert Ok(_) = {
     use output_dir <- temporary.create(temporary.directory())
     let assert Ok(_) =
@@ -149,7 +149,7 @@ pub fn serve_html_page_test() {
 }
 
 pub fn serve_html_page_without_live_reload_test() {
-  let port = 49_153
+  let port = 20_153
   let assert Ok(_) = {
     use output_dir <- temporary.create(temporary.directory())
     let assert Ok(_) =
@@ -173,7 +173,7 @@ pub fn serve_html_page_without_live_reload_test() {
 }
 
 pub fn serve_nested_page_test() {
-  let port = 49_154
+  let port = 20_154
   let assert Ok(_) = {
     use output_dir <- temporary.create(temporary.directory())
     let assert Ok(_) = simplifile.create_directory_all(output_dir <> "/about")
@@ -196,7 +196,7 @@ pub fn serve_nested_page_test() {
 }
 
 pub fn serve_missing_page_returns_404_test() {
-  let port = 49_155
+  let port = 20_155
   let assert Ok(_) = {
     use output_dir <- temporary.create(temporary.directory())
 
@@ -212,7 +212,7 @@ pub fn serve_missing_page_returns_404_test() {
 }
 
 pub fn serve_static_asset_test() {
-  let port = 49_156
+  let port = 20_156
   let assert Ok(_) = {
     use output_dir <- temporary.create(temporary.directory())
     let assert Ok(_) =
@@ -235,7 +235,7 @@ pub fn serve_static_asset_test() {
 }
 
 pub fn serve_missing_asset_returns_404_test() {
-  let port = 49_157
+  let port = 20_157
   let assert Ok(_) = {
     use output_dir <- temporary.create(temporary.directory())
 
@@ -251,7 +251,7 @@ pub fn serve_missing_asset_returns_404_test() {
 }
 
 pub fn path_traversal_page_returns_404_test() {
-  let port = 49_158
+  let port = 20_158
   let assert Ok(_) = {
     use output_dir <- temporary.create(temporary.directory())
     let assert Ok(_) =
@@ -273,7 +273,7 @@ pub fn path_traversal_page_returns_404_test() {
 }
 
 pub fn path_traversal_asset_returns_404_test() {
-  let port = 49_159
+  let port = 20_159
   let assert Ok(_) = {
     use output_dir <- temporary.create(temporary.directory())
 
@@ -290,7 +290,7 @@ pub fn path_traversal_asset_returns_404_test() {
 }
 
 pub fn serve_html_page_has_no_cache_headers_test() {
-  let port = 49_160
+  let port = 20_160
   let assert Ok(_) = {
     use output_dir <- temporary.create(temporary.directory())
     let assert Ok(_) =
@@ -311,7 +311,7 @@ pub fn serve_html_page_has_no_cache_headers_test() {
 }
 
 pub fn serve_nested_page_without_trailing_slash_redirects_test() {
-  let port = 49_161
+  let port = 20_161
   let assert Ok(_) = {
     use output_dir <- temporary.create(temporary.directory())
     let assert Ok(_) = simplifile.create_directory_all(output_dir <> "/about")

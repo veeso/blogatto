@@ -19,6 +19,18 @@ pub fn default_has_no_template_test() {
   |> should.equal(None)
 }
 
+pub fn default_has_no_route_builder_test() {
+  let cfg = markdown.default()
+  cfg.route_builder
+  |> should.equal(None)
+}
+
+pub fn default_has_no_route_prefix_test() {
+  let cfg = markdown.default()
+  cfg.route_prefix
+  |> should.equal(None)
+}
+
 pub fn default_components_renders_paragraph_test() {
   let comps = markdown.default_components()
   let result = comps.p([html.text("hello")])
@@ -33,6 +45,29 @@ pub fn default_components_renders_h1_test() {
   result
   |> element.to_string
   |> should.equal("<h1 id=\"title\">Title</h1>")
+}
+
+//  --- route_prefix ---
+
+pub fn route_prefix_adds_prefix_to_url_test() {
+  let cfg =
+    markdown.default()
+    |> markdown.route_prefix("blog")
+
+  cfg.route_prefix
+  |> should.equal(Some("blog"))
+}
+
+// --- route_builder ---
+
+pub fn route_builder_overrides_default_url_test() {
+  let builder = fn(_metadata) { "/custom-url/" }
+  let cfg =
+    markdown.default()
+    |> markdown.route_builder(builder)
+
+  cfg.route_builder
+  |> should.equal(Some(builder))
 }
 
 // --- markdown_path ---

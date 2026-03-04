@@ -119,6 +119,58 @@ Without a `route_prefix`:
 | `hello-world/index.md` | `dist/hello-world/index.html` |
 | `hello-world/index-it.md` | `dist/it/hello-world/index.html` |
 
+### Custom routing with `route_builder`
+
+For full control over post URLs, use `markdown.route_builder()` instead of `route_prefix`. The route builder receives a `PostMetadata` value and returns the URL path for that post. When set, the `route_prefix` is ignored.
+
+```gleam
+import blogatto/config/markdown
+import blogatto/post
+import gleam/int
+import gleam/option
+import gleam/time/calendar
+
+let md =
+  markdown.default()
+  |> markdown.markdown_path("./blog")
+  |> markdown.route_builder(fn(meta: post.PostMetadata) {
+    let #(year, month, _day) = calendar.to_date(meta.date)
+    "/blog/" <> int.to_string(year) <> "/" <> int.to_string(month) <> "/" <> meta.slug <> "/"
+  })
+```
+
+This produces date-based URLs like `/blog/2024/1/my-post/` and filesystem paths like `dist/blog/2024/1/my-post/index.html`.
+
+The route builder can also incorporate language:
+
+```gleam
+markdown.route_builder(fn(meta: post.PostMetadata) {
+  let lang_prefix = case meta.language {
+    option.Some(lang) -> "/" <> lang
+    option.None -> ""
+  }
+  lang_prefix <> "/blog/" <> meta.slug <> "/"
+})
+```
+
+Blogatto normalizes the returned path: a leading `/` is added if missing, and a trailing `/` is appended if missing.
+
+#### `PostMetadata` fields
+
+The `PostMetadata` type contains all frontmatter-derived fields available at routing time:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | `String` | From frontmatter |
+| `slug` | `String` | From frontmatter |
+| `date` | `Timestamp` | From frontmatter |
+| `description` | `String` | From frontmatter |
+| `language` | `Option(String)` | `None` for default, `Some("it")` for variants |
+| `featured_image` | `Option(String)` | From frontmatter, if provided |
+| `extras` | `Dict(String, String)` | Additional frontmatter fields |
+
+Note that `PostMetadata` intentionally excludes `url` (which is the output of the route builder), `excerpt`, and `contents` (which are not available at routing time).
+
 ### Filtering posts by language
 
 In route views, filter the post list by language to build language-specific pages:
