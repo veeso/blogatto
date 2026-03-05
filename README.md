@@ -117,7 +117,7 @@ fn home_view(posts: List(Post(Nil))) -> Element(Nil) {
 }
 ```
 
-Running `gleam build` will generate the `dist` directory with the following structure:
+Running `gleam run` will generate the `dist` directory with the following structure:
 
 ```
 dist/
@@ -134,7 +134,7 @@ dist/
 
 Blogatto includes a built-in development server that watches your source files for changes, automatically rebuilds the site, and live-reloads the browser via SSE.
 
-Create a separate dev entrypoint module (e.g., `src/dev.gleam`):
+Create a separate dev entrypoint module (name it like your main module, but with `_dev` postfix and put it in the `dev` folder, e.g. `dev/my_blog_dev.gleam`):
 
 ```gleam
 import blogatto/dev
@@ -158,7 +158,7 @@ pub fn main() {
 }
 ```
 
-Run with: `gleam run -m dev`
+Run with: `gleam dev`
 
 The dev server will:
 
