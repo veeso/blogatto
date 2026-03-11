@@ -1,6 +1,5 @@
 ---
 title: Hello World
-slug: hello-world
 date: 2025-01-15 00:00:00
 description: Welcome to my new blog built with Blogatto
 ---

@@ -36,6 +36,22 @@ fn markdown_content(
   <> body
 }
 
+fn markdown_content_without_slug(
+  title: String,
+  date: String,
+  description: String,
+  body: String,
+) -> String {
+  "---\ntitle: "
+  <> title
+  <> "\ndate: "
+  <> date
+  <> "\ndescription: "
+  <> description
+  <> "\n---\n"
+  <> body
+}
+
 fn sample_markdown() -> String {
   markdown_content(
     "Hello World",
@@ -1012,7 +1028,7 @@ pub fn build_returns_error_for_missing_title_test() {
   }
 }
 
-pub fn build_returns_error_for_missing_slug_test() {
+pub fn build_auto_generates_slug_from_title_when_missing_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
     use blog <- temporary.create(temporary.directory())
@@ -1021,17 +1037,47 @@ pub fn build_returns_error_for_missing_slug_test() {
     write_markdown(
       post_dir,
       "index.md",
-      "---\ntitle: No Slug\ndate: 2024-01-01 00:00:00\ndescription: missing slug\n---\n# Body\n",
+      markdown_content_without_slug(
+        "My Amazing Post",
+        "2024-01-01 00:00:00",
+        "a post without slug",
+        "# Body\n",
+      ),
     )
 
-    let result =
+    let assert [post] =
       minimal_config(dir, blog)
       |> blog_builder.build()
+      |> should.be_ok
 
-    result |> should.be_error
+    post.slug |> should.equal("my-amazing-post")
+  }
+}
 
-    let assert Error(error.FrontmatterMissingField("slug")) = result
-    Nil
+pub fn build_uses_explicit_slug_over_auto_generated_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+
+    let post_dir = create_post_dir(blog, "custom-slug")
+    write_markdown(
+      post_dir,
+      "index.md",
+      markdown_content(
+        "My Amazing Post",
+        "custom-slug",
+        "2024-01-01 00:00:00",
+        "a post with explicit slug",
+        "# Body\n",
+      ),
+    )
+
+    let assert [post] =
+      minimal_config(dir, blog)
+      |> blog_builder.build()
+      |> should.be_ok
+
+    post.slug |> should.equal("custom-slug")
   }
 }
 

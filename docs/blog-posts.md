@@ -10,16 +10,16 @@ Blogatto discovers blog posts from markdown files with YAML frontmatter. This gu
 
 ## Directory-per-post convention
 
-Each blog post lives in its own directory. The directory name becomes the post's **slug** (URL-friendly identifier):
+Each blog post lives in its own directory:
 
 ```text
 blog/
-  my-first-post/         # slug: "my-first-post"
+  my-first-post/
     index.md             # Default language
     index-it.md          # Italian variant
     index-fr.md          # French variant
     cover.jpg            # Asset copied to output
-  another-post/          # slug: "another-post"
+  another-post/
     index.md
     diagram.png
 ```
@@ -33,7 +33,6 @@ Each markdown file must start with a YAML frontmatter block:
 ```markdown
 ---
 title: My First Post
-slug: my-first-post
 date: 2025-01-15 00:00:00
 description: A short description of the post
 featured_image: /images/hero.jpg
@@ -47,7 +46,6 @@ Your markdown content here...
 | Field | Format | Description |
 |-------|--------|-------------|
 | `title` | String | The post title |
-| `slug` | String | URL-friendly identifier for the post |
 | `date` | `YYYY-MM-DD HH:MM:SS` | Publication date (UTC) |
 | `description` | String | A short description or excerpt |
 
@@ -55,6 +53,7 @@ Your markdown content here...
 
 | Field | Format | Description |
 |-------|--------|-------------|
+| `slug` | String | URL-friendly identifier for the post. If omitted, auto-generated from the title (e.g., `"My First Post"` becomes `"my-first-post"`) |
 | `featured_image` | String | URL or path to a featured image |
 
 ### Extra fields
@@ -64,7 +63,6 @@ Any frontmatter keys beyond the required and optional fields are collected in `P
 ```markdown
 ---
 title: My Post
-slug: my-post
 date: 2025-01-15 00:00:00
 description: A post about Gleam
 author: Jane Doe
@@ -162,7 +160,7 @@ The `PostMetadata` type contains all frontmatter-derived fields available at rou
 | Field | Type | Description |
 |-------|------|-------------|
 | `title` | `String` | From frontmatter |
-| `slug` | `String` | From frontmatter |
+| `slug` | `String` | From frontmatter, or auto-generated from title |
 | `date` | `Timestamp` | From frontmatter |
 | `description` | `String` | From frontmatter |
 | `language` | `Option(String)` | `None` for default, `Some("it")` for variants |
@@ -193,7 +191,6 @@ Non-markdown files in a post directory (images, PDFs, etc.) are automatically co
 ```markdown
 ---
 title: My Post
-slug: my-post
 date: 2025-01-15 00:00:00
 description: A post with images
 ---
@@ -244,7 +241,7 @@ After parsing, each markdown file produces a `Post(msg)` value with these fields
 | Field | Type | Description |
 |-------|------|-------------|
 | `title` | `String` | From frontmatter |
-| `slug` | `String` | From frontmatter |
+| `slug` | `String` | From frontmatter, or auto-generated from title |
 | `url` | `String` | Absolute URL (e.g., `"https://example.com/blog/my-post"`) |
 | `date` | `Timestamp` | From frontmatter |
 | `description` | `String` | From frontmatter |

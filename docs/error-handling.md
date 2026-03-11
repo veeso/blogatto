@@ -15,7 +15,7 @@ All Blogatto build functions return `Result(Nil, BlogattoError)`. The library ne
 | `DevServer(String)` | Error message | An error occurred in the development server (e.g. file watching, live reload) |
 | `File(FileError)` | `simplifile.FileError` | File system error (reading, writing, deleting files or directories) |
 | `FrontmatterMissing` | — | A markdown file has no frontmatter block |
-| `FrontmatterMissingField(String)` | Field name | A required frontmatter field (`title`, `date`, `slug`, or `description`) is missing |
+| `FrontmatterMissingField(String)` | Field name | A required frontmatter field (`title`, `date`, or `description`) is missing |
 | `FrontmatterInvalidDate(String)` | The date string | The `date` field could not be parsed as `YYYY-MM-DD HH:MM:SS` |
 | `FrontmatterInvalidLine(String)` | The line content | A frontmatter line could not be parsed as a `key: value` pair |
 | `InvalidUri(String)` | The invalid URI string | A URI could not be parsed during URL resolution |

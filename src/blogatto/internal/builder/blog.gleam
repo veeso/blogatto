@@ -27,6 +27,7 @@ import maud
 import maud/components as maud_components
 import mork/document as mork_document
 import simplifile
+import str
 
 type PostInfo(msg) {
   PostInfo(
@@ -392,13 +393,14 @@ fn post_url(site_url: String, path: String) -> String {
   base <> path
 }
 
-/// Helper function to parse the frontmatter of a markdown file and extract the required fields (title, slug, date, description) along with any additional fields.
+/// Helper function to parse the frontmatter of a markdown file and extract the required fields (title, date, description) along with any additional fields.
+/// 
+/// Slug is either parsed from the frontmatter or generated from the title using `slugify`. Date is parsed into a `timestamp.Timestamp` value.
 fn parse_frontmatter(
   content: String,
 ) -> Result(Frontmatter, error.BlogattoError) {
   use frontmatter <- result.try(frontmatter.parse_content(content))
   use title <- result.try(get_frontmatter_required_field(frontmatter, "title"))
-  use slug <- result.try(get_frontmatter_required_field(frontmatter, "slug"))
   use date <- result.try(get_frontmatter_required_field(frontmatter, "date"))
   use description <- result.try(get_frontmatter_required_field(
     frontmatter,
@@ -407,6 +409,10 @@ fn parse_frontmatter(
   let featured_image =
     get_frontmatter_optional_field(frontmatter, "featured_image")
   use date <- result.try(date.parse(date))
+  let slug =
+    frontmatter
+    |> get_frontmatter_optional_field("slug")
+    |> option.unwrap(or: str.slugify(title))
 
   // get extras by filtering out the known fields from the frontmatter dictionary
   let extras =
