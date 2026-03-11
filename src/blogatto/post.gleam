@@ -1,8 +1,9 @@
 //// Blog post type representing a parsed markdown article.
 ////
 //// A `Post` is produced by the build pipeline after parsing a markdown file
-//// with frontmatter metadata. The `slug` is derived from the post's directory name,
-//// and the `language` is determined by the filename convention:
+//// with frontmatter metadata. The `slug` is either taken from the frontmatter
+//// or auto-generated from the title via slugification.
+//// The `language` is determined by the filename convention:
 //// `index.md` for the default language (`None`) or `index-{lang}.md` for a specific language.
 ////
 //// ## Example
@@ -28,12 +29,13 @@ import lustre/element.{type Element}
 /// A parsed blog post with rendered markdown contents.
 ///
 /// Required frontmatter fields are `title`, `date`, and `description`.
+/// The `slug` field is optional; if omitted, it is auto-generated from the title.
 /// Any additional frontmatter keys are collected in `extras`.
 pub type Post(msg) {
   Post(
     /// The post title, extracted from the `title` frontmatter field.
     title: String,
-    /// URL-friendly identifier derived from the post's directory name.
+    /// URL-friendly identifier from frontmatter, or auto-generated from the title.
     slug: String,
     /// The absolute URL for this post (e.g., `"https://example.com/blog/my-post/"`).
     /// Constructed from the site URL, optional route prefix, optional language,
@@ -62,7 +64,7 @@ pub type PostMetadata {
   PostMetadata(
     /// The post title, extracted from the `title` frontmatter field.
     title: String,
-    /// URL-friendly identifier derived from the post's directory name.
+    /// URL-friendly identifier from frontmatter, or auto-generated from the title.
     slug: String,
     /// Publication date extracted from the `date` frontmatter field.
     date: timestamp.Timestamp,

@@ -234,14 +234,13 @@ Key points:
 
 ## Blog posts
 
-Each blog post lives in its own directory under `blog/`. The directory name becomes the slug.
+Each blog post lives in its own directory under `blog/`.
 
 ### hello-world/index.md
 
 ```markdown
 ---
 title: Hello World
-slug: hello-world
 date: 2025-01-15 00:00:00
 description: Welcome to my new blog built with Blogatto
 ---
@@ -261,7 +260,6 @@ Blogatto is a framework for building static blogs with Lustre and Markdown...
 ```markdown
 ---
 title: Getting Started with Blogatto
-slug: getting-started
 date: 2025-01-20 00:00:00
 description: Learn how to set up your first static blog with Blogatto
 ---
@@ -271,7 +269,7 @@ description: Learn how to set up your first static blog with Blogatto
 Setting up a blog with Blogatto is straightforward...
 ```
 
-Required frontmatter fields are `title`, `slug`, `date`, and `description`. Any additional fields (e.g. `author`, `tags`) are collected into the post's `extras` dictionary.
+Required frontmatter fields are `title`, `date`, and `description`. The `slug` field is optional — if omitted, it is auto-generated from the title. Any additional fields (e.g. `author`, `tags`) are collected into the post's `extras` dictionary.
 
 ## Generated output
 
