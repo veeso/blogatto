@@ -78,10 +78,13 @@ fn sse_init(
 }
 
 fn sse_loop(
-  _state: Nil,
+  state: Result(actor.Initialised(Nil, message.SseMessage, Nil), String),
   msg: message.SseMessage,
   conn: mist.SSEConnection,
-) -> actor.Next(Nil, message.SseMessage) {
+) -> actor.Next(
+  Result(actor.Initialised(Nil, message.SseMessage, Nil), String),
+  message.SseMessage,
+) {
   case msg {
     message.Reload -> {
       let event =
@@ -89,7 +92,7 @@ fn sse_loop(
         |> mist.event
         |> mist.event_name("reload")
       case mist.send_event(conn, event) {
-        Ok(_) -> actor.continue(Nil)
+        Ok(_) -> actor.continue(state)
         Error(_) -> actor.stop()
       }
     }
