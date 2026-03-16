@@ -101,6 +101,21 @@ let md = markdown.default()
 
 See [Markdown parsing options](blog-posts#markdown-parsing-options) for details on each option.
 
+#### Syntax highlighting
+
+Enable build-time syntax highlighting for fenced code blocks:
+
+```gleam
+import blogatto/config/markdown
+import blogatto/config/markdown/code
+
+let md = markdown.default()
+  |> markdown.markdown_path("./blog")
+  |> markdown.syntax_highlighting(code.default())
+```
+
+See [Syntax highlighting](syntax-highlighting) for the full guide on supported languages, styling, and customization.
+
 #### Markdown routing options
 
 The `MarkdownConfig` controls how blog post URLs are generated. You can use either `route_prefix` or `route_builder` (not both — `route_builder` takes precedence):

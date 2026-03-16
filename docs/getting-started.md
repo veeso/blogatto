@@ -158,4 +158,5 @@ See the [simple_blog example](https://github.com/veeso/blogatto/tree/main/exampl
 
 - [Blog posts](blog-posts) — learn about frontmatter, multilingual support, and post assets
 - [Configuration](configuration) — explore all configuration options
+- [Syntax highlighting](syntax-highlighting) — enable build-time code block highlighting
 - [Static pages](static-pages) — add more pages and use post data in views

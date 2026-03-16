@@ -8,6 +8,7 @@
 import blogatto/config
 import blogatto/config/feed
 import blogatto/config/markdown
+import blogatto/config/markdown/code
 import blogatto/config/robots
 import blogatto/config/sitemap
 import blogatto/post.{type Post}
@@ -17,16 +18,33 @@ import gleam/time/timestamp
 import lustre/attribute
 import lustre/element.{type Element}
 import lustre/element/html
+import smalto/lustre/themes
 
 const site_url = "https://example.com"
 
 pub fn config() -> config.Config(Nil) {
+  // Syntax highlighting configuration using CSS classes
+  let syntax_config =
+    code.default()
+    |> code.smalto_config(themes.material_light())
+
   // Markdown configuration: search the blog/ directory for posts
   let md_config =
     markdown.default()
     |> markdown.markdown_path("./blog")
     |> markdown.route_prefix("blog")
     |> markdown.template(blog_post_template)
+    |> markdown.syntax_highlighting(syntax_config)
+    |> markdown.pre(fn(children) {
+      html.pre([attribute.class("code-block")], children)
+    })
+    |> markdown.code(fn(language, children) {
+      let lang_class = case language {
+        option.Some(lang) -> "language-" <> lang
+        option.None -> ""
+      }
+      html.code([attribute.class(lang_class)], children)
+    })
 
   // RSS feed configuration
   let rss =

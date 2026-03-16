@@ -27,6 +27,7 @@ Blogatto generates your entire static site from a single configuration: blog pos
 - **Sitemap XML** — automatic sitemap generation covering static pages and blog posts
 - **Robots.txt** — configurable crawl policies with sitemap reference
 - **Custom markdown rendering** — override any markdown element's HTML output via Maud components
+- **Build-time syntax highlighting** — highlight code blocks at build time via [Smalto](https://hexdocs.pm/smalto/), with 28 built-in languages and customizable token rendering
 - **Custom post routing** — control blog post URLs with a route builder function for date-based, category-based, or any custom URL scheme
 - **Blog post templates** — full control over the page layout wrapping each blog post
 - **Static asset copying** — copy CSS, images, and other assets into the output directory
@@ -54,6 +55,7 @@ The output is a fully static site ready to deploy to any static hosting provider
 | [Blog posts](blog-posts) | Directory structure, frontmatter, multilingual support |
 | [Configuration](configuration) | Full configuration reference |
 | [Markdown components](markdown-components) | Customizing markdown rendering |
+| [Syntax highlighting](syntax-highlighting) | Build-time code block highlighting with Smalto |
 | [Static pages](static-pages) | Routes, view functions, and using post data |
 | [RSS feeds](rss-feeds) | Feed configuration, filtering, and serialization |
 | [Sitemap and robots.txt](sitemap-and-robots) | Sitemap and crawler configuration |

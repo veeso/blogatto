@@ -50,16 +50,31 @@ The build configuration lives in `src/simple_blog/blog.gleam` as a shared module
 The markdown config tells Blogatto where to find posts and how to render them:
 
 ```gleam
+let syntax_config = code.default()
+
 let md_config =
   markdown.default()
   |> markdown.markdown_path("./blog")
   |> markdown.route_prefix("blog")
   |> markdown.template(blog_post_template)
+  |> markdown.syntax_highlighting(syntax_config)
+  |> markdown.pre(fn(children) {
+    html.pre([attribute.class("code-block")], children)
+  })
+  |> markdown.code(fn(language, children) {
+    let lang_class = case language {
+      option.Some(lang) -> "language-" <> lang
+      option.None -> ""
+    }
+    html.code([attribute.class(lang_class)], children)
+  })
 ```
 
 - `markdown_path("./blog")` — scan the `blog/` directory for post directories
 - `route_prefix("blog")` — output posts under `/blog/{slug}/`
 - `template(blog_post_template)` — wrap each post in a custom HTML page layout
+- `syntax_highlighting(syntax_config)` — enable build-time syntax highlighting for code blocks (see [Syntax highlighting](syntax-highlighting))
+- `pre` and `code` — add CSS classes to code block wrappers for styling
 
 ### RSS feed
 

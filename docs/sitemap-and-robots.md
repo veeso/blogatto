@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Sitemap and robots.txt
-nav_order: 9
+nav_order: 10
 ---
 
 # Sitemap and robots.txt

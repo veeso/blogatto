@@ -1,4 +1,5 @@
 import blogatto/config/markdown.{Center, Left, Right}
+import blogatto/config/markdown/code
 import gleam/option.{None, Some}
 import gleeunit/should
 import lustre/attribute
@@ -28,6 +29,12 @@ pub fn default_has_no_route_builder_test() {
 pub fn default_has_no_route_prefix_test() {
   let cfg = markdown.default()
   cfg.route_prefix
+  |> should.equal(None)
+}
+
+pub fn default_syntax_highlighting_is_default_test() {
+  let cfg = markdown.default()
+  cfg.syntax_highlighting
   |> should.equal(None)
 }
 
@@ -170,6 +177,21 @@ pub fn template_sets_template_function_test() {
 
   cfg.template
   |> should.be_some
+}
+
+// syntax highlighting setter is tested in code_test.gleam
+pub fn syntax_highlighting_sets_config_test() {
+  let custom_config =
+    code.default()
+    |> code.attribute(fn(text) {
+      html.span([attribute.class("code-attr")], [html.text(text)])
+    })
+  let cfg =
+    markdown.default()
+    |> markdown.syntax_highlighting(custom_config)
+
+  cfg.syntax_highlighting
+  |> should.equal(Some(custom_config))
 }
 
 // --- components setter ---

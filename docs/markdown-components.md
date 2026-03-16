@@ -119,7 +119,9 @@ markdown.a(fn(href, title, children) {
 
 The `code` component receives `Some("gleam")` for fenced code blocks with a language tag, or `None` for inline code.
 
-Example — add language class for syntax highlighting:
+> **Tip:** Blogatto supports build-time syntax highlighting via Smalto, which automatically tokenizes code blocks and renders styled `<span>` elements. When syntax highlighting is enabled, the `code` component receives pre-highlighted children. See [Syntax highlighting](syntax-highlighting) for the full guide.
+
+Example — add language class to code blocks:
 
 ```gleam
 import gleam/option.{None, Some}

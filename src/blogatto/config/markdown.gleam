@@ -18,6 +18,7 @@
 ////   })
 //// ```
 
+import blogatto/config/markdown/code
 import blogatto/post.{type Post, type PostMetadata}
 import gleam/list
 import gleam/option.{type Option, None}
@@ -52,6 +53,11 @@ pub type MarkdownConfig(msg) {
     /// including the ability to place them outside of the route prefix or to use a completely different URL structure.
     /// If not provided the default builder will be used (i.e. `/{route_prefix?}/{lang}/{slug}/` or `/{route_prefix?}/{slug}/` if language is `None`).
     route_builder: Option(fn(PostMetadata) -> String),
+    /// Configuration for syntax highlighting in code blocks.
+    /// 
+    /// If not provided, syntax highlighting is disabled by default.
+    /// You can enable it with `markdown.syntax_highlighting(config, code.default())`, or customize it with your own configuration.
+    syntax_highlighting: Option(code.SyntaxHighlightingConfig(msg)),
     /// Optional custom template for rendering a blog post page.
     /// Receives the parsed `Post`, and all the other posts, and returns a full page element.
     /// When `None`, Blogatto uses a minimal default template.
@@ -145,6 +151,7 @@ pub fn default() -> MarkdownConfig(msg) {
     paths: [],
     route_prefix: None,
     route_builder: None,
+    syntax_highlighting: None,
     template: None,
   )
 }
@@ -238,6 +245,17 @@ pub fn route_builder(
   builder: fn(PostMetadata) -> String,
 ) -> MarkdownConfig(msg) {
   MarkdownConfig(..config, route_builder: option.Some(builder))
+}
+
+/// Set the configuration for syntax highlighting in code blocks.
+pub fn syntax_highlighting(
+  config: MarkdownConfig(msg),
+  syntax_highlighting: code.SyntaxHighlightingConfig(msg),
+) -> MarkdownConfig(msg) {
+  MarkdownConfig(
+    ..config,
+    syntax_highlighting: option.Some(syntax_highlighting),
+  )
 }
 
 /// Set a custom template function for rendering blog post pages.
