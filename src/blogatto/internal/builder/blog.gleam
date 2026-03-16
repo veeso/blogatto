@@ -6,6 +6,7 @@
 
 import blogatto/config
 import blogatto/config/markdown
+import blogatto/config/markdown/code
 import blogatto/error
 import blogatto/internal/date
 import blogatto/internal/excerpt
@@ -21,7 +22,7 @@ import gleam/result
 import gleam/string
 import gleam/time/timestamp
 import lustre/attribute
-import lustre/element
+import lustre/element.{type Element}
 import lustre/element/html
 import maud
 import maud/components as maud_components
@@ -276,7 +277,7 @@ fn parse_post(
     maud.render_markdown(
       markdown_file.content,
       mork_options(markdown_config.options),
-      to_maud_components(markdown_config.components),
+      to_maud_components(markdown_config),
     )
   let excerpt =
     rendered_components
@@ -454,13 +455,14 @@ fn get_frontmatter_optional_field(
 
 /// Convert blogatto `Components` to maud `Components`.
 fn to_maud_components(
-  c: markdown.Components(msg),
+  config: markdown.MarkdownConfig(msg),
 ) -> maud_components.Components(msg) {
+  let c = config.components
   maud_components.Components(
     a: c.a,
     blockquote: c.blockquote,
     checkbox: c.checkbox,
-    code: c.code,
+    code: code_component(config.syntax_highlighting, c.code),
     del: c.del,
     em: c.em,
     footnote: c.footnote,
@@ -490,6 +492,54 @@ fn to_maud_components(
     tr: c.tr,
     ul: c.ul,
   )
+}
+
+/// Helper function to convert blogatto `code.SyntaxHighlightingConfig` to a Maud component for rendering code blocks with syntax highlighting.
+/// When syntax highlighting is configured and a matching language grammar is found,
+/// the code block's text content is tokenized via smalto and rendered as highlighted Lustre elements.
+/// Otherwise, the original code component is used as-is.
+fn code_component(
+  syntax_highlighting: Option(code.SyntaxHighlightingConfig(msg)),
+  code_fn: fn(Option(String), List(Element(msg))) -> Element(msg),
+) -> fn(Option(String), List(Element(msg))) -> Element(msg) {
+  case syntax_highlighting {
+    option.None -> code_fn
+    option.Some(config) -> {
+      fn(language: Option(String), children: List(Element(msg))) -> Element(msg) {
+        case language {
+          option.Some(lang) -> {
+            // Extract raw text from children and unescape HTML entities,
+            // since element.to_string HTML-escapes text content.
+            // Each child is converted individually to avoid fragment
+            // comment markers that element.fragment adds.
+            let source =
+              children
+              |> list.map(element.to_string)
+              |> string.join("")
+              |> unescape_html()
+            case code.highlight(config, lang, source) {
+              Ok(highlighted) -> code_fn(language, highlighted)
+              Error(_) -> code_fn(language, children)
+            }
+          }
+          option.None -> code_fn(language, children)
+        }
+      }
+    }
+  }
+}
+
+/// Unescape HTML entities in a string. Used to recover raw source code from
+/// Lustre text elements which HTML-escape their content via houdini.
+/// The `&amp;` entity must be unescaped last to avoid double-unescaping
+/// sequences like `&amp;lt;`.
+fn unescape_html(html: String) -> String {
+  html
+  |> string.replace("&lt;", "<")
+  |> string.replace("&gt;", ">")
+  |> string.replace("&quot;", "\"")
+  |> string.replace("&#39;", "'")
+  |> string.replace("&amp;", "&")
 }
 
 /// Convert maud `Alignment` to blogatto `Alignment`.

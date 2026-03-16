@@ -26,6 +26,8 @@ maud = ">= 1.0.0 and < 2.0.0"
 mist = ">= 5.0.4 and < 6.0.0"
 mork = ">= 1.11.1 and < 2.0.0"
 simplifile = ">= 2.3.2 and < 3.0.0"
+smalto = ">= 2.0.0 and < 3.0.0"
+smalto_lustre = ">= 2.0.0 and < 3.0.0"
 str = ">= 2.0.1 and < 3.0.0"
 webls = ">= 1.6.1 and < 2.0.0"
 

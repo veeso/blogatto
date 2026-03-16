@@ -1,5 +1,6 @@
 import blogatto/config
 import blogatto/config/markdown
+import blogatto/config/markdown/code
 import blogatto/error
 import blogatto/internal/builder/blog as blog_builder
 import blogatto/internal/path
@@ -1938,5 +1939,199 @@ pub fn build_with_tasklists_disabled_does_not_render_checkboxes_test() {
       |> string.join("")
 
     html |> string.contains("type=\"checkbox\"") |> should.be_false
+  }
+}
+
+// --- Syntax highlighting integration ---
+
+fn config_with_syntax_highlighting(
+  output_dir: String,
+  blog_dir: String,
+) -> config.Config(msg) {
+  let md_config =
+    markdown.default()
+    |> markdown.markdown_path(blog_dir)
+    |> markdown.syntax_highlighting(code.default())
+
+  config.new("https://example.com")
+  |> config.output_dir(output_dir)
+  |> config.markdown(md_config)
+}
+
+pub fn build_with_syntax_highlighting_renders_highlighted_code_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+    let output = dir <> "/output"
+
+    let post_dir = create_post_dir(blog, "highlighted")
+    write_markdown(
+      post_dir,
+      "index.md",
+      markdown_content(
+        "Highlighted Post",
+        "highlighted",
+        "2024-01-15 10:00:00",
+        "A post with a code block",
+        "```gleam\npub fn main() {}\n```\n",
+      ),
+    )
+
+    let assert [built_post] =
+      config_with_syntax_highlighting(output, blog)
+      |> blog_builder.build()
+      |> should.be_ok
+
+    let html =
+      built_post.contents
+      |> list.map(element.to_string)
+      |> string.join("")
+
+    // syntax highlighting should produce styled spans instead of plain text
+    html |> string.contains("<span") |> should.be_true
+    html |> string.contains("pub") |> should.be_true
+    html |> string.contains("fn") |> should.be_true
+    html |> string.contains("main") |> should.be_true
+  }
+}
+
+pub fn build_with_syntax_highlighting_falls_back_for_unknown_language_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+    let output = dir <> "/output"
+
+    let post_dir = create_post_dir(blog, "unknown-lang")
+    write_markdown(
+      post_dir,
+      "index.md",
+      markdown_content(
+        "Unknown Lang Post",
+        "unknown-lang",
+        "2024-01-15 10:00:00",
+        "A post with an unknown language code block",
+        "```brainfuck\n+++.\n```\n",
+      ),
+    )
+
+    let assert [built_post] =
+      config_with_syntax_highlighting(output, blog)
+      |> blog_builder.build()
+      |> should.be_ok
+
+    let html =
+      built_post.contents
+      |> list.map(element.to_string)
+      |> string.join("")
+
+    // should still render the code block, just without highlighting
+    html |> string.contains("<code") |> should.be_true
+    html |> string.contains("+++.") |> should.be_true
+  }
+}
+
+pub fn build_with_syntax_highlighting_no_language_falls_back_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+    let output = dir <> "/output"
+
+    let post_dir = create_post_dir(blog, "no-lang")
+    write_markdown(
+      post_dir,
+      "index.md",
+      markdown_content(
+        "No Lang Post",
+        "no-lang",
+        "2024-01-15 10:00:00",
+        "A post with a code block without language",
+        "```\nsome plain code\n```\n",
+      ),
+    )
+
+    let assert [built_post] =
+      config_with_syntax_highlighting(output, blog)
+      |> blog_builder.build()
+      |> should.be_ok
+
+    let html =
+      built_post.contents
+      |> list.map(element.to_string)
+      |> string.join("")
+
+    // should render code block without highlighting (no language specified)
+    html |> string.contains("<code") |> should.be_true
+    html |> string.contains("some plain code") |> should.be_true
+  }
+}
+
+pub fn build_with_syntax_highlighting_handles_html_entities_in_code_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+    let output = dir <> "/output"
+
+    let post_dir = create_post_dir(blog, "html-entities")
+    write_markdown(
+      post_dir,
+      "index.md",
+      markdown_content(
+        "HTML Entities Post",
+        "html-entities",
+        "2024-01-15 10:00:00",
+        "Code with angle brackets",
+        "```rust\nfn main() {\n    let x: Vec<i32> = vec![1, 2, 3];\n}\n```\n",
+      ),
+    )
+
+    let assert [built_post] =
+      config_with_syntax_highlighting(output, blog)
+      |> blog_builder.build()
+      |> should.be_ok
+
+    let html =
+      built_post.contents
+      |> list.map(element.to_string)
+      |> string.join("")
+
+    // should handle angle brackets correctly in code
+    html |> string.contains("Vec") |> should.be_true
+    html |> string.contains("i32") |> should.be_true
+    html |> string.contains("fn") |> should.be_true
+  }
+}
+
+pub fn build_without_syntax_highlighting_renders_plain_code_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+    let output = dir <> "/output"
+
+    let post_dir = create_post_dir(blog, "plain-code")
+    write_markdown(
+      post_dir,
+      "index.md",
+      markdown_content(
+        "Plain Code Post",
+        "plain-code",
+        "2024-01-15 10:00:00",
+        "A post with code but no syntax highlighting",
+        "```gleam\npub fn main() {}\n```\n",
+      ),
+    )
+
+    let assert [built_post] =
+      minimal_config(output, blog)
+      |> blog_builder.build()
+      |> should.be_ok
+
+    let html =
+      built_post.contents
+      |> list.map(element.to_string)
+      |> string.join("")
+
+    // without syntax highlighting, code should be plain text inside <code>
+    html |> string.contains("<code") |> should.be_true
+    html |> string.contains("pub fn main()") |> should.be_true
   }
 }

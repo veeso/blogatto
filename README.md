@@ -5,7 +5,7 @@
 [![Package Version](https://img.shields.io/hexpm/v/blogatto)](https://hex.pm/packages/blogatto)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/blogatto/)
 [![conventional-commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
-[![target-erlang](https://img.shields.io/badge/target-erlang-b83998)](https://www.erlang.org/)
+[![Erlang Compatible](https://img.shields.io/badge/target-erlang-b83998)](https://www.erlang.org/)
 [![test](https://github.com/veeso/blogatto/actions/workflows/test.yml/badge.svg)](https://github.com/veeso/blogatto/actions/workflows/test.yml)
 
 A Gleam framework for building static blogs with [**Lustre**](https://hexdocs.pm/lustre/) and Markdown.
@@ -22,6 +22,7 @@ Blogatto generates your entire static site from a single configuration: blog pos
 - Robots.txt generation
 - Static asset copying
 - Custom Maud components for markdown rendering
+- Build-time syntax highlighting for code blocks via [Smalto](https://hexdocs.pm/smalto/)
 - Configurable blog post templates
 - Dev server with file watching, auto-rebuild, and live reload
 
@@ -119,7 +120,7 @@ fn home_view(posts: List(Post(Nil))) -> Element(Nil) {
 
 Running `gleam run` will generate the `dist` directory with the following structure:
 
-```
+```txt
 dist/
 ├── blog/
 │   └── my-post/
