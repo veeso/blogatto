@@ -1,5 +1,21 @@
 # Changelog
 
+## 4.0.2
+
+Released on 2026-03-17
+
+### CI
+
+- bump gleam to 1.15.0
+
+### Documentation
+
+- add CONTRIBUTING.md
+
+### Fixed
+
+- bump smalto to 3.0.0; added support for new languages (fsharp, csharp, razor, nginx, react-tsx, react-jsx)
+
 ## 4.0.1
 
 Released on 2026-03-17
