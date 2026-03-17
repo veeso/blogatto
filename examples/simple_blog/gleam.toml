@@ -7,9 +7,9 @@ gleam_stdlib = ">= 0.44.0 and < 2.0.0"
 lustre = ">= 5.6.0 and < 6.0.0"
 gleam_time = ">= 1.7.0 and < 2.0.0"
 blogatto = { path = "../../" }
-smalto = ">= 2.0.1 and < 3.0.0"
-smalto_lustre = ">= 2.0.0 and < 3.0.0"
-smalto_lustre_themes = ">= 2.0.0 and < 3.0.0"
+smalto = ">= 3.0.0 and < 4.0.0"
+smalto_lustre = ">= 3.0.0 and < 4.0.0"
+smalto_lustre_themes = ">= 3.0.0 and < 4.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"

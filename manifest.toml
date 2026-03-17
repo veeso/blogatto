@@ -33,8 +33,8 @@ packages = [
   { name = "mork", version = "1.11.1", build_tools = ["gleam"], requirements = ["casefold", "gleam_regexp", "gleam_stdlib", "splitter"], otp_app = "mork", source = "hex", outer_checksum = "2DB4900FCCBB2CF9AB8C8438620FE00FC38CC6D340D52275D10769A4B43B3E5B" },
   { name = "odysseus", version = "1.0.0", build_tools = ["gleam"], requirements = [], otp_app = "odysseus", source = "hex", outer_checksum = "6A97DA1075BDDEA8B60F47B1DFFAD49309FA27E73843F13A0AF32EA7087BA11C" },
   { name = "simplifile", version = "2.4.0", build_tools = ["gleam"], requirements = ["filepath", "gleam_stdlib"], otp_app = "simplifile", source = "hex", outer_checksum = "7C18AFA4FED0B4CE1FA5B0B4BAC1FA1744427054EA993565F6F3F82E5453170D" },
-  { name = "smalto", version = "2.0.2", build_tools = ["gleam"], requirements = ["gleam_community_ansi", "gleam_stdlib", "houdini"], otp_app = "smalto", source = "hex", outer_checksum = "199C1A010F4CEE6E4DBE17C74A3F42326A1C89956C0D884B2BCC611104185CD1" },
-  { name = "smalto_lustre", version = "2.0.0", build_tools = ["gleam"], requirements = ["gleam_stdlib", "lustre", "smalto"], otp_app = "smalto_lustre", source = "hex", outer_checksum = "7C00BDC91CCE90240F4746E7BA250DC725D0D05D7B17B6B622DEEF921F78196D" },
+  { name = "smalto", version = "3.0.0", build_tools = ["gleam"], requirements = ["gleam_community_ansi", "gleam_stdlib", "houdini"], otp_app = "smalto", source = "hex", outer_checksum = "13EA8935A9E60A770E326FB850F5A5B3612A62E0A6C62C3F850AD04C842E3769" },
+  { name = "smalto_lustre", version = "3.0.0", build_tools = ["gleam"], requirements = ["gleam_stdlib", "lustre", "smalto"], otp_app = "smalto_lustre", source = "hex", outer_checksum = "63C5F2CE886D7CDFEAABAAC5A0E7B3EDBF69F9776A08AACA0360B0948745EF2A" },
   { name = "splitter", version = "1.2.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "splitter", source = "hex", outer_checksum = "3DFD6B6C49E61EDAF6F7B27A42054A17CFF6CA2135FF553D0CB61C234D281DD0" },
   { name = "str", version = "2.0.1", build_tools = ["gleam"], requirements = ["gleam_stdlib", "houdini", "odysseus"], otp_app = "str", source = "hex", outer_checksum = "9DABB9C97E3B88F13BD71E4ABF5781C6D12F88BFA4839D7FC9F99BED8E390C07" },
   { name = "temporary", version = "1.0.0", build_tools = ["gleam"], requirements = ["envoy", "exception", "filepath", "gleam_crypto", "gleam_stdlib", "simplifile"], otp_app = "temporary", source = "hex", outer_checksum = "51C0FEF4D72CE7CA507BD188B21C1F00695B3D5B09D7DFE38240BFD3A8E1E9B3" },
@@ -59,8 +59,8 @@ maud = { version = ">= 1.0.0 and < 2.0.0" }
 mist = { version = ">= 6.0.0 and < 7.0.0" }
 mork = { version = ">= 1.11.1 and < 2.0.0" }
 simplifile = { version = ">= 2.3.2 and < 3.0.0" }
-smalto = { version = ">= 2.0.0 and < 3.0.0" }
-smalto_lustre = { version = ">= 2.0.0 and < 3.0.0" }
+smalto = { version = ">= 3.0.0 and < 4.0.0" }
+smalto_lustre = { version = ">= 3.0.0 and < 4.0.0" }
 str = { version = ">= 2.0.1 and < 3.0.0" }
 temporary = { version = ">= 1.0.0 and < 2.0.0" }
 webls = { version = ">= 1.6.1 and < 2.0.0" }
