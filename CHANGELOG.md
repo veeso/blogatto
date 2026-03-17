@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.0.1
+
+Released on 2026-03-17
+
+### Fixed
+
+- escape HTML tag in frontmatter title, subtitle and excerpt (#32)
+
 ## 4.0.0
 
 Released on 2026-03-16
