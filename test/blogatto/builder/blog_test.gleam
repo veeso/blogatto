@@ -2135,3 +2135,90 @@ pub fn build_without_syntax_highlighting_renders_plain_code_test() {
     html |> string.contains("pub fn main()") |> should.be_true
   }
 }
+
+// --- HTML escaping in frontmatter fields ---
+
+pub fn build_escapes_html_in_title_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+
+    let post_dir = create_post_dir(blog, "html-title")
+    write_markdown(
+      post_dir,
+      "index.md",
+      markdown_content(
+        "<script>alert('xss')</script>",
+        "html-title",
+        "2024-01-15 10:00:00",
+        "A safe post",
+        "# Hello\n\nBody text here.\n",
+      ),
+    )
+
+    let assert [post] =
+      minimal_config(dir, blog)
+      |> blog_builder.build()
+      |> should.be_ok
+
+    post.title
+    |> should.equal("&lt;script&gt;alert(&#39;xss&#39;)&lt;/script&gt;")
+  }
+}
+
+pub fn build_escapes_html_in_description_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+
+    let post_dir = create_post_dir(blog, "html-desc")
+    write_markdown(
+      post_dir,
+      "index.md",
+      markdown_content(
+        "Safe Title",
+        "html-desc",
+        "2024-01-15 10:00:00",
+        "Use <b>bold</b> & \"quotes\"",
+        "# Hello\n\nBody text here.\n",
+      ),
+    )
+
+    let assert [post] =
+      minimal_config(dir, blog)
+      |> blog_builder.build()
+      |> should.be_ok
+
+    post.description
+    |> should.equal("Use &lt;b&gt;bold&lt;/b&gt; &amp; &quot;quotes&quot;")
+  }
+}
+
+pub fn build_escapes_html_in_excerpt_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+
+    let post_dir = create_post_dir(blog, "html-excerpt")
+    write_markdown(
+      post_dir,
+      "index.md",
+      markdown_content(
+        "Excerpt Test",
+        "html-excerpt",
+        "2024-01-15 10:00:00",
+        "A post",
+        "Tom & Jerry went to the store.\n",
+      ),
+    )
+
+    let assert [post] =
+      minimal_config(dir, blog)
+      |> blog_builder.build()
+      |> should.be_ok
+
+    // The & in body text is HTML-escaped by element.to_string to &amp;,
+    // then houdini.escape escapes the & again to &amp;amp;
+    post.excerpt |> string.contains("&amp;amp;") |> should.be_true
+  }
+}
