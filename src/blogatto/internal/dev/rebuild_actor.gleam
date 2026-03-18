@@ -8,13 +8,25 @@ import gleam/io
 import gleam/list
 import gleam/option.{type Option}
 import gleam/otp/actor
+import gleam/result
 
 const debounce_delay: Int = 300
+
+/// Configuration for the rebuild actor, including the build command and optional hooks to run before and after the build.
+pub type RebuildStateConfig {
+  RebuildStateConfig(
+    build_command: String,
+    before_build: Option(fn() -> Result(Nil, String)),
+    after_build: Option(fn() -> Result(Nil, String)),
+  )
+}
 
 type RebuildState {
   RebuildState(
     self: Subject(message.RebuildMessage),
     build_command: String,
+    before_build: Option(fn() -> Result(Nil, String)),
+    after_build: Option(fn() -> Result(Nil, String)),
     debounce_timer: Option(Timer),
     sse_clients: List(Subject(message.SseMessage)),
   )
@@ -42,14 +54,16 @@ pub fn register_sse_client(
 /// for file change messages, debounce them, shell out to the build command,
 /// and broadcast reload events to connected SSE clients.
 pub fn new(
-  build_command: String,
+  config: RebuildStateConfig,
 ) -> Result(actor.Started(Subject(message.RebuildMessage)), actor.StartError) {
   actor.new_with_initialiser(5000, fn(subject) {
     // Schedule an immediate rebuild on startup
     process.send(subject, message.Rebuild)
     RebuildState(
       self: subject,
-      build_command:,
+      build_command: config.build_command,
+      before_build: config.before_build,
+      after_build: config.after_build,
       debounce_timer: option.None,
       sse_clients: [],
     )
@@ -78,9 +92,9 @@ fn handle_message(
     message.Rebuild -> {
       // Prune dead SSE clients, then broadcast reload on success
       let live_clients = prune_dead_clients(state.sse_clients)
-      case rebuild(state.build_command) {
-        True -> broadcast_reload(live_clients)
-        False -> Nil
+      case rebuild(state.build_command, state.before_build, state.after_build) {
+        Ok(_) -> broadcast_reload(live_clients)
+        Error(_) -> Nil
       }
       actor.continue(
         RebuildState(
@@ -101,13 +115,42 @@ fn handle_message(
   }
 }
 
-fn rebuild(build_command: String) -> Bool {
+fn rebuild(
+  build_command: String,
+  before_build: Option(fn() -> Result(Nil, String)),
+  after_build: Option(fn() -> Result(Nil, String)),
+) -> Result(Nil, Nil) {
+  use _ <- result.try(run_hook(before_build, "before_build"))
+  use _ <- result.try(exec_build(build_command))
+  use _ <- result.try(run_hook(after_build, "after_build"))
+  Ok(Nil)
+}
+
+fn run_hook(
+  hook: Option(fn() -> Result(Nil, String)),
+  name: String,
+) -> Result(Nil, Nil) {
+  case hook {
+    option.Some(f) ->
+      case f() {
+        Ok(Nil) -> Ok(Nil)
+        Error(msg) -> {
+          io.println("✗ " <> name <> " hook failed: " <> msg)
+          io.println("  (server still running, fix the error and save again)")
+          Error(Nil)
+        }
+      }
+    option.None -> Ok(Nil)
+  }
+}
+
+fn exec_build(build_command: String) -> Result(Nil, Nil) {
   io.println("⟳ Rebuilding...")
   let #(exit_code, output) = command.exec(build_command)
   case exit_code {
     0 -> {
       io.println("✓ Rebuild complete")
-      True
+      Ok(Nil)
     }
     _ -> {
       io.println(
@@ -115,7 +158,7 @@ fn rebuild(build_command: String) -> Bool {
       )
       io.println(output)
       io.println("  (server still running, fix the error and save again)")
-      False
+      Error(Nil)
     }
   }
 }

@@ -2,6 +2,7 @@ import blogatto/internal/dev/rebuild_actor
 import blogatto/internal/dev/web_server
 import gleam/erlang/process
 import gleam/int
+import gleam/option
 import gleam/string
 import gleeunit/should
 import simplifile
@@ -344,7 +345,13 @@ fn start_server(
   live_reload: Bool,
 ) -> #(process.Pid, process.Pid) {
   // Start a rebuild actor (uses "true" so it always succeeds)
-  let assert Ok(rebuild_started) = rebuild_actor.new("true")
+  let assert Ok(rebuild_started) =
+    rebuild_actor.RebuildStateConfig(
+      build_command: "true",
+      before_build: option.None,
+      after_build: option.None,
+    )
+    |> rebuild_actor.new()
   process.unlink(rebuild_started.pid)
   // Wait for initial rebuild
   process.sleep(200)

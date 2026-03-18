@@ -99,14 +99,14 @@ The server starts, performs an initial build, then watches for changes:
 ```text
 🔨 blogatto dev server starting...
 👀 Watching for file changes...
-	👀 Watching: ./static
-	👀 Watching: ./src/
-	👀 Watching: ./blog
+👀 Watching: ./static
+👀 Watching: ./src/
+👀 Watching: ./blog
 
 ⟳ Rebuilding...
 ✓ Rebuild complete
-	→  http://127.0.0.1:3000
-	Output: ./dist
+  →  http://127.0.0.1:3000
+  Output: ./dist
 ```
 
 Open `http://127.0.0.1:3000` in your browser. When you save a file, the site rebuilds and the browser reloads automatically.
@@ -122,6 +122,14 @@ blog.config()
 |> dev.port(8080)
 |> dev.host("0.0.0.0")
 |> dev.live_reload(False)
+|> dev.before_build(fn() {
+  io.println("Starting build...")
+  Ok(Nil)
+})
+|> dev.after_build(fn() {
+  io.println("Build finished!")
+  Ok(Nil)
+})
 |> dev.start()
 ```
 
@@ -182,6 +190,37 @@ dev.new(config)
 |> dev.live_reload(False)
 ```
 
+### `dev.before_build(server, hook)`
+
+Set a function to run **before** each rebuild. The hook runs before the build command is executed, on every rebuild (including the initial build on startup). This is useful for setup or cleanup tasks.
+
+The hook must return `Result(Nil, String)`. If it returns `Error(reason)`, the build is aborted and the error reason is logged. The hook runs regardless of whether the subsequent build would succeed or fail.
+
+```gleam
+dev.new(config)
+|> dev.before_build(fn() {
+  // Clean generated assets, fetch data, etc.
+  io.println("Preparing build...")
+  Ok(Nil)
+})
+```
+
+### `dev.after_build(server, hook)`
+
+Set a function to run **after** each successful rebuild. The hook runs only when the build command exits with code 0. This is useful for post-processing tasks like running Tailwind CSS, copying additional assets, or sending notifications.
+
+The hook must return `Result(Nil, String)`. If it returns `Error(reason)`, the error is logged and browsers are **not** reloaded. The hook is **not** called when the build fails.
+
+```gleam
+dev.new(config)
+|> dev.after_build(fn() {
+  case shellout.command("npx", ["tailwindcss", "-o", "./dist/style.css"], ".", []) {
+    Ok(_) -> Ok(Nil)
+    Error(_) -> Error("Tailwind CSS compilation failed")
+  }
+})
+```
+
 ## Reference
 
 | Option | Default | Description |
@@ -190,6 +229,8 @@ dev.new(config)
 | `port` | `3000` | HTTP server port |
 | `host` | `"127.0.0.1"` | Bind address |
 | `live_reload` | `True` | Inject live-reload script into HTML responses |
+| `before_build` | `None` | `fn() -> Result(Nil, String)` to run before each rebuild |
+| `after_build` | `None` | `fn() -> Result(Nil, String)` to run after each successful rebuild |
 
 ## How it works
 
@@ -206,9 +247,10 @@ The dev server is built on OTP actors:
 1. A file changes on disk
 2. The file watcher sends a `FileChanged` message to the rebuild actor
 3. The rebuild actor cancels any pending debounce timer and starts a new 300ms timer
-4. When the timer fires, the actor shells out to the build command
-5. On success (exit code 0), a `Reload` event is sent to all connected SSE clients
-6. On failure, the error output is logged and the server keeps running with the last successful build
+4. When the timer fires, the `before_build` hook runs (if configured)
+5. The actor shells out to the build command
+6. On success (exit code 0), the `after_build` hook runs (if configured), then a `Reload` event is sent to all connected SSE clients
+7. On failure, the error output is logged and the server keeps running with the last successful build (the `after_build` hook is **not** called)
 
 ### Watched directories
 

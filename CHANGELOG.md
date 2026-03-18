@@ -1,5 +1,34 @@
 # Changelog
 
+## 5.0.0
+
+Released on 2026-03-18
+
+### Added
+
+- add before_build and after_build hooks to dev server
+  > Add optional hooks that run around each rebuild cycle in the dev server.
+  > Hooks return Result(Nil, String) so they can abort the rebuild with a
+  > descriptive error message (e.g. a failing Tailwind compilation).
+  >
+  > Execution order: before_build → build command → after_build → SSE reload.
+  > A failing before_build aborts the build entirely; a failing after_build
+  > prevents the browser reload. Both error paths log the reason and keep
+  > the server running.
+  >
+  > Internal changes:
+  > - Introduce RebuildStateConfig public type to bundle build_command and
+  >   hooks into rebuild_actor.new()
+  > - Refactor rebuild() to use Result with `use _ <- result.try` for clean
+  >   short-circuit chaining via run_hook() and exec_build() helpers
+  > - Update existing tests for the new RebuildStateConfig API
+  > - Add 7 new tests covering hook invocation, ordering, and error handling
+  > - Document hooks in docs/dev-server.md (API, reference table, rebuild flow)
+
+### CI
+
+- gleam 1.15.1
+
 ## 4.0.2
 
 Released on 2026-03-17

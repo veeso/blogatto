@@ -9,13 +9,19 @@ import gleam/erlang/process
 import gleam/int
 import gleam/io
 import gleam/list
-import gleam/option
+import gleam/option.{type Option}
 import gleam/result
 import gleam/string
 
 /// A development server for Blogatto. This will serve the generated blog and watch for file changes to trigger rebuilds.
 pub type DevServer(msg) {
   DevServer(
+    /// An optional function to run after each build.
+    /// This can be used to perform any tasks after the build command is run, such as running tailwind or other post-build tasks. (default: None)
+    after_build: Option(fn() -> Result(Nil, String)),
+    /// An optional function to run before each build.
+    /// This can be used to perform any setup or cleanup tasks before the build command is run. (default: None)
+    before_build: Option(fn() -> Result(Nil, String)),
     /// Build command to build the blog. (default: "gleam run")
     build_command: String,
     /// Blogatto build config to use for knowing which files to watch.
@@ -32,12 +38,32 @@ pub type DevServer(msg) {
 /// Create a new development server with the given config and options.
 pub fn new(config: config.Config(msg)) -> DevServer(msg) {
   DevServer(
+    after_build: option.None,
+    before_build: option.None,
     build_command: "gleam run",
     config:,
     port: 3000,
     host: "127.0.0.1",
     live_reload: True,
   )
+}
+
+/// Set a function to run after each build.
+/// This can be used to perform any tasks after the build command is run, such as running tailwind or other post-build tasks.
+pub fn after_build(
+  server: DevServer(msg),
+  after_build: fn() -> Result(Nil, String),
+) -> DevServer(msg) {
+  DevServer(..server, after_build: option.Some(after_build))
+}
+
+/// Set a function to run before each build.
+/// This can be used to perform any setup or cleanup tasks before the build command is run.
+pub fn before_build(
+  server: DevServer(msg),
+  before_build: fn() -> Result(Nil, String),
+) -> DevServer(msg) {
+  DevServer(..server, before_build: option.Some(before_build))
 }
 
 /// Set the build command to use for building the blog.
@@ -76,7 +102,12 @@ pub fn start(server: DevServer(msg)) -> Result(Nil, error.BlogattoError) {
 
   // Start the rebuild actor (performs an initial build on startup)
   use started <- result.try(
-    rebuild_actor.new(server.build_command)
+    rebuild_actor.RebuildStateConfig(
+      build_command: server.build_command,
+      before_build: server.before_build,
+      after_build: server.after_build,
+    )
+    |> rebuild_actor.new
     |> result.map_error(fn(e) {
       error.DevServer("Failed to start rebuild actor: " <> string.inspect(e))
     }),
