@@ -1,5 +1,21 @@
 # Changelog
 
+## 5.0.1
+
+Released on 2026-03-19
+
+### CI
+
+- gleam 1.15.2
+
+### Fixed
+
+- move HTML escaping from post parsing to RSS feed generation
+  > Escaping at parse time caused double-escaping in HTML output (Lustre
+  > already escapes via element.text) and forced users to use
+  > unsafe_raw_html for titles. Now escaping is applied only when
+  > constructing FeedMetadata for RSS, keeping Post fields raw.
+
 ## 5.0.0
 
 Released on 2026-03-18
