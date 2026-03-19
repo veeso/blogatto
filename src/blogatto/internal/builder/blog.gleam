@@ -21,7 +21,6 @@ import gleam/order
 import gleam/result
 import gleam/string
 import gleam/time/timestamp
-import houdini
 import lustre/attribute
 import lustre/element.{type Element}
 import lustre/element/html
@@ -253,10 +252,10 @@ fn parse_post(
   // build post metadata
   let post_metadata =
     post.PostMetadata(
-      title: houdini.escape(frontmatter.title),
+      title: frontmatter.title,
       slug: frontmatter.slug,
       date: frontmatter.date,
-      description: houdini.escape(frontmatter.description),
+      description: frontmatter.description,
       featured_image: frontmatter.featured_image,
       language: markdown_file.language,
       extras: frontmatter.extras,
@@ -284,7 +283,6 @@ fn parse_post(
     rendered_components
     |> excerpt.extract(markdown_config.excerpt_len)
     |> excerpt.truncate_at_word_boundary(markdown_config.excerpt_len)
-    |> houdini.escape
   // finally return the PostInfo with all the data needed to build the post page and link it in the feed and sitemap
   Ok(PostInfo(
     html_path: html_path,
