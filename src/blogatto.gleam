@@ -42,6 +42,7 @@ import gleam/list
 import gleam/option
 import gleam/result
 import gleam/uri
+import houdini
 import simplifile
 
 /// Build the static site based on the provided configuration.
@@ -98,8 +99,18 @@ fn feed_metadata(
       |> result.map(fn(u) { u.path })
       |> result.unwrap(or: p.url)
 
-    feed_config.FeedMetadata(path:, post: p, url: p.url)
+    feed_config.FeedMetadata(path:, post: escape_feed_post(p), url: p.url)
   })
+}
+
+/// Escape HTML special characters in the post title, description, and excerpt to ensure they render correctly in RSS feeds and prevent XML parsing issues.
+fn escape_feed_post(post: post.Post(msg)) -> post.Post(msg) {
+  post.Post(
+    ..post,
+    title: houdini.escape(post.title),
+    description: houdini.escape(post.description),
+    excerpt: houdini.escape(post.excerpt),
+  )
 }
 
 // Build the sitemap by collecting static routes and blog post URLs,
