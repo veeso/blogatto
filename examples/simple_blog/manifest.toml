@@ -2,7 +2,7 @@
 # You typically do not need to edit this file
 
 packages = [
-  { name = "blogatto", version = "5.0.1", build_tools = ["gleam"], requirements = ["filepath", "filespy", "frontmatter", "gleam_erlang", "gleam_http", "gleam_otp", "gleam_stdlib", "gleam_time", "gtempo", "houdini", "lustre", "marceau", "maud", "mist", "mork", "simplifile", "smalto", "smalto_lustre", "str", "webls"], source = "local", path = "../.." },
+  { name = "blogatto", version = "5.0.2", build_tools = ["gleam"], requirements = ["filepath", "filespy", "frontmatter", "gleam_erlang", "gleam_http", "gleam_otp", "gleam_stdlib", "gleam_time", "gtempo", "houdini", "lustre", "marceau", "maud", "mist", "mork", "simplifile", "smalto", "smalto_lustre", "str", "webls"], source = "local", path = "../.." },
   { name = "casefold", version = "2.0.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "casefold", source = "hex", outer_checksum = "F09530B6F771BB7B0BCACD3014089C20DFDA31775BA4793266C3814607C0A468" },
   { name = "exception", version = "2.1.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "exception", source = "hex", outer_checksum = "329D269D5C2A314F7364BD2711372B6F2C58FA6F39981572E5CA68624D291F8C" },
   { name = "filepath", version = "1.1.2", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "filepath", source = "hex", outer_checksum = "B06A9AF0BF10E51401D64B98E4B627F1D2E48C154967DA7AF4D0914780A6D40A" },
@@ -38,7 +38,7 @@ packages = [
   { name = "smalto_lustre_themes", version = "3.0.0", build_tools = ["gleam"], requirements = ["gleam_stdlib", "lustre", "smalto_lustre"], otp_app = "smalto_lustre_themes", source = "hex", outer_checksum = "50EAA03DB51FF7F3FA4457EC78D522A8C27B8DE11DE04407100473587E453499" },
   { name = "splitter", version = "1.2.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "splitter", source = "hex", outer_checksum = "3DFD6B6C49E61EDAF6F7B27A42054A17CFF6CA2135FF553D0CB61C234D281DD0" },
   { name = "str", version = "2.0.1", build_tools = ["gleam"], requirements = ["gleam_stdlib", "houdini", "odysseus"], otp_app = "str", source = "hex", outer_checksum = "9DABB9C97E3B88F13BD71E4ABF5781C6D12F88BFA4839D7FC9F99BED8E390C07" },
-  { name = "webls", version = "1.6.1", build_tools = ["gleam"], requirements = ["gleam_stdlib", "gleam_time"], otp_app = "webls", source = "hex", outer_checksum = "40317445399BFBBDCE8D5976C84ACD92319D4A6F1500A926F19AFCC9ED6639F1" },
+  { name = "webls", version = "1.6.2", build_tools = ["gleam"], requirements = ["gleam_stdlib", "gleam_time", "gtempo"], otp_app = "webls", source = "hex", outer_checksum = "515CA019E3B09FF7605D44ABBCDCF8FF56EC528AA29017741E0184278E3423DD" },
 ]
 
 [requirements]
