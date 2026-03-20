@@ -1,5 +1,14 @@
 # Changelog
 
+## 5.0.2
+
+Released on 2026-03-20
+
+### Fixed
+
+- RSS pubDate is now correctly being serialized with RFC882
+  > webls was serializing with RFC3339. I've created this PR on webls <https://github.com/versecafe/webls/pull/9> to fix this behaviour. This fix on blogatto just bumps webls from 1.6.1 to 1.6.2
+
 ## 5.0.1
 
 Released on 2026-03-19

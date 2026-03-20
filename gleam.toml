@@ -1,5 +1,5 @@
 name = "blogatto"
-version = "5.0.1"
+version = "5.0.2"
 description = "A Gleam framework for building static blogs with Lustre and Markdown. Generates HTML pages, RSS feeds, sitemaps, and robots.txt from markdown files with frontmatter, with multilingual support."
 repository = { type = "github", user = "veeso", repo = "blogatto" }
 licenses = ["MIT"]
@@ -30,7 +30,7 @@ simplifile = ">= 2.3.2 and < 3.0.0"
 smalto = ">= 3.0.0 and < 4.0.0"
 smalto_lustre = ">= 3.0.0 and < 4.0.0"
 str = ">= 2.0.1 and < 3.0.0"
-webls = ">= 1.6.1 and < 2.0.0"
+webls = ">= 1.6.2 and < 2.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
