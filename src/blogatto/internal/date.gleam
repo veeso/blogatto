@@ -7,16 +7,19 @@
 //// or as an IANA timezone name (e.g. `Europe/Helsinki`).
 
 import blogatto/error
-import gleam/int
 import gleam/list
+import gleam/order
 import gleam/result
 import gleam/string
-import gleam/time/duration
+import gleam/time/calendar
 import gleam/time/timestamp.{type Timestamp}
 import tempo
+import tempo/date as tdate
 import tempo/datetime
 import tempo/naive_datetime
+import tempo/time as ttime
 import tzif/database
+import tzif/tzcalendar
 
 /// Parse a date string into a UTC timestamp.
 ///
@@ -62,81 +65,83 @@ fn parse_naive(raw: String) -> Result(Timestamp, error.BlogattoError) {
 }
 
 /// Parse a date string with a timezone at the end.
-/// Handles both UTC offsets (e.g. "+02:00") and IANA timezone names
-/// (e.g. "Europe/Helsinki") by first resolving names to offsets.
+/// For UTC offsets (e.g. "+02:00"), parses directly with tempo.
+/// For IANA timezone names (e.g. "Europe/Helsinki"), uses
+/// tzcalendar.from_calendar to correctly resolve the local time to UTC,
+/// handling DST transitions and ambiguous/invalid times.
 fn parse_with_tz(raw: String) -> Result(Timestamp, error.BlogattoError) {
-  let fmt = tempo.Custom(format: "YYYY-MM-DD HH:mm:ss Z")
-  raw
-  |> resolve_tz_name
-  |> datetime.parse(fmt)
-  |> result.map(datetime.to_timestamp)
-  |> result.map_error(fn(_) { error.FrontmatterInvalidDate(raw) })
-}
-
-/// If the string ends with an IANA timezone name (e.g. "Europe/Helsinki"),
-/// replaces it with the equivalent UTC offset (e.g. "+02:00").
-/// If the last token does not contain a "/" it is returned unchanged,
-/// allowing offset formats like "+02:00" to pass through to tempo.
-fn resolve_tz_name(raw: String) -> String {
   case string.split(raw, " ") {
     [date_part, time_part, tz_part] ->
       case string.contains(tz_part, "/") {
-        True -> {
-          let datetime_part = date_part <> " " <> time_part
-          case resolve_offset(datetime_part, tz_part) {
-            Ok(offset_str) -> datetime_part <> " " <> offset_str
-            // If resolution fails, return unchanged so parse_with_tz fails
-            // with FrontmatterInvalidDate
-            Error(_) -> raw
-          }
+        // IANA timezone name — use tzcalendar for correct DST handling
+        True -> parse_with_iana_tz(raw, date_part <> " " <> time_part, tz_part)
+        // UTC offset — parse directly with tempo
+        False -> {
+          let fmt = tempo.Custom(format: "YYYY-MM-DD HH:mm:ss Z")
+          raw
+          |> datetime.parse(fmt)
+          |> result.map(datetime.to_timestamp)
+          |> result.map_error(fn(_) { error.FrontmatterInvalidDate(raw) })
         }
-        // Not a tz name, might be an offset like "+02:00" — pass through
-        False -> raw
       }
-    _ -> raw
+    _ -> Error(error.FrontmatterInvalidDate(raw))
   }
 }
 
-/// Look up the UTC offset for a timezone name at the given approximate datetime.
-/// The datetime string is parsed as naive (UTC) to get a reference timestamp
-/// for the lookup, which is close enough for correct DST resolution in
-/// nearly all cases.
-fn resolve_offset(datetime_str: String, tz_name: String) -> Result(String, Nil) {
+/// Parse a datetime string with an IANA timezone name using tzcalendar.
+/// First parses the naive datetime to extract calendar parts, then uses
+/// tzcalendar.from_calendar to convert the local time to UTC timestamp(s).
+/// If the local time is ambiguous (DST fall-back), picks the earlier UTC
+/// timestamp. If the local time is invalid (DST spring-forward), returns
+/// an error.
+fn parse_with_iana_tz(
+  raw: String,
+  datetime_str: String,
+  tz_name: String,
+) -> Result(Timestamp, error.BlogattoError) {
   let fmt = tempo.CustomNaive(format: "YYYY-MM-DD HH:mm:ss")
+  let error = error.FrontmatterInvalidDate(raw)
 
   use naive <- result.try(
-    naive_datetime.parse(datetime_str, fmt) |> result.replace_error(Nil),
+    naive_datetime.parse(datetime_str, fmt) |> result.replace_error(error),
   )
-  let approximate_ts = naive |> naive_datetime.as_utc |> datetime.to_timestamp
+
+  // Extract calendar parts from the parsed naive datetime
+  let parsed_date = naive_datetime.get_date(naive)
+  let parsed_time = naive_datetime.get_time(naive)
+
+  let date =
+    calendar.Date(
+      year: tdate.get_year(parsed_date),
+      month: tdate.get_month(parsed_date),
+      day: tdate.get_day(parsed_date),
+    )
+  let time =
+    calendar.TimeOfDay(
+      hours: ttime.get_hour(parsed_time),
+      minutes: ttime.get_minute(parsed_time),
+      seconds: ttime.get_second(parsed_time),
+      nanoseconds: 0,
+    )
 
   let db = get_tz_database()
-  use zone_params <- result.try(
-    database.get_zone_parameters(approximate_ts, tz_name, db)
-    |> result.replace_error(Nil),
+  use timestamps <- result.try(
+    tzcalendar.from_calendar(date, time, tz_name, db)
+    |> result.replace_error(error),
   )
 
-  Ok(format_offset(zone_params.offset))
-}
-
-/// Format a Duration offset as "+HH:MM" or "-HH:MM".
-fn format_offset(offset: duration.Duration) -> String {
-  let total_seconds = {
-    let #(seconds, _) = duration.to_seconds_and_nanoseconds(offset)
-    seconds
+  case timestamps {
+    // Single unambiguous result
+    [ts] -> Ok(ts)
+    // Ambiguous time (DST fall-back) — pick the earlier UTC timestamp
+    [ts1, ts2, ..] ->
+      case timestamp.compare(ts1, ts2) {
+        order.Lt | order.Eq -> Ok(ts1)
+        order.Gt -> Ok(ts2)
+      }
+    // Invalid time (DST spring-forward) — no valid timestamp exists
+    [] -> Error(error)
   }
-  let sign = case total_seconds >= 0 {
-    True -> "+"
-    False -> "-"
-  }
-  let abs_seconds = int.absolute_value(total_seconds)
-  let hours = abs_seconds / 3600
-  let minutes = { abs_seconds % 3600 } / 60
-
-  sign
-  <> int.to_string(hours)
-  |> string.pad_start(2, "0")
-  <> ":"
-  <> int.to_string(minutes) |> string.pad_start(2, "0")
 }
 
 /// Get the timezone database, cached via persistent_term.
