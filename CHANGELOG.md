@@ -1,5 +1,17 @@
 # Changelog
 
+## 5.1.1
+
+Released on 2026-03-25
+
+### Fixed
+
+- use tzcalendar.from_calendar for IANA timezone resolution
+  > Replace the broken resolve-to-offset approach that could produce
+  > incorrect results around DST transitions. The new implementation
+  > uses tzcalendar.from_calendar which properly handles ambiguous
+  > and invalid local times.
+
 ## 5.1.0
 
 Released on 2026-03-25
