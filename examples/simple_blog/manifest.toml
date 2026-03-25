@@ -2,7 +2,7 @@
 # You typically do not need to edit this file
 
 packages = [
-  { name = "blogatto", version = "5.1.0", build_tools = ["gleam"], requirements = ["filepath", "filespy", "frontmatter", "gleam_erlang", "gleam_http", "gleam_otp", "gleam_stdlib", "gleam_time", "gtempo", "houdini", "lustre", "marceau", "maud", "mist", "mork", "simplifile", "smalto", "smalto_lustre", "str", "tzif", "webls", "zones"], source = "local", path = "../.." },
+  { name = "blogatto", version = "5.1.1", build_tools = ["gleam"], requirements = ["filepath", "filespy", "frontmatter", "gleam_erlang", "gleam_http", "gleam_otp", "gleam_stdlib", "gleam_time", "gtempo", "houdini", "lustre", "marceau", "maud", "mist", "mork", "simplifile", "smalto", "smalto_lustre", "str", "tzif", "webls", "zones"], source = "local", path = "../.." },
   { name = "casefold", version = "2.0.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "casefold", source = "hex", outer_checksum = "F09530B6F771BB7B0BCACD3014089C20DFDA31775BA4793266C3814607C0A468" },
   { name = "exception", version = "2.1.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "exception", source = "hex", outer_checksum = "329D269D5C2A314F7364BD2711372B6F2C58FA6F39981572E5CA68624D291F8C" },
   { name = "filepath", version = "1.1.2", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "filepath", source = "hex", outer_checksum = "B06A9AF0BF10E51401D64B98E4B627F1D2E48C154967DA7AF4D0914780A6D40A" },
