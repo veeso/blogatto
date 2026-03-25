@@ -46,7 +46,7 @@ Your markdown content here...
 | Field | Format | Description |
 |-------|--------|-------------|
 | `title` | String | The post title |
-| `date` | `YYYY-MM-DD HH:MM:SS` | Publication date (UTC) |
+| `date` | `YYYY-MM-DD HH:MM:SS [timezone]` | Publication date (see [Date formats](#date-formats) below) |
 | `description` | String | A short description or excerpt |
 
 ### Optional fields
@@ -80,6 +80,28 @@ case dict.get(post.extras, "author") {
   Error(Nil) -> element.none()
 }
 ```
+
+### Date formats
+
+The `date` field supports three formats. All dates are internally normalized to UTC.
+
+| Format | Example | Description |
+|--------|---------|-------------|
+| Naive | `2025-01-15 00:00:00` | Interpreted as UTC |
+| UTC offset | `2025-01-15 02:00:00 +02:00` | Converted to UTC using the given offset |
+| IANA timezone | `2025-01-15 02:00:00 Europe/Helsinki` | Converted to UTC using the [IANA timezone database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) |
+
+When a timezone is specified, the date is converted to UTC before being stored in the `Post` type. This means you can write post dates in your local timezone without manually converting to UTC:
+
+```markdown
+---
+title: My Post
+date: 2025-01-15 10:30:00 America/New_York
+description: Written at 10:30 AM Eastern Time
+---
+```
+
+DST transitions are handled automatically — the correct offset is applied based on the date and the timezone's rules.
 
 ## Multilingual posts
 

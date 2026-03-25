@@ -1,7 +1,7 @@
 ---
 title: Getting Started with Blogatto
 slug: getting-started
-date: 2025-01-20 00:00:00
+date: 2025-01-20 00:00:00 Europe/Rome
 description: Learn how to set up your first static blog with Blogatto
 ---
 
