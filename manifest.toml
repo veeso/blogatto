@@ -38,7 +38,9 @@ packages = [
   { name = "splitter", version = "1.2.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "splitter", source = "hex", outer_checksum = "3DFD6B6C49E61EDAF6F7B27A42054A17CFF6CA2135FF553D0CB61C234D281DD0" },
   { name = "str", version = "2.0.1", build_tools = ["gleam"], requirements = ["gleam_stdlib", "houdini", "odysseus"], otp_app = "str", source = "hex", outer_checksum = "9DABB9C97E3B88F13BD71E4ABF5781C6D12F88BFA4839D7FC9F99BED8E390C07" },
   { name = "temporary", version = "1.0.0", build_tools = ["gleam"], requirements = ["envoy", "exception", "filepath", "gleam_crypto", "gleam_stdlib", "simplifile"], otp_app = "temporary", source = "hex", outer_checksum = "51C0FEF4D72CE7CA507BD188B21C1F00695B3D5B09D7DFE38240BFD3A8E1E9B3" },
+  { name = "tzif", version = "1.1.2", build_tools = ["gleam"], requirements = ["filepath", "gleam_stdlib", "gleam_time", "simplifile"], otp_app = "tzif", source = "hex", outer_checksum = "04C8EBAFB7F6A6E61B8B0C16E06F96E7C7F76C31172EF07204CE9813B2E54AD2" },
   { name = "webls", version = "1.6.2", build_tools = ["gleam"], requirements = ["gleam_stdlib", "gleam_time", "gtempo"], otp_app = "webls", source = "hex", outer_checksum = "515CA019E3B09FF7605D44ABBCDCF8FF56EC528AA29017741E0184278E3423DD" },
+  { name = "zones", version = "1.26010.1", build_tools = ["gleam"], requirements = ["tzif"], otp_app = "zones", source = "hex", outer_checksum = "6F79507E564D1F578C282BFE9241558744818D5957FE5CB859D64B5096F4211D" },
 ]
 
 [requirements]
@@ -63,4 +65,6 @@ smalto = { version = ">= 3.0.0 and < 4.0.0" }
 smalto_lustre = { version = ">= 3.0.0 and < 4.0.0" }
 str = { version = ">= 2.0.1 and < 3.0.0" }
 temporary = { version = ">= 1.0.0 and < 2.0.0" }
+tzif = { version = ">= 1.1.2 and < 2.0.0" }
 webls = { version = ">= 1.6.2 and < 2.0.0" }
+zones = { version = ">= 1.26010.1 and < 2.0.0" }

@@ -1,5 +1,19 @@
 # Changelog
 
+## 5.1.0
+
+Released on 2026-03-25
+
+### Added
+
+- support timezone in frontmatter date field
+  > Allow specifying a timezone in the frontmatter date field as either a
+  > UTC offset (+02:00) or an IANA timezone name (Europe/Helsinki).
+  > Dates without a timezone are still interpreted as UTC.
+  >
+  > The timezone database from the zones package is cached via
+  > persistent_term for efficient repeated lookups during builds.
+
 ## 5.0.2
 
 Released on 2026-03-20
