@@ -28,9 +28,10 @@ Blogatto generates your entire static site from a single configuration: blog pos
 
 ## Installation
 
+Blogatto is available on [Hex](https://hex.pm/packages/blogatto). Add it as a dependency to your project:
+
 ```sh
-gleam add blogatto@3
-gleam add lustre@5
+gleam add blogatto
 ```
 
 ## Quick start
