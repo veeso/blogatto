@@ -39,6 +39,14 @@ gleam test
 gleam format src test
 ```
 
+### Git Hooks
+
+The repository ships pre-commit hooks under `.githooks/` that run `gleam format` on staged files in `src/` and `examples/`. Enable them once per clone:
+
+```bash
+git config core.hooksPath .githooks
+```
+
 ## Making Changes
 
 ### Branch Naming
