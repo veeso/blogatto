@@ -22,6 +22,7 @@
 ////   |> config.markdown(md)
 //// ```
 
+import blogatto/config/feed/atom as atom_feed_config
 import blogatto/config/feed/rss as rss_feed_config
 import blogatto/config/markdown
 import blogatto/config/robots
@@ -38,6 +39,8 @@ import lustre/element.{type Element}
 /// the configuration, enabling type-safe component and view definitions.
 pub type Config(msg) {
   Config(
+    /// Atom feeds to generate, each with its own filter/serialize/output settings.
+    atom_feeds: List(atom_feed_config.AtomFeed(msg)),
     /// Markdown configuration for rendering blog articles. When `None`, no blog posts are built.
     markdown_config: Option(markdown.MarkdownConfig(msg)),
     /// Output directory for the built site. Default: `"./dist"`.
@@ -69,6 +72,7 @@ pub type Config(msg) {
 /// Use the builder functions to further configure feeds, routes, markdown, and more.
 pub fn new(site_url: String) -> Config(msg) {
   Config(
+    atom_feeds: [],
     markdown_config: None,
     output_dir: "./dist",
     robots: None,
@@ -78,6 +82,14 @@ pub fn new(site_url: String) -> Config(msg) {
     sitemap: None,
     static_dir: None,
   )
+}
+
+/// Add an Atom feed configuration to the build.
+pub fn atom_feed(
+  config: Config(msg),
+  feed: atom_feed_config.AtomFeed(msg),
+) -> Config(msg) {
+  Config(..config, atom_feeds: list.prepend(config.atom_feeds, feed))
 }
 
 /// Set the markdown configuration for blog post rendering.

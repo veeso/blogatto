@@ -16,14 +16,14 @@ nav_order: 1
 
 A Gleam framework for building static blogs with [**Lustre**](https://hexdocs.pm/lustre/) and Markdown.
 
-Blogatto generates your entire static site from a single configuration: blog posts from markdown with frontmatter, static pages from Lustre views, RSS feeds, sitemaps, and robots.txt — all rendered via [Maud](https://hexdocs.pm/maud/) components.
+Blogatto generates your entire static site from a single configuration: blog posts from markdown with frontmatter, static pages from Lustre views, RSS and Atom feeds, sitemaps, and robots.txt — all rendered via [Maud](https://hexdocs.pm/maud/) components.
 
 ## Features
 
 - **Blog posts from markdown** — write in markdown with YAML frontmatter, Blogatto handles parsing, rendering, and output
 - **Multilingual support** — add `index-it.md`, `index-fr.md`, etc. alongside `index.md` for language variants
 - **Static pages** — map URL paths to Lustre view functions that receive the full list of blog posts
-- **RSS feeds** — generate one or more RSS 2.0 feeds with optional filtering and custom serialization
+- **RSS and Atom feeds** — generate one or more RSS 2.0 and Atom 1.0 feeds with optional filtering and custom serialization
 - **Sitemap XML** — automatic sitemap generation covering static pages and blog posts
 - **Robots.txt** — configurable crawl policies with sitemap reference
 - **Custom markdown rendering** — override any markdown element's HTML output via Maud components
@@ -41,26 +41,27 @@ You define a `Config` using the builder pattern, then call `blogatto.build(confi
 3. Generates robots.txt
 4. Parses markdown files, extracts frontmatter, renders HTML, and copies post assets
 5. Renders static pages from route view functions
-6. Generates RSS feeds
+6. Generates RSS and Atom feeds
 7. Generates sitemap XML
 
 The output is a fully static site ready to deploy to any static hosting provider.
 
 ## Documentation
 
-| Guide                                        | Description                                            |
-| -------------------------------------------- | ------------------------------------------------------ |
-| [Getting started](getting-started)           | Installation, project setup, and your first build      |
-| [Example blog](example)                      | Walkthrough of the complete example project            |
-| [Blog posts](blog-posts)                     | Directory structure, frontmatter, multilingual support |
-| [Configuration](configuration)               | Full configuration reference                           |
-| [Markdown components](markdown-components)   | Customizing markdown rendering                         |
-| [Syntax highlighting](syntax-highlighting)   | Build-time code block highlighting with Smalto         |
-| [Static pages](static-pages)                 | Routes, view functions, and using post data            |
-| [RSS feeds](rss-feeds)                       | Feed configuration, filtering, and serialization       |
-| [Sitemap and robots.txt](sitemap-and-robots) | Sitemap and crawler configuration                      |
-| [Dev server](dev-server)                     | File watching, auto-rebuild, and live reload           |
-| [Error handling](error-handling)             | Error types and recovery patterns                      |
+| Guide                                        | Description                                               |
+| -------------------------------------------- | --------------------------------------------------------- |
+| [Getting started](getting-started)           | Installation, project setup, and your first build         |
+| [Example blog](example)                      | Walkthrough of the complete example project               |
+| [Blog posts](blog-posts)                     | Directory structure, frontmatter, multilingual support    |
+| [Configuration](configuration)               | Full configuration reference                              |
+| [Markdown components](markdown-components)   | Customizing markdown rendering                            |
+| [Syntax highlighting](syntax-highlighting)   | Build-time code block highlighting with Smalto            |
+| [Static pages](static-pages)                 | Routes, view functions, and using post data               |
+| [RSS feeds](rss-feeds)                       | RSS 2.0 feed configuration, filtering, and serialization  |
+| [Atom feeds](atom-feeds)                     | Atom 1.0 feed configuration, filtering, and serialization |
+| [Sitemap and robots.txt](sitemap-and-robots) | Sitemap and crawler configuration                         |
+| [Dev server](dev-server)                     | File watching, auto-rebuild, and live reload              |
+| [Error handling](error-handling)             | Error types and recovery patterns                         |
 
 ## API reference
 

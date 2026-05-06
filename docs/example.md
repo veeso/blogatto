@@ -91,6 +91,32 @@ let rss_feed =
 
 This generates an RSS 2.0 feed with a title, description, and language tag.
 
+### Atom feed
+
+```gleam
+let atom_feed =
+  atom.new(
+    id: site_url <> "/",
+    title: atom.PlainText("Simple Blog"),
+    updated: timestamp.system_time(),
+  )
+  |> atom.subtitle("A simple example blog built with Blogatto")
+  |> atom.link(atom.Link(
+    href: site_url <> "/atom.xml",
+    rel: option.Some("self"),
+    content_type: option.Some("application/atom+xml"),
+    hreflang: option.None,
+    title: option.None,
+    length: option.None,
+  ))
+  |> atom.generator(atom.Generator(
+    uri: option.Some("https://github.com/veeso/blogatto"),
+    version: option.None,
+  ))
+```
+
+This generates an Atom 1.0 feed with a self-link, subtitle, and generator metadata.
+
 ### Sitemap and robots.txt
 
 ```gleam
@@ -119,6 +145,7 @@ let cfg =
   |> config.markdown(md_config)
   |> config.route("/", home_view)
   |> config.rss_feed(rss_feed)
+  |> config.atom_feed(atom_feed)
   |> config.sitemap(sitemap_config)
   |> config.robots(robots_config)
 ```
@@ -298,7 +325,8 @@ dist/
       index.html                 # Blog post page
     getting-started/
       index.html                 # Blog post page
-  feed.xml                       # RSS feed
+  rss.xml                        # RSS feed
+  atom.xml                       # Atom feed
   sitemap.xml                    # Sitemap
   robots.txt                     # Robots policy
 ```
