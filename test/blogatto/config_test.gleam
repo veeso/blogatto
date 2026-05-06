@@ -1,5 +1,5 @@
 import blogatto/config
-import blogatto/config/feed
+import blogatto/config/feed/rss
 import blogatto/config/markdown
 import blogatto/config/robots
 import blogatto/config/sitemap
@@ -9,8 +9,8 @@ import gleam/option.{None, Some}
 import gleeunit/should
 import lustre/element/html
 
-fn sample_feed_config() -> feed.FeedConfig(msg) {
-  feed.FeedConfig(
+fn sample_feed_config() -> rss.RssFeedConfig(msg) {
+  rss.RssFeedConfig(
     filter: None,
     output: "/rss.xml",
     serialize: None,
@@ -43,7 +43,7 @@ pub fn new_sets_site_url_test() {
 
 pub fn new_has_empty_feeds_test() {
   let cfg = config.new("https://example.com")
-  cfg.feeds
+  cfg.rss_feeds
   |> should.equal([])
 }
 
@@ -84,36 +84,36 @@ pub fn new_has_no_static_dir_test() {
   |> should.equal(None)
 }
 
-pub fn feed_prepends_feed_config_test() {
+pub fn rss_feed_prepends_feed_config_test() {
   let fc = sample_feed_config()
   let cfg =
     config.new("https://example.com")
-    |> config.feed(fc)
+    |> config.rss_feed(fc)
 
-  cfg.feeds
+  cfg.rss_feeds
   |> should.equal([fc])
 }
 
-pub fn feed_prepends_multiple_feeds_test() {
+pub fn rss_feed_prepends_multiple_feeds_test() {
   let feed1 =
-    feed.FeedConfig(
+    rss.RssFeedConfig(
       ..sample_feed_config(),
       output: "/rss.xml",
       title: "English",
     )
   let feed2 =
-    feed.FeedConfig(
+    rss.RssFeedConfig(
       ..sample_feed_config(),
       output: "/rss-it.xml",
       title: "Italian",
     )
   let cfg =
     config.new("https://example.com")
-    |> config.feed(feed1)
-    |> config.feed(feed2)
+    |> config.rss_feed(feed1)
+    |> config.rss_feed(feed2)
 
   // feed2 was prepended last, so it comes first
-  cfg.feeds
+  cfg.rss_feeds
   |> should.equal([feed2, feed1])
 }
 
@@ -226,7 +226,7 @@ pub fn builder_pipeline_preserves_all_settings_test() {
   let md = markdown.default()
   let robots_cfg = robots.new("https://example.com/sitemap.xml")
   let sm = sitemap.new("/sitemap.xml")
-  let feed_cfg = feed.FeedConfig(..sample_feed_config(), title: "Blog")
+  let feed_cfg = rss.RssFeedConfig(..sample_feed_config(), title: "Blog")
 
   let cfg =
     config.new("https://example.com")
@@ -235,7 +235,7 @@ pub fn builder_pipeline_preserves_all_settings_test() {
     |> config.markdown(md)
     |> config.robots(robots_cfg)
     |> config.sitemap(sm)
-    |> config.feed(feed_cfg)
+    |> config.rss_feed(feed_cfg)
     |> config.route("/about", fn(_posts: List(post.Post(msg))) {
       html.div([], [])
     })
@@ -246,6 +246,6 @@ pub fn builder_pipeline_preserves_all_settings_test() {
   cfg.markdown_config |> should.be_some
   cfg.robots |> should.equal(Some(robots_cfg))
   cfg.sitemap |> should.equal(Some(sm))
-  cfg.feeds |> should.equal([feed_cfg])
+  cfg.rss_feeds |> should.equal([feed_cfg])
   cfg.routes |> dict.size |> should.equal(1)
 }

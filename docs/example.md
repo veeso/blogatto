@@ -79,14 +79,14 @@ let md_config =
 ### RSS feed
 
 ```gleam
-let rss =
-  feed.new(
+let rss_feed =
+  rss.new(
     "Simple Blog",
     site_url,
     "A simple example blog built with Blogatto",
   )
-  |> feed.language("en-us")
-  |> feed.generator("Blogatto")
+  |> rss.language("en-us")
+  |> rss.generator("Blogatto")
 ```
 
 This generates an RSS 2.0 feed with a title, description, and language tag.
@@ -118,7 +118,7 @@ let cfg =
   |> config.output_dir("./dist")
   |> config.markdown(md_config)
   |> config.route("/", home_view)
-  |> config.feed(rss)
+  |> config.rss_feed(rss_feed)
   |> config.sitemap(sitemap_config)
   |> config.robots(robots_config)
 ```

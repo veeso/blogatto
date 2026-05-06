@@ -1,8 +1,9 @@
-import blogatto/config/feed.{
-  type FeedConfig, type FeedItem, type FeedMetadata, Cloud, Enclosure,
-  FeedConfig, FeedItem, FeedMetadata, Image, TextInput,
+import blogatto/config/feed.{type FeedMetadata, FeedMetadata}
+import blogatto/config/feed/rss.{
+  type RssFeedConfig, type RssFeedItem, Cloud, Enclosure, Image, RssFeedConfig,
+  RssFeedItem, TextInput,
 }
-import blogatto/internal/builder/feed as feed_builder
+import blogatto/internal/builder/feed/rss as feed_builder
 import blogatto/post.{type Post, Post}
 import gleam/dict
 import gleam/option.{None, Some}
@@ -35,8 +36,8 @@ fn sample_metadata() -> FeedMetadata(msg) {
   )
 }
 
-fn minimal_config(output: String) -> FeedConfig(msg) {
-  FeedConfig(
+fn minimal_config(output: String) -> RssFeedConfig(msg) {
+  RssFeedConfig(
     filter: None,
     output: output,
     serialize: None,
@@ -251,7 +252,7 @@ pub fn build_applies_custom_filter_test() {
     let filter = fn(meta: FeedMetadata(msg)) -> Bool {
       meta.post.slug != "excluded"
     }
-    let cfg = FeedConfig(..minimal_config("/rss.xml"), filter: Some(filter))
+    let cfg = RssFeedConfig(..minimal_config("/rss.xml"), filter: Some(filter))
     let included = sample_metadata()
     let excluded =
       FeedMetadata(
@@ -277,7 +278,7 @@ pub fn build_filter_excludes_all_posts_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
     let filter = fn(_meta: FeedMetadata(msg)) -> Bool { False }
-    let cfg = FeedConfig(..minimal_config("/rss.xml"), filter: Some(filter))
+    let cfg = RssFeedConfig(..minimal_config("/rss.xml"), filter: Some(filter))
 
     feed_builder.build(dir, [cfg], [sample_metadata()])
     |> should.be_ok
@@ -294,8 +295,8 @@ pub fn build_filter_excludes_all_posts_test() {
 pub fn build_applies_custom_serialize_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
-    let serialize = fn(meta: FeedMetadata(msg)) -> FeedItem {
-      FeedItem(
+    let serialize = fn(meta: FeedMetadata(msg)) -> RssFeedItem {
+      RssFeedItem(
         title: "Custom: " <> meta.post.title,
         description: "Custom description",
         link: Some(meta.url),
@@ -309,7 +310,7 @@ pub fn build_applies_custom_serialize_test() {
       )
     }
     let cfg =
-      FeedConfig(..minimal_config("/rss.xml"), serialize: Some(serialize))
+      RssFeedConfig(..minimal_config("/rss.xml"), serialize: Some(serialize))
 
     feed_builder.build(dir, [cfg], [sample_metadata()])
     |> should.be_ok
@@ -333,8 +334,8 @@ pub fn build_with_filter_and_serialize_combined_test() {
     let filter = fn(meta: FeedMetadata(msg)) -> Bool {
       meta.post.slug != "draft"
     }
-    let serialize = fn(meta: FeedMetadata(msg)) -> FeedItem {
-      FeedItem(
+    let serialize = fn(meta: FeedMetadata(msg)) -> RssFeedItem {
+      RssFeedItem(
         title: "[RSS] " <> meta.post.title,
         description: meta.post.excerpt,
         link: Some(meta.url),
@@ -348,7 +349,7 @@ pub fn build_with_filter_and_serialize_combined_test() {
       )
     }
     let cfg =
-      FeedConfig(
+      RssFeedConfig(
         ..minimal_config("/rss.xml"),
         filter: Some(filter),
         serialize: Some(serialize),
@@ -382,7 +383,8 @@ pub fn build_with_filter_and_serialize_combined_test() {
 pub fn build_includes_language_in_channel_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
-    let cfg = FeedConfig(..minimal_config("/rss.xml"), language: Some("en-us"))
+    let cfg =
+      RssFeedConfig(..minimal_config("/rss.xml"), language: Some("en-us"))
 
     feed_builder.build(dir, [cfg], [])
     |> should.be_ok
@@ -398,7 +400,7 @@ pub fn build_includes_copyright_in_channel_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
     let cfg =
-      FeedConfig(
+      RssFeedConfig(
         ..minimal_config("/rss.xml"),
         copyright: Some("Copyright 2024 Example"),
       )
@@ -417,7 +419,7 @@ pub fn build_includes_managing_editor_and_web_master_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
     let cfg =
-      FeedConfig(
+      RssFeedConfig(
         ..minimal_config("/rss.xml"),
         managing_editor: Some("editor@example.com"),
         web_master: Some("webmaster@example.com"),
@@ -440,7 +442,7 @@ pub fn build_includes_pub_date_and_last_build_date_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
     let cfg =
-      FeedConfig(
+      RssFeedConfig(
         ..minimal_config("/rss.xml"),
         pub_date: Some(timestamp.from_unix_seconds(1_700_000_000)),
         last_build_date: Some(timestamp.from_unix_seconds(1_700_100_000)),
@@ -463,7 +465,7 @@ pub fn build_includes_channel_categories_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
     let cfg =
-      FeedConfig(..minimal_config("/rss.xml"), categories: [
+      RssFeedConfig(..minimal_config("/rss.xml"), categories: [
         "tech",
         "programming",
       ])
@@ -485,7 +487,7 @@ pub fn build_includes_generator_and_docs_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
     let cfg =
-      FeedConfig(
+      RssFeedConfig(
         ..minimal_config("/rss.xml"),
         generator: Some("blogatto"),
         docs: Some("https://www.rssboard.org/rss-2-0-1"),
@@ -508,7 +510,7 @@ pub fn build_includes_cloud_in_channel_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
     let cfg =
-      FeedConfig(
+      RssFeedConfig(
         ..minimal_config("/rss.xml"),
         cloud: Some(Cloud(
           domain: "rpc.example.com",
@@ -544,7 +546,7 @@ pub fn build_includes_cloud_in_channel_test() {
 pub fn build_includes_ttl_in_channel_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
-    let cfg = FeedConfig(..minimal_config("/rss.xml"), ttl: Some(60))
+    let cfg = RssFeedConfig(..minimal_config("/rss.xml"), ttl: Some(60))
 
     feed_builder.build(dir, [cfg], [])
     |> should.be_ok
@@ -560,7 +562,7 @@ pub fn build_includes_image_in_channel_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
     let cfg =
-      FeedConfig(
+      RssFeedConfig(
         ..minimal_config("/rss.xml"),
         image: Some(Image(
           url: "https://example.com/logo.png",
@@ -604,7 +606,7 @@ pub fn build_includes_image_without_optional_fields_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
     let cfg =
-      FeedConfig(
+      RssFeedConfig(
         ..minimal_config("/rss.xml"),
         image: Some(Image(
           url: "https://example.com/logo.png",
@@ -640,7 +642,7 @@ pub fn build_includes_text_input_in_channel_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
     let cfg =
-      FeedConfig(
+      RssFeedConfig(
         ..minimal_config("/rss.xml"),
         text_input: Some(TextInput(
           title: "Search",
@@ -679,7 +681,7 @@ pub fn build_includes_skip_hours_in_channel_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
     let cfg =
-      FeedConfig(..minimal_config("/rss.xml"), skip_hours: [0, 1, 2, 23])
+      RssFeedConfig(..minimal_config("/rss.xml"), skip_hours: [0, 1, 2, 23])
 
     feed_builder.build(dir, [cfg], [])
     |> should.be_ok
@@ -704,9 +706,9 @@ pub fn build_includes_skip_days_in_channel_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
     let cfg =
-      FeedConfig(..minimal_config("/rss.xml"), skip_days: [
-        feed.Saturday,
-        feed.Sunday,
+      RssFeedConfig(..minimal_config("/rss.xml"), skip_days: [
+        rss.Saturday,
+        rss.Sunday,
       ])
 
     feed_builder.build(dir, [cfg], [])
@@ -732,14 +734,14 @@ pub fn build_converts_all_weekday_variants_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
     let cfg =
-      FeedConfig(..minimal_config("/rss.xml"), skip_days: [
-        feed.Monday,
-        feed.Tuesday,
-        feed.Wednesday,
-        feed.Thursday,
-        feed.Friday,
-        feed.Saturday,
-        feed.Sunday,
+      RssFeedConfig(..minimal_config("/rss.xml"), skip_days: [
+        rss.Monday,
+        rss.Tuesday,
+        rss.Wednesday,
+        rss.Thursday,
+        rss.Friday,
+        rss.Saturday,
+        rss.Sunday,
       ])
 
     feed_builder.build(dir, [cfg], [])
@@ -761,8 +763,8 @@ pub fn build_converts_all_weekday_variants_test() {
 pub fn build_with_item_having_author_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
-    let serialize = fn(meta: FeedMetadata(msg)) -> FeedItem {
-      FeedItem(
+    let serialize = fn(meta: FeedMetadata(msg)) -> RssFeedItem {
+      RssFeedItem(
         title: meta.post.title,
         description: meta.post.excerpt,
         link: None,
@@ -776,7 +778,7 @@ pub fn build_with_item_having_author_test() {
       )
     }
     let cfg =
-      FeedConfig(..minimal_config("/rss.xml"), serialize: Some(serialize))
+      RssFeedConfig(..minimal_config("/rss.xml"), serialize: Some(serialize))
 
     feed_builder.build(dir, [cfg], [sample_metadata()])
     |> should.be_ok
@@ -791,8 +793,8 @@ pub fn build_with_item_having_author_test() {
 pub fn build_with_item_having_comments_and_source_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
-    let serialize = fn(meta: FeedMetadata(msg)) -> FeedItem {
-      FeedItem(
+    let serialize = fn(meta: FeedMetadata(msg)) -> RssFeedItem {
+      RssFeedItem(
         title: meta.post.title,
         description: meta.post.excerpt,
         link: None,
@@ -806,7 +808,7 @@ pub fn build_with_item_having_comments_and_source_test() {
       )
     }
     let cfg =
-      FeedConfig(..minimal_config("/rss.xml"), serialize: Some(serialize))
+      RssFeedConfig(..minimal_config("/rss.xml"), serialize: Some(serialize))
 
     feed_builder.build(dir, [cfg], [sample_metadata()])
     |> should.be_ok
@@ -826,8 +828,8 @@ pub fn build_with_item_having_comments_and_source_test() {
 pub fn build_with_item_having_enclosure_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
-    let serialize = fn(meta: FeedMetadata(msg)) -> FeedItem {
-      FeedItem(
+    let serialize = fn(meta: FeedMetadata(msg)) -> RssFeedItem {
+      RssFeedItem(
         title: meta.post.title,
         description: meta.post.excerpt,
         link: None,
@@ -845,7 +847,7 @@ pub fn build_with_item_having_enclosure_test() {
       )
     }
     let cfg =
-      FeedConfig(..minimal_config("/rss.xml"), serialize: Some(serialize))
+      RssFeedConfig(..minimal_config("/rss.xml"), serialize: Some(serialize))
 
     feed_builder.build(dir, [cfg], [sample_metadata()])
     |> should.be_ok
@@ -866,8 +868,8 @@ pub fn build_with_item_having_enclosure_test() {
 pub fn build_with_item_having_categories_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
-    let serialize = fn(meta: FeedMetadata(msg)) -> FeedItem {
-      FeedItem(
+    let serialize = fn(meta: FeedMetadata(msg)) -> RssFeedItem {
+      RssFeedItem(
         title: meta.post.title,
         description: meta.post.excerpt,
         link: None,
@@ -881,7 +883,7 @@ pub fn build_with_item_having_categories_test() {
       )
     }
     let cfg =
-      FeedConfig(..minimal_config("/rss.xml"), serialize: Some(serialize))
+      RssFeedConfig(..minimal_config("/rss.xml"), serialize: Some(serialize))
 
     feed_builder.build(dir, [cfg], [sample_metadata()])
     |> should.be_ok
@@ -905,7 +907,7 @@ pub fn build_with_all_channel_fields_test() {
   let assert Ok(_) = {
     use dir <- temporary.create(temporary.directory())
     let cfg =
-      FeedConfig(
+      RssFeedConfig(
         filter: None,
         output: "/rss.xml",
         serialize: None,
@@ -944,7 +946,7 @@ pub fn build_with_all_channel_fields_test() {
           link: "https://example.com/search",
         )),
         skip_hours: [0, 6, 12],
-        skip_days: [feed.Saturday, feed.Sunday],
+        skip_days: [rss.Saturday, rss.Sunday],
       )
 
     feed_builder.build(dir, [cfg], [sample_metadata()])

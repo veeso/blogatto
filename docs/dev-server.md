@@ -223,14 +223,14 @@ dev.new(config)
 
 ## Reference
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `build_command` | `"gleam run"` | Shell command to rebuild the site |
-| `port` | `3000` | HTTP server port |
-| `host` | `"127.0.0.1"` | Bind address |
-| `live_reload` | `True` | Inject live-reload script into HTML responses |
-| `before_build` | `None` | `fn() -> Result(Nil, String)` to run before each rebuild |
-| `after_build` | `None` | `fn() -> Result(Nil, String)` to run after each successful rebuild |
+| Option          | Default       | Description                                                        |
+| --------------- | ------------- | ------------------------------------------------------------------ |
+| `build_command` | `"gleam run"` | Shell command to rebuild the site                                  |
+| `port`          | `3000`        | HTTP server port                                                   |
+| `host`          | `"127.0.0.1"` | Bind address                                                       |
+| `live_reload`   | `True`        | Inject live-reload script into HTML responses                      |
+| `before_build`  | `None`        | `fn() -> Result(Nil, String)` to run before each rebuild           |
+| `after_build`   | `None`        | `fn() -> Result(Nil, String)` to run after each successful rebuild |
 
 ## How it works
 
@@ -256,11 +256,11 @@ The dev server is built on OTP actors:
 
 The dev server watches these directories based on your config:
 
-| Source | Derived from |
-|--------|-------------|
-| Gleam source code | `src/` (always watched) |
-| Blog post directories | `config.markdown_config.paths` |
-| Static assets directory | `config.static_dir` |
+| Source                  | Derived from                   |
+| ----------------------- | ------------------------------ |
+| Gleam source code       | `src/` (always watched)        |
+| Blog post directories   | `config.markdown_config.paths` |
+| Static assets directory | `config.static_dir`            |
 
 The output directory itself is **not** watched — it is rebuilt by the build command.
 
