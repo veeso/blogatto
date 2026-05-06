@@ -1,11 +1,12 @@
 //// A simple blog example demonstrating the full Blogatto build pipeline.
 ////
 //// Builds a static blog with a homepage listing articles, two markdown
-//// blog posts, an RSS feed, a sitemap, and a robots.txt file.
+//// blog posts, an RSS feed, an Atom feed, a sitemap, and a robots.txt file.
 ////
 //// Run with `gleam run` from the `examples/simple_blog` directory.
 
 import blogatto/config
+import blogatto/config/feed/atom
 import blogatto/config/feed/rss
 import blogatto/config/markdown
 import blogatto/config/markdown/code
@@ -56,6 +57,27 @@ pub fn config() -> config.Config(Nil) {
     |> rss.language("en-us")
     |> rss.generator("Blogatto")
 
+  // Atom feed configuration
+  let atom_feed =
+    atom.new(
+      id: site_url <> "/",
+      title: atom.PlainText("Simple Blog"),
+      updated: timestamp.system_time(),
+    )
+    |> atom.subtitle("A simple example blog built with Blogatto")
+    |> atom.link(atom.Link(
+      href: site_url <> "/atom.xml",
+      rel: option.Some("self"),
+      content_type: option.Some("application/atom+xml"),
+      hreflang: option.None,
+      title: option.None,
+      length: option.None,
+    ))
+    |> atom.generator(atom.Generator(
+      uri: option.Some("https://github.com/veeso/blogatto"),
+      version: option.None,
+    ))
+
   // Sitemap configuration
   let sitemap_config = sitemap.new("/sitemap.xml")
 
@@ -76,6 +98,7 @@ pub fn config() -> config.Config(Nil) {
   |> config.markdown(md_config)
   |> config.route("/", home_view)
   |> config.rss_feed(rss_feed)
+  |> config.atom_feed(atom_feed)
   |> config.sitemap(sitemap_config)
   |> config.robots(robots_config)
 }

@@ -22,6 +22,7 @@ let cfg =
   |> config.markdown(md_config)
   |> config.route("/", home_view)
   |> config.rss_feed(rss_config)
+  |> config.atom_feed(atom_config)
   |> config.sitemap(sitemap_config)
   |> config.robots(robots_config)
 ```
@@ -41,6 +42,7 @@ Creates a new `Config` with the given base URL. The `site_url` is required becau
 | `markdown_config` | `None` (no blog posts)           |
 | `routes`          | Empty (no static pages)          |
 | `rss_feeds`       | Empty (no RSS feeds)             |
+| `atom_feeds`      | Empty (no Atom feeds)            |
 | `sitemap`         | `None` (no sitemap)              |
 | `robots`          | `None` (no robots.txt)           |
 
@@ -143,6 +145,10 @@ See [Static pages](static-pages) for more on writing view functions.
 
 Add an RSS feed configuration. Can be called multiple times to generate multiple feeds. See [RSS feeds](rss-feeds).
 
+### `config.atom_feed(config, atom_feed_config)`
+
+Add an Atom 1.0 feed configuration. Can be called multiple times to generate multiple feeds. See [Atom feeds](atom-feeds).
+
 ### `config.sitemap(config, sitemap_config)`
 
 Set the sitemap configuration. See [Sitemap and robots.txt](sitemap-and-robots).
@@ -186,7 +192,7 @@ let cfg =
 
 ### Full-featured site
 
-Blog, multiple pages, RSS, sitemap, and robots.txt:
+Blog, multiple pages, RSS, Atom, sitemap, and robots.txt:
 
 ```gleam
 let md =
@@ -204,6 +210,7 @@ let cfg =
   |> config.route("/", home_view)
   |> config.route("/about", about_view)
   |> config.rss_feed(rss_config)
+  |> config.atom_feed(atom_config)
   |> config.sitemap(sitemap_config)
   |> config.robots(robots_config)
 ```

@@ -3,6 +3,7 @@
 import blogatto/config
 import blogatto/config/feed as feed_config
 import blogatto/error
+import blogatto/internal/builder/feed/atom as atom_builder
 import blogatto/internal/builder/feed/rss as rss_builder
 import gleam/result
 
@@ -13,8 +14,11 @@ pub fn build(
   metadata: List(feed_config.FeedMetadata(msg)),
 ) -> Result(Nil, error.BlogattoError) {
   use _ <- result.try(
-    rss_builder.build(output_dir, config.rss_feeds, metadata)
+    output_dir
+    |> rss_builder.build(config.rss_feeds, metadata)
     |> result.replace(Nil),
   )
-  Ok(Nil)
+  output_dir
+  |> atom_builder.build(config.atom_feeds, metadata)
+  |> result.replace(Nil)
 }

@@ -10,14 +10,14 @@
 
 A Gleam framework for building static blogs with [**Lustre**](https://hexdocs.pm/lustre/) and Markdown.
 
-Blogatto generates your entire static site from a single configuration: blog posts from markdown with frontmatter, static pages from [Lustre](https://hexdocs.pm/lustre/) views, RSS feeds, sitemaps, and robots.txt — all rendered via [Maud](https://hexdocs.pm/maud/) components.
+Blogatto generates your entire static site from a single configuration: blog posts from markdown with frontmatter, static pages from [Lustre](https://hexdocs.pm/lustre/) views, RSS and Atom feeds, sitemaps, and robots.txt — all rendered via [Maud](https://hexdocs.pm/maud/) components.
 
 ## Features
 
 - Blog posts from markdown files with YAML frontmatter
 - Multilingual posts via `index-{lang}.md` file naming convention
 - Static pages from [Lustre](https://hexdocs.pm/lustre/) view functions
-- RSS feed generation with customizable filtering and serialization
+- RSS 2.0 and Atom 1.0 feed generation with customizable filtering and serialization
 - Sitemap XML generation with alternate language links
 - Robots.txt generation
 - Static asset copying
@@ -39,6 +39,7 @@ gleam add blogatto
 ```gleam
 import blogatto
 import blogatto/config
+import blogatto/config/feed/atom
 import blogatto/config/feed/rss
 import blogatto/config/markdown
 import blogatto/config/robots
@@ -70,6 +71,15 @@ pub fn main() {
     |> rss.language("en-us")
     |> rss.generator("Blogatto")
 
+  // Atom feed
+  let atom_feed =
+    atom.new(
+      id: site_url <> "/",
+      title: atom.PlainText("My Blog"),
+      updated: timestamp.system_time(),
+    )
+    |> atom.subtitle("My personal blog")
+
   // Build configuration
   let cfg =
     config.new(site_url)
@@ -78,6 +88,7 @@ pub fn main() {
     |> config.markdown(md)
     |> config.route("/", home_view)
     |> config.rss_feed(rss_feed)
+    |> config.atom_feed(atom_feed)
     |> config.sitemap(sitemap.new("/sitemap.xml"))
     |> config.robots(robots.RobotsConfig(
       sitemap_url: site_url <> "/sitemap.xml",
@@ -129,7 +140,8 @@ dist/
 ├── index.html
 ├── robots.txt
 ├── sitemap.xml
-└── feed.xml
+├── rss.xml
+└── atom.xml
 ```
 
 ## Dev server
@@ -183,7 +195,7 @@ The dev server will:
 
 ## Documentation
 
-Full documentation is available at [blogat.to](https://blogat.to), covering blog post structure, configuration, markdown components, static pages, RSS feeds, sitemaps, dev server, and error handling.
+Full documentation is available at [blogat.to](https://blogat.to), covering blog post structure, configuration, markdown components, static pages, RSS and Atom feeds, sitemaps, dev server, and error handling.
 
 API reference is on [HexDocs](https://hexdocs.pm/blogatto/).
 
