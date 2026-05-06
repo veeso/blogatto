@@ -48,19 +48,19 @@ The output is a fully static site ready to deploy to any static hosting provider
 
 ## Documentation
 
-| Guide | Description |
-|-------|-------------|
-| [Getting started](getting-started) | Installation, project setup, and your first build |
-| [Example blog](example) | Walkthrough of the complete example project |
-| [Blog posts](blog-posts) | Directory structure, frontmatter, multilingual support |
-| [Configuration](configuration) | Full configuration reference |
-| [Markdown components](markdown-components) | Customizing markdown rendering |
-| [Syntax highlighting](syntax-highlighting) | Build-time code block highlighting with Smalto |
-| [Static pages](static-pages) | Routes, view functions, and using post data |
-| [RSS feeds](rss-feeds) | Feed configuration, filtering, and serialization |
-| [Sitemap and robots.txt](sitemap-and-robots) | Sitemap and crawler configuration |
-| [Dev server](dev-server) | File watching, auto-rebuild, and live reload |
-| [Error handling](error-handling) | Error types and recovery patterns |
+| Guide                                        | Description                                            |
+| -------------------------------------------- | ------------------------------------------------------ |
+| [Getting started](getting-started)           | Installation, project setup, and your first build      |
+| [Example blog](example)                      | Walkthrough of the complete example project            |
+| [Blog posts](blog-posts)                     | Directory structure, frontmatter, multilingual support |
+| [Configuration](configuration)               | Full configuration reference                           |
+| [Markdown components](markdown-components)   | Customizing markdown rendering                         |
+| [Syntax highlighting](syntax-highlighting)   | Build-time code block highlighting with Smalto         |
+| [Static pages](static-pages)                 | Routes, view functions, and using post data            |
+| [RSS feeds](rss-feeds)                       | Feed configuration, filtering, and serialization       |
+| [Sitemap and robots.txt](sitemap-and-robots) | Sitemap and crawler configuration                      |
+| [Dev server](dev-server)                     | File watching, auto-rebuild, and live reload           |
+| [Error handling](error-handling)             | Error types and recovery patterns                      |
 
 ## API reference
 

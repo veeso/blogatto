@@ -81,7 +81,7 @@ pub fn build(config: config.Config(msg)) -> Result(Nil, error.BlogattoError) {
   use _ <- result.try(pages.build(config, posts))
   // Step 6: Generate RSS feed.
   let feed_metadata = feed_metadata(posts)
-  use _ <- result.try(feed.build(config.output_dir, config.feeds, feed_metadata))
+  use _ <- result.try(feed.build(config.output_dir, config, feed_metadata))
   // Step 7: Generate sitemap.xml.
   use _ <- result.try(sitemap_build(config, posts))
 

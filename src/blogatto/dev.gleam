@@ -87,7 +87,10 @@ pub fn host(server: DevServer(msg), host: String) -> DevServer(msg) {
 }
 
 /// Set whether to inject the live reload script into the generated HTML pages.
-pub fn live_reload(server: DevServer(msg), live_reload: Bool) -> DevServer(msg) {
+pub fn live_reload(
+  server: DevServer(msg),
+  live_reload: Bool,
+) -> DevServer(msg) {
   DevServer(..server, live_reload:)
 }
 

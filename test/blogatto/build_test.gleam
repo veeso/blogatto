@@ -1,6 +1,6 @@
 import blogatto
 import blogatto/config
-import blogatto/config/feed.{type FeedConfig, FeedConfig}
+import blogatto/config/feed/rss.{type RssFeedConfig, RssFeedConfig}
 import blogatto/config/markdown
 import blogatto/config/robots.{Robot, RobotsConfig}
 import blogatto/config/sitemap
@@ -63,7 +63,10 @@ fn minimal_config(output_dir: String) -> config.Config(msg) {
   |> config.output_dir(output_dir)
 }
 
-fn config_with_blog(output_dir: String, blog_dir: String) -> config.Config(msg) {
+fn config_with_blog(
+  output_dir: String,
+  blog_dir: String,
+) -> config.Config(msg) {
   let md_config =
     markdown.default()
     |> markdown.markdown_path(blog_dir)
@@ -73,8 +76,8 @@ fn config_with_blog(output_dir: String, blog_dir: String) -> config.Config(msg) 
   |> config.markdown(md_config)
 }
 
-fn minimal_feed_config(output: String) -> FeedConfig(msg) {
-  FeedConfig(
+fn minimal_feed_config(output: String) -> RssFeedConfig(msg) {
+  RssFeedConfig(
     filter: None,
     output: output,
     serialize: None,
@@ -512,7 +515,7 @@ pub fn build_generates_rss_feed_when_configured_test() {
     )
 
     config_with_blog(output, blog)
-    |> config.feed(minimal_feed_config("/rss.xml"))
+    |> config.rss_feed(minimal_feed_config("/rss.xml"))
     |> blogatto.build()
     |> should.be_ok
 
@@ -542,7 +545,7 @@ pub fn build_feed_contains_post_title_test() {
     )
 
     config_with_blog(output, blog)
-    |> config.feed(minimal_feed_config("/rss.xml"))
+    |> config.rss_feed(minimal_feed_config("/rss.xml"))
     |> blogatto.build()
     |> should.be_ok
 
@@ -573,7 +576,7 @@ pub fn build_feed_uses_post_url_as_link_test() {
     )
 
     config_with_blog(output, blog)
-    |> config.feed(minimal_feed_config("/rss.xml"))
+    |> config.rss_feed(minimal_feed_config("/rss.xml"))
     |> blogatto.build()
     |> should.be_ok
 
@@ -604,7 +607,7 @@ pub fn build_feed_uses_body_content_as_excerpt_test() {
     )
 
     config_with_blog(output, blog)
-    |> config.feed(minimal_feed_config("/rss.xml"))
+    |> config.rss_feed(minimal_feed_config("/rss.xml"))
     |> blogatto.build()
     |> should.be_ok
 
@@ -665,8 +668,8 @@ pub fn build_generates_multiple_feeds_test() {
     )
 
     config_with_blog(output, blog)
-    |> config.feed(minimal_feed_config("/rss.xml"))
-    |> config.feed(minimal_feed_config("/feed.xml"))
+    |> config.rss_feed(minimal_feed_config("/rss.xml"))
+    |> config.rss_feed(minimal_feed_config("/feed.xml"))
     |> blogatto.build()
     |> should.be_ok
 
@@ -880,7 +883,7 @@ pub fn build_full_pipeline_with_all_features_test() {
     |> config.markdown(md_config)
     |> config.robots(robots_cfg)
     |> config.route("/", simple_view)
-    |> config.feed(minimal_feed_config("/rss.xml"))
+    |> config.rss_feed(minimal_feed_config("/rss.xml"))
     |> config.sitemap(sitemap_cfg)
     |> blogatto.build()
     |> should.be_ok
@@ -975,7 +978,7 @@ pub fn build_feed_escapes_html_in_title_test() {
     )
 
     config_with_blog(output, blog)
-    |> config.feed(minimal_feed_config("/rss.xml"))
+    |> config.rss_feed(minimal_feed_config("/rss.xml"))
     |> blogatto.build()
     |> should.be_ok
 
@@ -1008,7 +1011,7 @@ pub fn build_feed_escapes_html_in_description_test() {
     )
 
     config_with_blog(output, blog)
-    |> config.feed(minimal_feed_config("/rss.xml"))
+    |> config.rss_feed(minimal_feed_config("/rss.xml"))
     |> blogatto.build()
     |> should.be_ok
 
@@ -1041,7 +1044,7 @@ pub fn build_feed_escapes_html_in_excerpt_test() {
     )
 
     config_with_blog(output, blog)
-    |> config.feed(minimal_feed_config("/rss.xml"))
+    |> config.rss_feed(minimal_feed_config("/rss.xml"))
     |> blogatto.build()
     |> should.be_ok
 
@@ -1073,7 +1076,7 @@ pub fn build_feed_does_not_double_escape_post_title_test() {
     )
 
     config_with_blog(output, blog)
-    |> config.feed(minimal_feed_config("/rss.xml"))
+    |> config.rss_feed(minimal_feed_config("/rss.xml"))
     |> blogatto.build()
     |> should.be_ok
 
@@ -1143,7 +1146,7 @@ pub fn build_full_pipeline_feed_has_post_data_test() {
     )
 
     config_with_blog(output, blog)
-    |> config.feed(minimal_feed_config("/rss.xml"))
+    |> config.rss_feed(minimal_feed_config("/rss.xml"))
     |> blogatto.build()
     |> should.be_ok
 

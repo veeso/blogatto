@@ -22,7 +22,7 @@
 ////   |> config.markdown(md)
 //// ```
 
-import blogatto/config/feed
+import blogatto/config/feed/rss as rss_feed_config
 import blogatto/config/markdown
 import blogatto/config/robots
 import blogatto/config/sitemap
@@ -38,8 +38,6 @@ import lustre/element.{type Element}
 /// the configuration, enabling type-safe component and view definitions.
 pub type Config(msg) {
   Config(
-    /// RSS feeds to generate, each with its own filter/serialize/output settings.
-    feeds: List(feed.FeedConfig(msg)),
     /// Markdown configuration for rendering blog articles. When `None`, no blog posts are built.
     markdown_config: Option(markdown.MarkdownConfig(msg)),
     /// Output directory for the built site. Default: `"./dist"`.
@@ -50,6 +48,8 @@ pub type Config(msg) {
     /// Each view function receives the full list of blog posts, enabling pages
     /// that display recent posts, featured posts, or other post-based content.
     routes: Dict(String, fn(List(post.Post(msg))) -> Element(msg)),
+    /// RSS feeds to generate, each with its own filter/serialize/output settings.
+    rss_feeds: List(rss_feed_config.RssFeedConfig(msg)),
     /// The base URL of the site (e.g., `"https://example.com"`).
     /// Used to build absolute URLs for sitemaps, RSS feeds, and other outputs.
     site_url: String,
@@ -69,20 +69,15 @@ pub type Config(msg) {
 /// Use the builder functions to further configure feeds, routes, markdown, and more.
 pub fn new(site_url: String) -> Config(msg) {
   Config(
-    feeds: [],
     markdown_config: None,
     output_dir: "./dist",
     robots: None,
     routes: dict.new(),
+    rss_feeds: [],
     site_url:,
     sitemap: None,
     static_dir: None,
   )
-}
-
-/// Add an RSS feed configuration to the build.
-pub fn feed(config: Config(msg), feed: feed.FeedConfig(msg)) -> Config(msg) {
-  Config(..config, feeds: list.prepend(config.feeds, feed))
 }
 
 /// Set the markdown configuration for blog post rendering.
@@ -114,6 +109,14 @@ pub fn route(
   view: fn(List(post.Post(msg))) -> Element(msg),
 ) -> Config(msg) {
   Config(..config, routes: dict.insert(config.routes, route, view))
+}
+
+/// Add an RSS feed configuration to the build.
+pub fn rss_feed(
+  config: Config(msg),
+  feed: rss_feed_config.RssFeedConfig(msg),
+) -> Config(msg) {
+  Config(..config, rss_feeds: list.prepend(config.rss_feeds, feed))
 }
 
 /// Set the sitemap generation configuration.
