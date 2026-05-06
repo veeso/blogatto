@@ -1,0 +1,15 @@
+#!/bin/sh
+# Format staged Gleam files in src/ or examples/ before commit.
+
+set -e
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR -- 'src/*.gleam' 'examples/*.gleam')
+
+if [ -z "$staged" ]; then
+    exit 0
+fi
+
+echo "pre-commit: running gleam format on staged files"
+echo "$staged" | xargs gleam format
+
+echo "$staged" | xargs git add
