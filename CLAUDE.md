@@ -26,7 +26,8 @@ There is no single-test runner flag in gleeunit; to run a specific test module, 
 
 - **`blogatto`** — Main entry point. Exposes `build(Config(msg)) -> Result(Nil, BuildError)` which orchestrates the entire build pipeline.
 - **`blogatto/config`** — Configuration builder (`Config(msg)` generic type) with functional composition. Routes are defined via `config.route(path, view)` where the view function receives the list of parsed blog posts (`List(Post(msg))`).
-  - `config/feed` — RSS feed configuration (`FeedConfig`, `FeedMetadata`, `FeedItem`)
+  - `config/feed` — Shared feed types (`FeedMetadata`)
+  - `config/feed/rss` — RSS feed configuration (`RssFeedConfig`, `RssFeedItem`)
   - `config/markdown` — Markdown rendering config: Maud components, markdown search paths, excerpt length, and optional blog post template override
   - `config/sitemap` — Sitemap generation config (`SitemapConfig`, `SitemapEntry`, `ChangeFrequency`)
   - `config/robots` — Robots.txt generation config
@@ -37,7 +38,8 @@ There is no single-test runner flag in gleeunit; to run a specific test module, 
 - **`blogatto/internal/builder/`** — Build sub-modules (no parent `builder.gleam` orchestrator)
   - `builder/blog` — Markdown parsing, post construction, blog page rendering
   - `builder/pages` — Static page rendering from route dict
-  - `builder/feed` — RSS feed generation via webls
+  - `builder/feed` — Feed generation orchestrator (delegates to per-format builders)
+  - `builder/feed/rss` — RSS feed generation via webls
   - `builder/sitemap` — Sitemap XML generation via webls
   - `builder/robots` — robots.txt generation via webls
 
@@ -50,12 +52,12 @@ There is no single-test runner flag in gleeunit; to run a specific test module, 
 3. **Build robots.txt** — If configured, generate via webls
 4. **Build blog pages** — Walk `markdown_config.paths`, find `index.md`/`index-{lang}.md` per directory, extract frontmatter, render via Maud components, generate plain-text excerpt (truncated to `markdown_config.excerpt_len`), construct `Post(msg)` values, write HTML pages via `markdown_config.template` (or default template, which receives both the current post and all other posts) to `output_dir/{slug}/index.html` or `output_dir/{slug}/index-{lang}.html`. Copy non-markdown assets (images, etc.) from each post's source directory to the output post directory. Produces `List(Post(msg))` used by subsequent steps.
 5. **Build static pages** — For each route in `config.routes`, call the view function with the `List(Post(msg))` from step 4, write HTML
-6. **Build feeds** — For each `FeedConfig`, filter/serialize posts into RSS via webls
+6. **Build feeds** — For each `RssFeedConfig`, filter/serialize posts into RSS via webls
 7. **Build sitemap** — If configured, collect all routes and blog post URLs, apply filter/serialize, generate XML
 
 ### Key Design Patterns
 
-- **Builder pattern**: Configuration is built via functional composition — `config.new(site_url)` piped through `config.feed()`, `config.route()`, `config.output_dir()`, etc.
+- **Builder pattern**: Configuration is built via functional composition — `config.new(site_url)` piped through `config.rss_feed()`, `config.route()`, `config.output_dir()`, etc.
 - **Generic over message type**: `Config(msg)` threads the Lustre message type through the entire configuration and into Post/template types.
 - **Route-to-file mapping**: Routes map to `{output_dir}/{route}/index.html` output paths.
 - **Closure-based routing**: Static routes stored as `Dict(String, fn(List(Post(msg))) -> Element(msg))`. Each view function receives the full list of parsed blog posts, enabling pages to display featured posts, recent articles, etc.

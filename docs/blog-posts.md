@@ -43,18 +43,18 @@ Your markdown content here...
 
 ### Required fields
 
-| Field | Format | Description |
-|-------|--------|-------------|
-| `title` | String | The post title |
-| `date` | `YYYY-MM-DD HH:MM:SS [timezone]` | Publication date (see [Date formats](#date-formats) below) |
-| `description` | String | A short description or excerpt |
+| Field         | Format                           | Description                                                |
+| ------------- | -------------------------------- | ---------------------------------------------------------- |
+| `title`       | String                           | The post title                                             |
+| `date`        | `YYYY-MM-DD HH:MM:SS [timezone]` | Publication date (see [Date formats](#date-formats) below) |
+| `description` | String                           | A short description or excerpt                             |
 
 ### Optional fields
 
-| Field | Format | Description |
-|-------|--------|-------------|
-| `slug` | String | URL-friendly identifier for the post. If omitted, auto-generated from the title (e.g., `"My First Post"` becomes `"my-first-post"`) |
-| `featured_image` | String | URL or path to a featured image |
+| Field            | Format | Description                                                                                                                         |
+| ---------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `slug`           | String | URL-friendly identifier for the post. If omitted, auto-generated from the title (e.g., `"My First Post"` becomes `"my-first-post"`) |
+| `featured_image` | String | URL or path to a featured image                                                                                                     |
 
 ### Extra fields
 
@@ -85,10 +85,10 @@ case dict.get(post.extras, "author") {
 
 The `date` field supports three formats. All dates are internally normalized to UTC.
 
-| Format | Example | Description |
-|--------|---------|-------------|
-| Naive | `2025-01-15 00:00:00` | Interpreted as UTC |
-| UTC offset | `2025-01-15 02:00:00 +02:00` | Converted to UTC using the given offset |
+| Format        | Example                               | Description                                                                                                       |
+| ------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Naive         | `2025-01-15 00:00:00`                 | Interpreted as UTC                                                                                                |
+| UTC offset    | `2025-01-15 02:00:00 +02:00`          | Converted to UTC using the given offset                                                                           |
 | IANA timezone | `2025-01-15 02:00:00 Europe/Helsinki` | Converted to UTC using the [IANA timezone database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) |
 
 When a timezone is specified, the date is converted to UTC before being stored in the `Post` type. This means you can write post dates in your local timezone without manually converting to UTC:
@@ -107,12 +107,12 @@ DST transitions are handled automatically — the correct offset is applied base
 
 Language variants use the `index-{lang}.md` naming convention:
 
-| Filename | Language |
-|----------|----------|
-| `index.md` | Default (no language set, `Post.language` is `None`) |
-| `index-en.md` | English (`Post.language` is `Some("en")`) |
-| `index-it.md` | Italian (`Post.language` is `Some("it")`) |
-| `index-fr.md` | French (`Post.language` is `Some("fr")`) |
+| Filename      | Language                                             |
+| ------------- | ---------------------------------------------------- |
+| `index.md`    | Default (no language set, `Post.language` is `None`) |
+| `index-en.md` | English (`Post.language` is `Some("en")`)            |
+| `index-it.md` | Italian (`Post.language` is `Some("it")`)            |
+| `index-fr.md` | French (`Post.language` is `Some("fr")`)             |
 
 Each variant is an independent `Post` with its own frontmatter. You can have different titles and descriptions per language:
 
@@ -127,16 +127,16 @@ blog/
 
 When a `route_prefix` is set (e.g., `"blog"`):
 
-| Input | Output |
-|-------|--------|
-| `hello-world/index.md` | `dist/blog/hello-world/index.html` |
+| Input                     | Output                                |
+| ------------------------- | ------------------------------------- |
+| `hello-world/index.md`    | `dist/blog/hello-world/index.html`    |
 | `hello-world/index-it.md` | `dist/blog/it/hello-world/index.html` |
 
 Without a `route_prefix`:
 
-| Input | Output |
-|-------|--------|
-| `hello-world/index.md` | `dist/hello-world/index.html` |
+| Input                     | Output                           |
+| ------------------------- | -------------------------------- |
+| `hello-world/index.md`    | `dist/hello-world/index.html`    |
 | `hello-world/index-it.md` | `dist/it/hello-world/index.html` |
 
 ### Custom routing with `route_builder`
@@ -179,15 +179,15 @@ Blogatto normalizes the returned path: a leading `/` is added if missing, and a 
 
 The `PostMetadata` type contains all frontmatter-derived fields available at routing time:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `title` | `String` | From frontmatter |
-| `slug` | `String` | From frontmatter, or auto-generated from title |
-| `date` | `Timestamp` | From frontmatter |
-| `description` | `String` | From frontmatter |
-| `language` | `Option(String)` | `None` for default, `Some("it")` for variants |
-| `featured_image` | `Option(String)` | From frontmatter, if provided |
-| `extras` | `Dict(String, String)` | Additional frontmatter fields |
+| Field            | Type                   | Description                                    |
+| ---------------- | ---------------------- | ---------------------------------------------- |
+| `title`          | `String`               | From frontmatter                               |
+| `slug`           | `String`               | From frontmatter, or auto-generated from title |
+| `date`           | `Timestamp`            | From frontmatter                               |
+| `description`    | `String`               | From frontmatter                               |
+| `language`       | `Option(String)`       | `None` for default, `Some("it")` for variants  |
+| `featured_image` | `Option(String)`       | From frontmatter, if provided                  |
+| `extras`         | `Dict(String, String)` | Additional frontmatter fields                  |
 
 Note that `PostMetadata` intentionally excludes `url` (which is the output of the route builder), `excerpt`, and `contents` (which are not available at routing time).
 
@@ -245,14 +245,14 @@ let md = markdown.default()
 
 ### Options reference
 
-| Field | Default | Description |
-|-------|---------|-------------|
-| `footnotes` | `True` | Enable [footnote](https://help.obsidian.md/syntax#Footnotes) parsing |
-| `heading_ids` | `False` | Add `id` attributes to all headings (enables [custom heading IDs](https://www.markdownguide.org/extended-syntax/#heading-ids)) |
-| `tables` | `True` | Enable [GFM table](https://help.obsidian.md/advanced-syntax#Tables) parsing |
-| `tasklists` | `True` | Enable [task list](https://github.github.com/gfm/#task-list-items-extension-) checkbox parsing |
-| `emojis_shortcodes` | `True` | Convert emoji shortcodes (e.g., `:smile:`) to Unicode emojis |
-| `autolinks` | `True` | Automatically convert plain URLs into clickable links |
+| Field               | Default | Description                                                                                                                    |
+| ------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `footnotes`         | `True`  | Enable [footnote](https://help.obsidian.md/syntax#Footnotes) parsing                                                           |
+| `heading_ids`       | `False` | Add `id` attributes to all headings (enables [custom heading IDs](https://www.markdownguide.org/extended-syntax/#heading-ids)) |
+| `tables`            | `True`  | Enable [GFM table](https://help.obsidian.md/advanced-syntax#Tables) parsing                                                    |
+| `tasklists`         | `True`  | Enable [task list](https://github.github.com/gfm/#task-list-items-extension-) checkbox parsing                                 |
+| `emojis_shortcodes` | `True`  | Convert emoji shortcodes (e.g., `:smile:`) to Unicode emojis                                                                   |
+| `autolinks`         | `True`  | Automatically convert plain URLs into clickable links                                                                          |
 
 All options default to `True` except `heading_ids`, which defaults to `False`. To get the default options explicitly, use `markdown.default_options()`.
 
@@ -260,17 +260,17 @@ All options default to `True` except `heading_ids`, which defaults to `False`. T
 
 After parsing, each markdown file produces a `Post(msg)` value with these fields:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `title` | `String` | From frontmatter |
-| `slug` | `String` | From frontmatter, or auto-generated from title |
-| `url` | `String` | Absolute URL (e.g., `"https://example.com/blog/my-post"`) |
-| `date` | `Timestamp` | From frontmatter |
-| `description` | `String` | From frontmatter |
-| `excerpt` | `String` | Auto-generated plain-text excerpt from rendered content, truncated to `excerpt_len` characters |
-| `language` | `Option(String)` | `None` for default, `Some("it")` for variants |
-| `featured_image` | `Option(String)` | From frontmatter, if provided |
-| `contents` | `List(Element(msg))` | Rendered markdown as Lustre elements |
-| `extras` | `Dict(String, String)` | Additional frontmatter fields |
+| Field            | Type                   | Description                                                                                    |
+| ---------------- | ---------------------- | ---------------------------------------------------------------------------------------------- |
+| `title`          | `String`               | From frontmatter                                                                               |
+| `slug`           | `String`               | From frontmatter, or auto-generated from title                                                 |
+| `url`            | `String`               | Absolute URL (e.g., `"https://example.com/blog/my-post"`)                                      |
+| `date`           | `Timestamp`            | From frontmatter                                                                               |
+| `description`    | `String`               | From frontmatter                                                                               |
+| `excerpt`        | `String`               | Auto-generated plain-text excerpt from rendered content, truncated to `excerpt_len` characters |
+| `language`       | `Option(String)`       | `None` for default, `Some("it")` for variants                                                  |
+| `featured_image` | `Option(String)`       | From frontmatter, if provided                                                                  |
+| `contents`       | `List(Element(msg))`   | Rendered markdown as Lustre elements                                                           |
+| `extras`         | `Dict(String, String)` | Additional frontmatter fields                                                                  |
 
 The full list of posts is passed to every route view function and is available during feed and sitemap generation.

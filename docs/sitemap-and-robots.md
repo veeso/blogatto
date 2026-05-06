@@ -31,11 +31,11 @@ This generates `dist/sitemap.xml` with entries for every static route and blog p
 
 ### SitemapConfig fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `path` | `String` | Output path relative to `output_dir` |
-| `filter` | `Option(fn(String) -> Bool)` | Include/exclude routes by URL |
-| `serialize` | `Option(fn(String) -> SitemapEntry)` | Custom entry serialization |
+| Field       | Type                                 | Description                          |
+| ----------- | ------------------------------------ | ------------------------------------ |
+| `path`      | `String`                             | Output path relative to `output_dir` |
+| `filter`    | `Option(fn(String) -> Bool)`         | Include/exclude routes by URL        |
+| `serialize` | `Option(fn(String) -> SitemapEntry)` | Custom entry serialization           |
 
 ### Filtering routes
 
@@ -79,24 +79,24 @@ let sitemap_config =
 
 ### SitemapEntry fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `url` | `String` | The full URL for this entry |
-| `priority` | `Option(Float)` | Priority hint (`0.0` to `1.0`) |
-| `last_modified` | `Option(Timestamp)` | Last modification date |
-| `change_frequency` | `Option(ChangeFrequency)` | How often the page changes |
+| Field              | Type                      | Description                    |
+| ------------------ | ------------------------- | ------------------------------ |
+| `url`              | `String`                  | The full URL for this entry    |
+| `priority`         | `Option(Float)`           | Priority hint (`0.0` to `1.0`) |
+| `last_modified`    | `Option(Timestamp)`       | Last modification date         |
+| `change_frequency` | `Option(ChangeFrequency)` | How often the page changes     |
 
 ### ChangeFrequency values
 
-| Value | Description |
-|-------|-------------|
-| `Always` | Changes every access |
-| `Hourly` | Changes approximately every hour |
-| `Daily` | Changes approximately every day |
-| `Weekly` | Changes approximately every week |
+| Value     | Description                       |
+| --------- | --------------------------------- |
+| `Always`  | Changes every access              |
+| `Hourly`  | Changes approximately every hour  |
+| `Daily`   | Changes approximately every day   |
+| `Weekly`  | Changes approximately every week  |
 | `Monthly` | Changes approximately every month |
-| `Yearly` | Changes approximately every year |
-| `Never` | Archived, will not change |
+| `Yearly`  | Changes approximately every year  |
+| `Never`   | Archived, will not change         |
 
 ## Robots.txt
 
@@ -151,17 +151,17 @@ let robots_config =
 
 ### RobotsConfig fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `sitemap_url` | `String` | Full URL to the sitemap |
-| `robots` | `List(Robot)` | Crawl policies per user agent |
+| Field         | Type          | Description                   |
+| ------------- | ------------- | ----------------------------- |
+| `sitemap_url` | `String`      | Full URL to the sitemap       |
+| `robots`      | `List(Robot)` | Crawl policies per user agent |
 
 ### Robot fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `user_agent` | `String` | Crawler name (`"*"` for all) |
-| `allowed_routes` | `List(String)` | Paths the crawler may access |
+| Field               | Type           | Description                       |
+| ------------------- | -------------- | --------------------------------- |
+| `user_agent`        | `String`       | Crawler name (`"*"` for all)      |
+| `allowed_routes`    | `List(String)` | Paths the crawler may access      |
 | `disallowed_routes` | `List(String)` | Paths the crawler must not access |
 
 ## Combining sitemap and robots.txt

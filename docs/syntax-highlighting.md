@@ -28,38 +28,38 @@ let md =
 
 The default configuration supports the following languages (with aliases):
 
-| Language | Aliases |
-|----------|---------|
-| Bash | `bash`, `sh`, `shell` |
-| C | `c` |
-| C++ | `cpp` |
-| CSS | `css` |
-| Dart | `dart` |
-| Dockerfile | `dockerfile` |
-| Elixir | `elixir` |
-| Erlang | `erlang` |
-| Gleam | `gleam` |
-| Go | `go`, `golang` |
-| Haskell | `haskell`, `hs` |
-| HTML | `html` |
-| Java | `java` |
-| JavaScript | `javascript`, `js` |
-| JSON | `json` |
-| Kotlin | `kotlin`, `kt` |
-| Lua | `lua` |
-| Markdown | `markdown`, `md` |
-| PHP | `php` |
-| Python | `python`, `py` |
-| Ruby | `ruby`, `rb` |
-| Rust | `rust`, `rs` |
-| Scala | `scala` |
-| SQL | `sql` |
-| Swift | `swift` |
-| TOML | `toml` |
-| TypeScript | `typescript`, `ts` |
-| XML | `xml` |
-| YAML | `yaml`, `yml` |
-| Zig | `zig` |
+| Language   | Aliases               |
+| ---------- | --------------------- |
+| Bash       | `bash`, `sh`, `shell` |
+| C          | `c`                   |
+| C++        | `cpp`                 |
+| CSS        | `css`                 |
+| Dart       | `dart`                |
+| Dockerfile | `dockerfile`          |
+| Elixir     | `elixir`              |
+| Erlang     | `erlang`              |
+| Gleam      | `gleam`               |
+| Go         | `go`, `golang`        |
+| Haskell    | `haskell`, `hs`       |
+| HTML       | `html`                |
+| Java       | `java`                |
+| JavaScript | `javascript`, `js`    |
+| JSON       | `json`                |
+| Kotlin     | `kotlin`, `kt`        |
+| Lua        | `lua`                 |
+| Markdown   | `markdown`, `md`      |
+| PHP        | `php`                 |
+| Python     | `python`, `py`        |
+| Ruby       | `ruby`, `rb`          |
+| Rust       | `rust`, `rs`          |
+| Scala      | `scala`               |
+| SQL        | `sql`                 |
+| Swift      | `swift`               |
+| TOML       | `toml`                |
+| TypeScript | `typescript`, `ts`    |
+| XML        | `xml`                 |
+| YAML       | `yaml`, `yml`         |
+| Zig        | `zig`                 |
 
 ## Adding custom languages
 
@@ -80,25 +80,25 @@ The second argument is a list of names that will match the language tag in fence
 
 Smalto renders each token as a `<span>` with a CSS class corresponding to the token type. By default, the classes are:
 
-| Token type | CSS class |
-|------------|-----------|
-| Keyword | `smalto-keyword` |
-| String | `smalto-string` |
-| Number | `smalto-number` |
-| Comment | `smalto-comment` |
-| Function | `smalto-function` |
-| Operator | `smalto-operator` |
+| Token type  | CSS class            |
+| ----------- | -------------------- |
+| Keyword     | `smalto-keyword`     |
+| String      | `smalto-string`      |
+| Number      | `smalto-number`      |
+| Comment     | `smalto-comment`     |
+| Function    | `smalto-function`    |
+| Operator    | `smalto-operator`    |
 | Punctuation | `smalto-punctuation` |
-| Type | `smalto-type` |
-| Module | `smalto-module` |
-| Variable | `smalto-variable` |
-| Constant | `smalto-constant` |
-| Builtin | `smalto-builtin` |
-| Tag | `smalto-tag` |
-| Attribute | `smalto-attribute` |
-| Selector | `smalto-selector` |
-| Property | `smalto-property` |
-| Regex | `smalto-regex` |
+| Type        | `smalto-type`        |
+| Module      | `smalto-module`      |
+| Variable    | `smalto-variable`    |
+| Constant    | `smalto-constant`    |
+| Builtin     | `smalto-builtin`     |
+| Tag         | `smalto-tag`         |
+| Attribute   | `smalto-attribute`   |
+| Selector    | `smalto-selector`    |
+| Property    | `smalto-property`    |
+| Regex       | `smalto-regex`       |
 
 To style your code blocks, add CSS rules for these classes. Here is a minimal dark theme example:
 

@@ -26,10 +26,10 @@ let cfg =
 
 Routes map to `{output_dir}/{route}/index.html`:
 
-| Route | Output file |
-|-------|-------------|
-| `"/"` | `dist/index.html` |
-| `"/about"` | `dist/about/index.html` |
+| Route        | Output file               |
+| ------------ | ------------------------- |
+| `"/"`        | `dist/index.html`         |
+| `"/about"`   | `dist/about/index.html`   |
 | `"/archive"` | `dist/archive/index.html` |
 
 ## Writing view functions

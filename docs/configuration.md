@@ -21,7 +21,7 @@ let cfg =
   |> config.static_dir("./static")
   |> config.markdown(md_config)
   |> config.route("/", home_view)
-  |> config.feed(rss_config)
+  |> config.rss_feed(rss_config)
   |> config.sitemap(sitemap_config)
   |> config.robots(robots_config)
 ```
@@ -34,15 +34,15 @@ Creates a new `Config` with the given base URL. The `site_url` is required becau
 
 **Default values:**
 
-| Field | Default |
-|-------|---------|
-| `output_dir` | `"./dist"` |
-| `static_dir` | `None` (no static asset copying) |
-| `markdown_config` | `None` (no blog posts) |
-| `routes` | Empty (no static pages) |
-| `feeds` | Empty (no RSS feeds) |
-| `sitemap` | `None` (no sitemap) |
-| `robots` | `None` (no robots.txt) |
+| Field             | Default                          |
+| ----------------- | -------------------------------- |
+| `output_dir`      | `"./dist"`                       |
+| `static_dir`      | `None` (no static asset copying) |
+| `markdown_config` | `None` (no blog posts)           |
+| `routes`          | Empty (no static pages)          |
+| `rss_feeds`       | Empty (no RSS feeds)             |
+| `sitemap`         | `None` (no sitemap)              |
+| `robots`          | `None` (no robots.txt)           |
 
 ### `config.output_dir(config, directory)`
 
@@ -139,7 +139,7 @@ config.new("https://example.com")
 
 See [Static pages](static-pages) for more on writing view functions.
 
-### `config.feed(config, feed_config)`
+### `config.rss_feed(config, rss_feed_config)`
 
 Add an RSS feed configuration. Can be called multiple times to generate multiple feeds. See [RSS feeds](rss-feeds).
 
@@ -203,7 +203,7 @@ let cfg =
   |> config.markdown(md)
   |> config.route("/", home_view)
   |> config.route("/about", about_view)
-  |> config.feed(rss_config)
+  |> config.rss_feed(rss_config)
   |> config.sitemap(sitemap_config)
   |> config.robots(robots_config)
 ```

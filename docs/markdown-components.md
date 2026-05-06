@@ -47,20 +47,20 @@ let md =
 
 ### Text elements
 
-| Setter | Signature | Description |
-|--------|-----------|-------------|
-| `markdown.p` | `fn(List(Element(msg))) -> Element(msg)` | Paragraphs |
-| `markdown.strong` | `fn(List(Element(msg))) -> Element(msg)` | Bold text |
-| `markdown.em` | `fn(List(Element(msg))) -> Element(msg)` | Italic text |
-| `markdown.del` | `fn(List(Element(msg))) -> Element(msg)` | Strikethrough text |
-| `markdown.mark` | `fn(List(Element(msg))) -> Element(msg)` | Highlighted text |
+| Setter            | Signature                                | Description        |
+| ----------------- | ---------------------------------------- | ------------------ |
+| `markdown.p`      | `fn(List(Element(msg))) -> Element(msg)` | Paragraphs         |
+| `markdown.strong` | `fn(List(Element(msg))) -> Element(msg)` | Bold text          |
+| `markdown.em`     | `fn(List(Element(msg))) -> Element(msg)` | Italic text        |
+| `markdown.del`    | `fn(List(Element(msg))) -> Element(msg)` | Strikethrough text |
+| `markdown.mark`   | `fn(List(Element(msg))) -> Element(msg)` | Highlighted text   |
 
 ### Headings
 
 All heading setters take `fn(String, List(Element(msg))) -> Element(msg)` where the first argument is a generated heading ID (useful for anchor links).
 
-| Setter | Description |
-|--------|-------------|
+| Setter        | Description     |
+| ------------- | --------------- |
 | `markdown.h1` | Level 1 heading |
 | `markdown.h2` | Level 2 heading |
 | `markdown.h3` | Level 3 heading |
@@ -82,10 +82,10 @@ markdown.h2(fn(id, children) {
 
 ### Links and images
 
-| Setter | Signature | Description |
-|--------|-----------|-------------|
-| `markdown.a` | `fn(String, Option(String), List(Element(msg))) -> Element(msg)` | Links (href, optional title, children) |
-| `markdown.img` | `fn(String, String, Option(String)) -> Element(msg)` | Images (src, alt text, optional title) |
+| Setter         | Signature                                                        | Description                            |
+| -------------- | ---------------------------------------------------------------- | -------------------------------------- |
+| `markdown.a`   | `fn(String, Option(String), List(Element(msg))) -> Element(msg)` | Links (href, optional title, children) |
+| `markdown.img` | `fn(String, String, Option(String)) -> Element(msg)`             | Images (src, alt text, optional title) |
 
 Example — open external links in a new tab:
 
@@ -112,10 +112,10 @@ markdown.a(fn(href, title, children) {
 
 ### Code
 
-| Setter | Signature | Description |
-|--------|-----------|-------------|
+| Setter          | Signature                                                | Description                                                |
+| --------------- | -------------------------------------------------------- | ---------------------------------------------------------- |
 | `markdown.code` | `fn(Option(String), List(Element(msg))) -> Element(msg)` | Code spans and fenced blocks (optional language, children) |
-| `markdown.pre` | `fn(List(Element(msg))) -> Element(msg)` | Preformatted code block wrapper |
+| `markdown.pre`  | `fn(List(Element(msg))) -> Element(msg)`                 | Preformatted code block wrapper                            |
 
 The `code` component receives `Some("gleam")` for fenced code blocks with a language tag, or `None` for inline code.
 
@@ -137,23 +137,23 @@ markdown.code(fn(lang, children) {
 
 ### Lists
 
-| Setter | Signature | Description |
-|--------|-----------|-------------|
-| `markdown.ul` | `fn(List(Element(msg))) -> Element(msg)` | Unordered lists |
-| `markdown.ol` | `fn(Option(Int), List(Element(msg))) -> Element(msg)` | Ordered lists (optional start number, children) |
-| `markdown.li` | `fn(List(Element(msg))) -> Element(msg)` | List items |
-| `markdown.checkbox` | `fn(Bool) -> Element(msg)` | Task list checkboxes (checked state) |
+| Setter              | Signature                                             | Description                                     |
+| ------------------- | ----------------------------------------------------- | ----------------------------------------------- |
+| `markdown.ul`       | `fn(List(Element(msg))) -> Element(msg)`              | Unordered lists                                 |
+| `markdown.ol`       | `fn(Option(Int), List(Element(msg))) -> Element(msg)` | Ordered lists (optional start number, children) |
+| `markdown.li`       | `fn(List(Element(msg))) -> Element(msg)`              | List items                                      |
+| `markdown.checkbox` | `fn(Bool) -> Element(msg)`                            | Task list checkboxes (checked state)            |
 
 ### Tables
 
-| Setter | Signature | Description |
-|--------|-----------|-------------|
-| `markdown.table` | `fn(List(Element(msg))) -> Element(msg)` | Table wrapper |
-| `markdown.thead` | `fn(List(Element(msg))) -> Element(msg)` | Table header group |
-| `markdown.tbody` | `fn(List(Element(msg))) -> Element(msg)` | Table body group |
-| `markdown.tr` | `fn(List(Element(msg))) -> Element(msg)` | Table row |
-| `markdown.th` | `fn(Alignment, List(Element(msg))) -> Element(msg)` | Header cell (alignment, children) |
-| `markdown.td` | `fn(Alignment, List(Element(msg))) -> Element(msg)` | Data cell (alignment, children) |
+| Setter           | Signature                                           | Description                       |
+| ---------------- | --------------------------------------------------- | --------------------------------- |
+| `markdown.table` | `fn(List(Element(msg))) -> Element(msg)`            | Table wrapper                     |
+| `markdown.thead` | `fn(List(Element(msg))) -> Element(msg)`            | Table header group                |
+| `markdown.tbody` | `fn(List(Element(msg))) -> Element(msg)`            | Table body group                  |
+| `markdown.tr`    | `fn(List(Element(msg))) -> Element(msg)`            | Table row                         |
+| `markdown.th`    | `fn(Alignment, List(Element(msg))) -> Element(msg)` | Header cell (alignment, children) |
+| `markdown.td`    | `fn(Alignment, List(Element(msg))) -> Element(msg)` | Data cell (alignment, children)   |
 
 The `Alignment` type has three variants: `Left`, `Center`, `Right`.
 
@@ -174,11 +174,11 @@ markdown.td(fn(alignment, children) {
 
 ### Other elements
 
-| Setter | Signature | Description |
-|--------|-----------|-------------|
-| `markdown.blockquote` | `fn(List(Element(msg))) -> Element(msg)` | Block quotes |
-| `markdown.hr` | `fn() -> Element(msg)` | Horizontal rules |
-| `markdown.footnote` | `fn(Int, List(Element(msg))) -> Element(msg)` | Footnotes (number, children) |
+| Setter                | Signature                                     | Description                  |
+| --------------------- | --------------------------------------------- | ---------------------------- |
+| `markdown.blockquote` | `fn(List(Element(msg))) -> Element(msg)`      | Block quotes                 |
+| `markdown.hr`         | `fn() -> Element(msg)`                        | Horizontal rules             |
+| `markdown.footnote`   | `fn(Int, List(Element(msg))) -> Element(msg)` | Footnotes (number, children) |
 
 ## Replacing all components at once
 

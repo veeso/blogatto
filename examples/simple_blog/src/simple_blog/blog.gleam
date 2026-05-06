@@ -6,7 +6,7 @@
 //// Run with `gleam run` from the `examples/simple_blog` directory.
 
 import blogatto/config
-import blogatto/config/feed
+import blogatto/config/feed/rss
 import blogatto/config/markdown
 import blogatto/config/markdown/code
 import blogatto/config/robots
@@ -47,14 +47,14 @@ pub fn config() -> config.Config(Nil) {
     })
 
   // RSS feed configuration
-  let rss =
-    feed.new(
+  let rss_feed =
+    rss.new(
       "Simple Blog",
       site_url,
       "A simple example blog built with Blogatto",
     )
-    |> feed.language("en-us")
-    |> feed.generator("Blogatto")
+    |> rss.language("en-us")
+    |> rss.generator("Blogatto")
 
   // Sitemap configuration
   let sitemap_config = sitemap.new("/sitemap.xml")
@@ -75,7 +75,7 @@ pub fn config() -> config.Config(Nil) {
   |> config.output_dir("./dist")
   |> config.markdown(md_config)
   |> config.route("/", home_view)
-  |> config.feed(rss)
+  |> config.rss_feed(rss_feed)
   |> config.sitemap(sitemap_config)
   |> config.robots(robots_config)
 }
@@ -132,7 +132,10 @@ fn home_view(posts: List(Post(Nil))) -> Element(Nil) {
 
 /// Blog post template: renders a full HTML page for a single blog post
 /// with a navigation link back to the homepage.
-fn blog_post_template(p: Post(Nil), _all_posts: List(Post(Nil))) -> Element(Nil) {
+fn blog_post_template(
+  p: Post(Nil),
+  _all_posts: List(Post(Nil)),
+) -> Element(Nil) {
   let lang = option.unwrap(p.language, "en")
 
   html.html([attribute.lang(lang)], [

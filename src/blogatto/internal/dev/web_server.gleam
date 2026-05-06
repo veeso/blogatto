@@ -155,7 +155,10 @@ pub fn append_live_reload_script(html: String, live_reload: Bool) -> String {
   }
 }
 
-fn serve_asset(output_dir: String, asset_path: String) -> Response(ResponseData) {
+fn serve_asset(
+  output_dir: String,
+  asset_path: String,
+) -> Response(ResponseData) {
   let path = path.join(output_dir, asset_path)
   case simplifile.is_file(path) {
     Error(_) -> not_found()

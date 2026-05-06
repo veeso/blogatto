@@ -39,7 +39,7 @@ gleam add blogatto
 ```gleam
 import blogatto
 import blogatto/config
-import blogatto/config/feed
+import blogatto/config/feed/rss
 import blogatto/config/markdown
 import blogatto/config/robots
 import blogatto/config/sitemap
@@ -65,10 +65,10 @@ pub fn main() {
     })
 
   // RSS feed
-  let rss =
-    feed.new("My Blog", site_url, "My personal blog")
-    |> feed.language("en-us")
-    |> feed.generator("Blogatto")
+  let rss_feed =
+    rss.new("My Blog", site_url, "My personal blog")
+    |> rss.language("en-us")
+    |> rss.generator("Blogatto")
 
   // Build configuration
   let cfg =
@@ -77,7 +77,7 @@ pub fn main() {
     |> config.static_dir("./static")
     |> config.markdown(md)
     |> config.route("/", home_view)
-    |> config.feed(rss)
+    |> config.rss_feed(rss_feed)
     |> config.sitemap(sitemap.new("/sitemap.xml"))
     |> config.robots(robots.RobotsConfig(
       sitemap_url: site_url <> "/sitemap.xml",
@@ -172,12 +172,12 @@ The dev server will:
 
 ### Configuration
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `build_command` | `"gleam run"` | Shell command to rebuild the site |
-| `port` | `3000` | HTTP server port |
-| `host` | `"127.0.0.1"` | Bind address |
-| `live_reload` | `True` | Inject live-reload script into HTML responses |
+| Option          | Default       | Description                                   |
+| --------------- | ------------- | --------------------------------------------- |
+| `build_command` | `"gleam run"` | Shell command to rebuild the site             |
+| `port`          | `3000`        | HTTP server port                              |
+| `host`          | `"127.0.0.1"` | Bind address                                  |
+| `live_reload`   | `True`        | Inject live-reload script into HTML responses |
 
 > **Note for Linux users**: The file watcher requires `inotify-tools` to be installed.
 

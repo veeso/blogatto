@@ -190,7 +190,10 @@ pub fn components(
 }
 
 /// Set the maximum character length for auto-generated post excerpts.
-pub fn excerpt_len(config: MarkdownConfig(msg), len: Int) -> MarkdownConfig(msg) {
+pub fn excerpt_len(
+  config: MarkdownConfig(msg),
+  len: Int,
+) -> MarkdownConfig(msg) {
   MarkdownConfig(..config, excerpt_len: len)
 }
 
