@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Error handling
-nav_order: 12
+nav_order: 13
 ---
 
 # Error handling
