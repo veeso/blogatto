@@ -1,5 +1,5 @@
 title: Blogatto
-description: A Gleam framework for building static blogs with Lustre and Markdown
+description: A Gleam framework for building static blogs with Lustre, Markdown, and Djot
 url: https://blogat.to
 theme: minima
 image: /og_preview.jpeg

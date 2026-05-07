@@ -6,7 +6,9 @@ nav_order: 7
 
 # Syntax highlighting
 
-Blogatto supports build-time syntax highlighting for code blocks in your markdown files via [Smalto](https://hexdocs.pm/smalto/). When enabled, fenced code blocks with a language tag (e.g., `` ```gleam ``) are highlighted at build time, producing styled HTML with no client-side JavaScript required.
+Blogatto supports build-time syntax highlighting for code blocks in your Markdown files via [Smalto](https://hexdocs.pm/smalto/). When enabled, fenced code blocks with a language tag (e.g., `` ```gleam ``) are highlighted at build time, producing styled HTML with no client-side JavaScript required.
+
+> **Note:** Syntax highlighting currently applies to Markdown (`.md`) source files only. Djot (`.dj`/`.djot`) code blocks are rendered through the user's `code` component without tokenization.
 
 ## Enabling syntax highlighting
 

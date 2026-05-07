@@ -1,0 +1,52 @@
+---
+title: Djot Showcase
+date: 2025-02-10 00:00:00
+description: A tour of djot syntax features rendered by Blogatto
+---
+
+# Djot Showcase
+
+This post demonstrates writing a Blogatto post in [djot](https://djot.net/)
+instead of Markdown. Djot files use the `.djot` (or `.dj`) extension and are
+rendered through the same `Components` configuration as Markdown posts.
+
+## Inline formatting
+
+Djot supports the usual _emphasis_ and *strong*, plus a few extras like
+{=highlighted=} text, {-deleted-} text, and {+inserted+} text.
+
+You can also write inline `code` and even reference footnotes inline[^djot].
+
+## Lists
+
+Tight bullet list:
+
+- Parses fast
+- Plays nicely with custom components
+- Lives next to Markdown posts
+
+Ordered list with a custom start:
+
+3. Third item
+4. Fourth item
+
+## Code blocks
+
+```gleam
+pub fn hello() -> String {
+  "Hello from djot!"
+}
+```
+
+## Blockquote
+
+> Djot keeps the readability of Markdown while removing many of its
+> ambiguities.
+
+## Link reference
+
+See the [official site][djot-site] for the full specification.
+
+[djot-site]: https://djot.net/
+
+[^djot]: Djot was created by John MacFarlane, the author of CommonMark.
