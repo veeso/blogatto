@@ -37,6 +37,8 @@ my-blog/
     second-post/
       index.md
       index-it.md        # Italian variant
+    djot-post/
+      index.djot         # Djot source (also `.dj`)
   static/
     css/
       style.css          # Static assets copied to output
@@ -47,7 +49,7 @@ my-blog/
 
 ## Minimal example
 
-The simplest Blogatto setup parses markdown files and writes HTML:
+The simplest Blogatto setup parses post source files (Markdown or Djot) and writes HTML:
 
 ```gleam
 import blogatto

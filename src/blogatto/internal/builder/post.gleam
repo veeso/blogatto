@@ -9,6 +9,7 @@
 import blogatto/config
 import blogatto/config/post as post_cfg
 import blogatto/error
+import blogatto/internal/builder/post/djot
 import blogatto/internal/builder/post/markdown
 import blogatto/internal/date
 import blogatto/internal/excerpt
@@ -44,6 +45,9 @@ type PostInfo(msg) {
 /// Supported post source file types. 
 /// This is used to determine the builder to use for a given source file based on its extension.
 type PostSourceType {
+  /// Djot source file, with extensions .dj or .djot
+  Djot
+  /// Markdown source file, with extension .md
   Markdown
 }
 
@@ -229,7 +233,11 @@ fn find_posts(
 /// Whether the given file path is a recognized post source file.
 fn is_source_file(file: String) -> Bool {
   case filepath.extension(file) {
-    Ok(ext) -> ext == markdown.extension
+    Ok(ext) ->
+      list.contains(
+        [markdown.extension, djot.extension_short, djot.extension_long],
+        ext,
+      )
     Error(_) -> False
   }
 }
@@ -318,6 +326,7 @@ fn render(
   source_type: PostSourceType,
 ) -> List(Element(msg)) {
   case source_type {
+    Djot -> djot.render(config, content)
     Markdown -> markdown.render(config, content)
   }
 }
@@ -476,6 +485,8 @@ fn source_type(
 ) -> Result(PostSourceType, error.BlogattoError) {
   case filepath.extension(source.path) {
     Ok(ext) if ext == markdown.extension -> Ok(Markdown)
+    Ok(ext) if ext == djot.extension_short || ext == djot.extension_long ->
+      Ok(Djot)
     Ok(ext) -> Error(error.InvalidSourceType(ext))
     Error(_) -> Error(error.InvalidSourceType("unknown"))
   }

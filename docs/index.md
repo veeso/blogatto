@@ -14,19 +14,19 @@ nav_order: 1
 [![target-erlang](https://img.shields.io/badge/target-erlang-b83998)](https://www.erlang.org/)
 [![test](https://github.com/veeso/blogatto/actions/workflows/test.yml/badge.svg)](https://github.com/veeso/blogatto/actions/workflows/test.yml)
 
-A Gleam framework for building static blogs with [**Lustre**](https://hexdocs.pm/lustre/) and Markdown.
+A Gleam framework for building static blogs with [**Lustre**](https://hexdocs.pm/lustre/), Markdown, and [Djot](https://djot.net/).
 
-Blogatto generates your entire static site from a single configuration: blog posts from markdown with frontmatter, static pages from Lustre views, RSS and Atom feeds, sitemaps, and robots.txt — all rendered via [Maud](https://hexdocs.pm/maud/) components.
+Blogatto generates your entire static site from a single configuration: blog posts from Markdown (`.md`) or Djot (`.dj`/`.djot`) files with YAML frontmatter, static pages from Lustre views, RSS and Atom feeds, sitemaps, and robots.txt — all rendered via [Maud](https://hexdocs.pm/maud/) components.
 
 ## Features
 
-- **Blog posts from markdown** — write in markdown with YAML frontmatter, Blogatto handles parsing, rendering, and output
+- **Blog posts from Markdown or Djot** — write in either format with YAML frontmatter, Blogatto handles parsing, rendering, and output
 - **Multilingual support** — add `index-it.md`, `index-fr.md`, etc. alongside `index.md` for language variants
 - **Static pages** — map URL paths to Lustre view functions that receive the full list of blog posts
 - **RSS and Atom feeds** — generate one or more RSS 2.0 and Atom 1.0 feeds with optional filtering and custom serialization
 - **Sitemap XML** — automatic sitemap generation covering static pages and blog posts
 - **Robots.txt** — configurable crawl policies with sitemap reference
-- **Custom markdown rendering** — override any markdown element's HTML output via Maud components
+- **Custom rendering** — override any Markdown or Djot element's HTML output via shared Maud components
 - **Build-time syntax highlighting** — highlight code blocks at build time via [Smalto](https://hexdocs.pm/smalto/), with 28 built-in languages and customizable token rendering
 - **Custom post routing** — control blog post URLs with a route builder function for date-based, category-based, or any custom URL scheme
 - **Blog post templates** — full control over the page layout wrapping each blog post
@@ -39,7 +39,7 @@ You define a `Config` using the builder pattern, then call `blogatto.build(confi
 1. Cleans and recreates the output directory
 2. Copies static assets
 3. Generates robots.txt
-4. Parses markdown files, extracts frontmatter, renders HTML, and copies post assets
+4. Parses post source files (Markdown or Djot), extracts frontmatter, renders HTML, and copies post assets
 5. Renders static pages from route view functions
 6. Generates RSS and Atom feeds
 7. Generates sitemap XML
@@ -54,7 +54,7 @@ The output is a fully static site ready to deploy to any static hosting provider
 | [Example blog](example)                      | Walkthrough of the complete example project               |
 | [Blog posts](blog-posts)                     | Directory structure, frontmatter, multilingual support    |
 | [Configuration](configuration)               | Full configuration reference                              |
-| [Markdown components](markdown-components)   | Customizing markdown rendering                            |
+| [Post components](post-components)           | Customizing Markdown and Djot rendering                   |
 | [Syntax highlighting](syntax-highlighting)   | Build-time code block highlighting with Smalto            |
 | [Static pages](static-pages)                 | Routes, view functions, and using post data               |
 | [RSS feeds](rss-feeds)                       | RSS 2.0 feed configuration, filtering, and serialization  |

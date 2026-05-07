@@ -8,20 +8,20 @@
 [![Erlang Compatible](https://img.shields.io/badge/target-erlang-b83998)](https://www.erlang.org/)
 [![test](https://github.com/veeso/blogatto/actions/workflows/test.yml/badge.svg)](https://github.com/veeso/blogatto/actions/workflows/test.yml)
 
-A Gleam framework for building static blogs with [**Lustre**](https://hexdocs.pm/lustre/) and Markdown.
+A Gleam framework for building static blogs with [**Lustre**](https://hexdocs.pm/lustre/), Markdown, and [Djot](https://djot.net/).
 
-Blogatto generates your entire static site from a single configuration: blog posts from markdown with frontmatter, static pages from [Lustre](https://hexdocs.pm/lustre/) views, RSS and Atom feeds, sitemaps, and robots.txt — all rendered via [Maud](https://hexdocs.pm/maud/) components.
+Blogatto generates your entire static site from a single configuration: blog posts from Markdown (`.md`) or Djot (`.dj`/`.djot`) files with YAML frontmatter, static pages from [Lustre](https://hexdocs.pm/lustre/) views, RSS and Atom feeds, sitemaps, and robots.txt — all rendered via [Maud](https://hexdocs.pm/maud/) components.
 
 ## Features
 
-- Blog posts from markdown files with YAML frontmatter
+- Blog posts from Markdown (`.md`) or Djot (`.dj`/`.djot`) files with YAML frontmatter
 - Multilingual posts via `index-{lang}.md` file naming convention
 - Static pages from [Lustre](https://hexdocs.pm/lustre/) view functions
 - RSS 2.0 and Atom 1.0 feed generation with customizable filtering and serialization
 - Sitemap XML generation with alternate language links
 - Robots.txt generation
 - Static asset copying
-- Custom Maud components for markdown rendering
+- Custom Maud components shared across Markdown and Djot rendering
 - Build-time syntax highlighting for code blocks via [Smalto](https://hexdocs.pm/smalto/)
 - Configurable blog post templates
 - Dev server with file watching, auto-rebuild, and live reload
@@ -195,7 +195,7 @@ The dev server will:
 
 ## Documentation
 
-Full documentation is available at [blogat.to](https://blogat.to), covering blog post structure, configuration, markdown components, static pages, RSS and Atom feeds, sitemaps, dev server, and error handling.
+Full documentation is available at [blogat.to](https://blogat.to), covering blog post structure, configuration, post components, static pages, RSS and Atom feeds, sitemaps, dev server, and error handling.
 
 API reference is on [HexDocs](https://hexdocs.pm/blogatto/).
 
