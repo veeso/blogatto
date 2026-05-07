@@ -1,5 +1,70 @@
 # Changelog
 
+## 6.0.0
+
+Released on 2026-05-07
+
+### ⚠ Breaking Changes
+
+- rename `FeedConfig` to `RssFeedConfig` and split into rss submodule
+  > `blogatto/config/feed`'s `FeedConfig`, `FeedItem`, and the
+related builder functions have moved to `blogatto/config/feed/rss` as
+`RssFeedConfig` and `RssFeedItem`. `Config.feeds` is now `Config.rss_feeds`,
+and `config.feed()` is now `config.rss_feed()`. `FeedMetadata` stays in
+`blogatto/config/feed`. This makes the existing API explicit about RSS and
+leaves room for additional feed formats (e.g. Atom, #44) without overloading
+the generic `feed` namespace.
+- rename `MarkdownConfig` to `PostConfig` and split builder
+  > `blogatto/config/markdown` module renamed to
+`blogatto/config/post`; `MarkdownConfig` renamed to `PostConfig`;
+`Config.markdown_config` field renamed to `post_config`;
+`config.markdown()` setter renamed to `config.post()`;
+`markdown.markdown_path()` renamed to `post.path()`. `Components`,
+`Options`, and `Alignment` move with the module. Component setter names
+unchanged; only the module qualifier changes.
+
+### Added
+
+- support Atom 1.0 feeds alongside RSS
+  > Adds AtomFeed configuration and internal builder for generating
+  > Atom 1.0 feeds via webls. Multiple Atom feeds can be configured
+  > through `config.atom_feed()` with optional filter/serialize hooks
+  > mirroring the RSS API. Updates docs, README, and the simple_blog
+  > example to demonstrate atom feed generation.- add djot support alongside markdown
+  > Add jot-backed renderer for `.dj` and `.djot` post sources, sharing the
+  > same `Components`, frontmatter, and `Post(msg)` pipeline as markdown.
+  > Mixed-format blogs are supported; each post directory picks its own
+  > extension.
+  >
+  > Markdown `Options` and Smalto syntax highlighting remain markdown-only.
+  > Djot-only inline constructs (span, ins, math, symbols) fall back to raw
+  > Lustre elements with attributes preserved.
+  >
+  > Renames `docs/markdown-components.md` to `docs/post-components.md` to
+  > reflect that components apply to both formats.
+
+### CI
+
+- bump gleam 1.16.0
+
+### Changed
+
+- 💥 rename FeedConfig to RssFeedConfig and split into rss submodule- 💥 rename `MarkdownConfig` to `PostConfig` and split builder
+  > Renames `blogatto/config/markdown` to `blogatto/config/post` to reflect
+  > that it configures post discovery and rendering rather than the markdown
+  > format specifically. Builder is reshaped: `internal/builder/blog.gleam`
+  > becomes `internal/builder/post.gleam`, and markdown-only rendering is
+  > extracted to `internal/builder/post/markdown.gleam` so other source
+  > formats (e.g. djot) can be added as sibling submodules.
+
+### Documentation
+
+- README and getting started provide command for latest version
+
+### Miscellaneous
+
+- add githook to run `gleam format`
+
 ## 5.1.1
 
 Released on 2026-03-25
