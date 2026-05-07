@@ -6,21 +6,35 @@ nav_order: 4
 
 # Blog posts
 
-Blogatto discovers blog posts from markdown files with YAML frontmatter. This guide covers the directory convention, frontmatter fields, multilingual support, and post assets.
+Blogatto discovers blog posts from Markdown or Djot files with YAML frontmatter. This guide covers the supported source formats, directory convention, frontmatter fields, multilingual support, and post assets.
+
+## Source formats
+
+Blogatto recognizes the following extensions when discovering post source files:
+
+| Extension | Format                                | Parser                           |
+| --------- | ------------------------------------- | -------------------------------- |
+| `.md`     | [CommonMark](https://commonmark.org/) | [mork](https://hexdocs.pm/mork/) |
+| `.dj`     | [Djot](https://djot.net/)             | [jot](https://hexdocs.pm/jot/)   |
+| `.djot`   | [Djot](https://djot.net/)             | [jot](https://hexdocs.pm/jot/)   |
+
+Both formats use the same YAML frontmatter block, the same `Components` for HTML output, and the same `Post(msg)` value at the end of the pipeline. Mix-and-match freely within a single blog: each post directory chooses its own format.
+
+> **Note:** [Markdown parsing options](#markdown-parsing-options) (`Options` record) only affect `.md` files. Djot parsing follows the [djot specification](https://djot.net/) and ignores those options.
 
 ## Directory-per-post convention
 
-Each blog post lives in its own directory:
+Each blog post lives in its own directory. The directory may contain `index.md`, `index.dj`, or `index.djot` (plus per-language variants):
 
 ```text
 blog/
   my-first-post/
-    index.md             # Default language
+    index.md             # Default language (Markdown)
     index-it.md          # Italian variant
     index-fr.md          # French variant
     cover.jpg            # Asset copied to output
-  another-post/
-    index.md
+  djot-post/
+    index.djot           # Default language (Djot)
     diagram.png
 ```
 
@@ -105,14 +119,16 @@ DST transitions are handled automatically — the correct offset is applied base
 
 ## Multilingual posts
 
-Language variants use the `index-{lang}.md` naming convention:
+Language variants use the `index-{lang}.{ext}` naming convention. Replace `{ext}` with `md`, `dj`, or `djot` per the source format. Mixed-format directories are allowed:
 
-| Filename      | Language                                             |
-| ------------- | ---------------------------------------------------- |
-| `index.md`    | Default (no language set, `Post.language` is `None`) |
-| `index-en.md` | English (`Post.language` is `Some("en")`)            |
-| `index-it.md` | Italian (`Post.language` is `Some("it")`)            |
-| `index-fr.md` | French (`Post.language` is `Some("fr")`)             |
+| Filename        | Language                                             |
+| --------------- | ---------------------------------------------------- |
+| `index.md`      | Default (no language set, `Post.language` is `None`) |
+| `index-en.md`   | English (`Post.language` is `Some("en")`)            |
+| `index-it.md`   | Italian (`Post.language` is `Some("it")`)            |
+| `index-fr.md`   | French (`Post.language` is `Some("fr")`)             |
+| `index.djot`    | Default, Djot source                                 |
+| `index-it.djot` | Italian, Djot source                                 |
 
 Each variant is an independent `Post` with its own frontmatter. You can have different titles and descriptions per language:
 
@@ -224,7 +240,7 @@ If `photo.jpg` is in the same directory as `index.md`, it will be copied to the 
 
 ## Markdown parsing options
 
-Blogatto exposes markdown parsing options that control which extensions are enabled. Use `post.options()` to override the defaults returned by `post.default_options()`:
+Blogatto exposes Markdown parsing options that control which extensions are enabled when parsing `.md` source files. Djot files are not affected — jot follows the [djot specification](https://djot.net/) without runtime toggles. Use `post.options()` to override the defaults returned by `post.default_options()`:
 
 ```gleam
 import blogatto/config/post
@@ -258,7 +274,7 @@ All options default to `True` except `heading_ids`, which defaults to `False`. T
 
 ## The Post type
 
-After parsing, each markdown file produces a `Post(msg)` value with these fields:
+After parsing, each post source file produces a `Post(msg)` value with these fields:
 
 | Field            | Type                   | Description                                                                                    |
 | ---------------- | ---------------------- | ---------------------------------------------------------------------------------------------- |
@@ -270,7 +286,7 @@ After parsing, each markdown file produces a `Post(msg)` value with these fields
 | `excerpt`        | `String`               | Auto-generated plain-text excerpt from rendered content, truncated to `excerpt_len` characters |
 | `language`       | `Option(String)`       | `None` for default, `Some("it")` for variants                                                  |
 | `featured_image` | `Option(String)`       | From frontmatter, if provided                                                                  |
-| `contents`       | `List(Element(msg))`   | Rendered markdown as Lustre elements                                                           |
+| `contents`       | `List(Element(msg))`   | Rendered source content as Lustre elements                                                     |
 | `extras`         | `Dict(String, String)` | Additional frontmatter fields                                                                  |
 
 The full list of posts is passed to every route view function and is available during feed and sitemap generation.

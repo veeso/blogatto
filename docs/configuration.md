@@ -35,16 +35,16 @@ Creates a new `Config` with the given base URL. The `site_url` is required becau
 
 **Default values:**
 
-| Field             | Default                          |
-| ----------------- | -------------------------------- |
-| `output_dir`      | `"./dist"`                       |
-| `static_dir`      | `None` (no static asset copying) |
+| Field         | Default                          |
+| ------------- | -------------------------------- |
+| `output_dir`  | `"./dist"`                       |
+| `static_dir`  | `None` (no static asset copying) |
 | `post_config` | `None` (no blog posts)           |
-| `routes`          | Empty (no static pages)          |
-| `rss_feeds`       | Empty (no RSS feeds)             |
-| `atom_feeds`      | Empty (no Atom feeds)            |
-| `sitemap`         | `None` (no sitemap)              |
-| `robots`          | `None` (no robots.txt)           |
+| `routes`      | Empty (no static pages)          |
+| `rss_feeds`   | Empty (no RSS feeds)             |
+| `atom_feeds`  | Empty (no Atom feeds)            |
+| `sitemap`     | `None` (no sitemap)              |
+| `robots`      | `None` (no robots.txt)           |
 
 ### `config.output_dir(config, directory)`
 
@@ -68,7 +68,7 @@ For example, `./static/css/style.css` becomes `./dist/css/style.css`.
 
 ### `config.post(config, post_config)`
 
-Set the markdown configuration for blog post rendering. See [Markdown components](markdown-components) for component customization and [Blog posts](blog-posts) for routing details.
+Set the post configuration for blog post rendering (applies to both Markdown and Djot sources). See [Post components](post-components) for component customization and [Blog posts](blog-posts) for routing details.
 
 ```gleam
 import blogatto/config/post

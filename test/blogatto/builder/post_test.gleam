@@ -2135,3 +2135,164 @@ pub fn build_without_syntax_highlighting_renders_plain_code_test() {
     html |> string.contains("pub fn main()") |> should.be_true
   }
 }
+
+// --- Djot source files ---
+
+fn djot_content(
+  title: String,
+  slug: String,
+  date: String,
+  description: String,
+  body: String,
+) -> String {
+  "---\ntitle: "
+  <> title
+  <> "\nslug: "
+  <> slug
+  <> "\ndate: "
+  <> date
+  <> "\ndescription: "
+  <> description
+  <> "\n---\n"
+  <> body
+}
+
+fn write_source(dir: String, filename: String, content: String) -> Nil {
+  let assert Ok(_) = simplifile.write(dir <> "/" <> filename, content)
+  Nil
+}
+
+pub fn build_single_djot_post_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+
+    let post_dir = create_post_dir(blog, "djot-post")
+    write_source(
+      post_dir,
+      "index.djot",
+      djot_content(
+        "Djot Post",
+        "djot-post",
+        "2024-04-01 09:00:00",
+        "A post written in djot",
+        "# Djot heading\n\nBody _with emphasis_ and *strong*.\n",
+      ),
+    )
+
+    let assert [built_post] =
+      minimal_config(dir, blog)
+      |> post_builder.build()
+      |> should.be_ok
+
+    built_post.title |> should.equal("Djot Post")
+    built_post.slug |> should.equal("djot-post")
+
+    let html =
+      built_post.contents
+      |> list.map(element.to_string)
+      |> string.join("")
+
+    html |> string.contains("<h1") |> should.be_true
+    html |> string.contains("Djot heading") |> should.be_true
+    html |> string.contains("<em>") |> should.be_true
+    html |> string.contains("<strong>") |> should.be_true
+  }
+}
+
+pub fn build_dj_short_extension_post_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+
+    let post_dir = create_post_dir(blog, "dj-post")
+    write_source(
+      post_dir,
+      "index.dj",
+      djot_content(
+        "Dj Post",
+        "dj-post",
+        "2024-04-02 09:00:00",
+        "A post using the .dj extension",
+        "Hello from djot!\n",
+      ),
+    )
+
+    let assert [built_post] =
+      minimal_config(dir, blog)
+      |> post_builder.build()
+      |> should.be_ok
+
+    built_post.slug |> should.equal("dj-post")
+
+    let html =
+      built_post.contents
+      |> list.map(element.to_string)
+      |> string.join("")
+
+    html |> string.contains("<p>") |> should.be_true
+    html |> string.contains("Hello from djot!") |> should.be_true
+  }
+}
+
+pub fn build_mixed_markdown_and_djot_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+
+    let md_dir = create_post_dir(blog, "md-post")
+    write_markdown(
+      md_dir,
+      "index.md",
+      markdown_content(
+        "Markdown Post",
+        "md-post",
+        "2024-04-10 10:00:00",
+        "A markdown post",
+        "# From markdown\n\nBody text.\n",
+      ),
+    )
+
+    let dj_dir = create_post_dir(blog, "dj-post")
+    write_source(
+      dj_dir,
+      "index.djot",
+      djot_content(
+        "Djot Post",
+        "dj-post",
+        "2024-04-11 10:00:00",
+        "A djot post",
+        "# From djot\n\nBody text.\n",
+      ),
+    )
+
+    let posts =
+      minimal_config(dir, blog)
+      |> post_builder.build()
+      |> should.be_ok
+
+    list.length(posts) |> should.equal(2)
+
+    let slugs =
+      posts
+      |> list.map(fn(p) { p.slug })
+      |> list.sort(string.compare)
+
+    slugs |> should.equal(["dj-post", "md-post"])
+
+    // Verify each post rendered its source format.
+    let assert Ok(md_post) = list.find(posts, fn(p) { p.slug == "md-post" })
+    let md_html =
+      md_post.contents
+      |> list.map(element.to_string)
+      |> string.join("")
+    md_html |> string.contains("From markdown") |> should.be_true
+
+    let assert Ok(dj_post) = list.find(posts, fn(p) { p.slug == "dj-post" })
+    let dj_html =
+      dj_post.contents
+      |> list.map(element.to_string)
+      |> string.join("")
+    dj_html |> string.contains("From djot") |> should.be_true
+  }
+}

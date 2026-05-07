@@ -1,16 +1,20 @@
 ---
 layout: default
-title: Markdown components
+title: Post components
 nav_order: 6
 ---
 
-# Markdown components
+# Post components
 
-Blogatto renders markdown through [Maud](https://hexdocs.pm/maud/) components — view functions that control how each markdown element becomes HTML. You can override any component to add classes, attributes, or entirely custom markup.
+Blogatto renders Markdown and [Djot](https://djot.net/) sources through the same set of [Maud](https://hexdocs.pm/maud/)-style components — view functions that control how each AST element becomes HTML. You can override any component to add classes, attributes, or entirely custom markup.
+
+The component setters live on `blogatto/config/post` and apply to every post regardless of source format. Markdown-specific AST nodes (e.g., GFM tables) and Djot-specific AST nodes (e.g., highlight `{=...=}`) reuse overlapping components (`table`, `mark`, …), so a single override applies to both formats.
 
 ## How it works
 
-Markdown is parsed into an AST, then rendered bottom-up: children are rendered first, then passed to the parent component function as `List(Element(msg))`. When implementing a custom component, you must include the children in the element you return, otherwise they won't appear in the output.
+The post source is parsed into an AST, then rendered bottom-up: children are rendered first, then passed to the parent component function as `List(Element(msg))`. When implementing a custom component, you must include the children in the element you return, otherwise they won't appear in the output.
+
+Djot-only inline constructs that have no matching component (e.g. `<span>` from `[text]{.class}`, `<ins>` from `{+text+}`, math, symbols) are emitted as raw Lustre elements with their attributes preserved.
 
 ## Default components
 
@@ -47,8 +51,8 @@ let md =
 
 ### Text elements
 
-| Setter            | Signature                                | Description        |
-| ----------------- | ---------------------------------------- | ------------------ |
+| Setter        | Signature                                | Description        |
+| ------------- | ---------------------------------------- | ------------------ |
 | `post.p`      | `fn(List(Element(msg))) -> Element(msg)` | Paragraphs         |
 | `post.strong` | `fn(List(Element(msg))) -> Element(msg)` | Bold text          |
 | `post.em`     | `fn(List(Element(msg))) -> Element(msg)` | Italic text        |
@@ -59,8 +63,8 @@ let md =
 
 All heading setters take `fn(String, List(Element(msg))) -> Element(msg)` where the first argument is a generated heading ID (useful for anchor links).
 
-| Setter        | Description     |
-| ------------- | --------------- |
+| Setter    | Description     |
+| --------- | --------------- |
 | `post.h1` | Level 1 heading |
 | `post.h2` | Level 2 heading |
 | `post.h3` | Level 3 heading |
@@ -82,8 +86,8 @@ post.h2(fn(id, children) {
 
 ### Links and images
 
-| Setter         | Signature                                                        | Description                            |
-| -------------- | ---------------------------------------------------------------- | -------------------------------------- |
+| Setter     | Signature                                                        | Description                            |
+| ---------- | ---------------------------------------------------------------- | -------------------------------------- |
 | `post.a`   | `fn(String, Option(String), List(Element(msg))) -> Element(msg)` | Links (href, optional title, children) |
 | `post.img` | `fn(String, String, Option(String)) -> Element(msg)`             | Images (src, alt text, optional title) |
 
@@ -112,8 +116,8 @@ post.a(fn(href, title, children) {
 
 ### Code
 
-| Setter          | Signature                                                | Description                                                |
-| --------------- | -------------------------------------------------------- | ---------------------------------------------------------- |
+| Setter      | Signature                                                | Description                                                |
+| ----------- | -------------------------------------------------------- | ---------------------------------------------------------- |
 | `post.code` | `fn(Option(String), List(Element(msg))) -> Element(msg)` | Code spans and fenced blocks (optional language, children) |
 | `post.pre`  | `fn(List(Element(msg))) -> Element(msg)`                 | Preformatted code block wrapper                            |
 
@@ -137,8 +141,8 @@ post.code(fn(lang, children) {
 
 ### Lists
 
-| Setter              | Signature                                             | Description                                     |
-| ------------------- | ----------------------------------------------------- | ----------------------------------------------- |
+| Setter          | Signature                                             | Description                                     |
+| --------------- | ----------------------------------------------------- | ----------------------------------------------- |
 | `post.ul`       | `fn(List(Element(msg))) -> Element(msg)`              | Unordered lists                                 |
 | `post.ol`       | `fn(Option(Int), List(Element(msg))) -> Element(msg)` | Ordered lists (optional start number, children) |
 | `post.li`       | `fn(List(Element(msg))) -> Element(msg)`              | List items                                      |
@@ -146,8 +150,8 @@ post.code(fn(lang, children) {
 
 ### Tables
 
-| Setter           | Signature                                           | Description                       |
-| ---------------- | --------------------------------------------------- | --------------------------------- |
+| Setter       | Signature                                           | Description                       |
+| ------------ | --------------------------------------------------- | --------------------------------- |
 | `post.table` | `fn(List(Element(msg))) -> Element(msg)`            | Table wrapper                     |
 | `post.thead` | `fn(List(Element(msg))) -> Element(msg)`            | Table header group                |
 | `post.tbody` | `fn(List(Element(msg))) -> Element(msg)`            | Table body group                  |
@@ -174,8 +178,8 @@ post.td(fn(alignment, children) {
 
 ### Other elements
 
-| Setter                | Signature                                     | Description                  |
-| --------------------- | --------------------------------------------- | ---------------------------- |
+| Setter            | Signature                                     | Description                  |
+| ----------------- | --------------------------------------------- | ---------------------------- |
 | `post.blockquote` | `fn(List(Element(msg))) -> Element(msg)`      | Block quotes                 |
 | `post.hr`         | `fn() -> Element(msg)`                        | Horizontal rules             |
 | `post.footnote`   | `fn(Int, List(Element(msg))) -> Element(msg)` | Footnotes (number, children) |
