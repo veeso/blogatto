@@ -1,4 +1,4 @@
-import blogatto/config/markdown/code
+import blogatto/config/post/code
 import gleam/list
 import gleam/string
 import gleeunit/should

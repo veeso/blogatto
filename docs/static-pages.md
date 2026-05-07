@@ -149,10 +149,10 @@ fn english_home(posts: List(Post(Nil))) -> Element(Nil) {
 
 ## Blog post templates
 
-Blog post templates control the full page layout wrapping each rendered blog post. Set a template via `markdown.template()`:
+Blog post templates control the full page layout wrapping each rendered blog post. Set a template via `post.template()`:
 
 ```gleam
-import blogatto/config/markdown
+import blogatto/config/post
 import blogatto/post.{type Post}
 import gleam/option
 import lustre/attribute
@@ -160,9 +160,9 @@ import lustre/element.{type Element}
 import lustre/element/html
 
 let md =
-  markdown.default()
-  |> markdown.markdown_path("./blog")
-  |> markdown.template(post_template)
+  post.default()
+  |> post.path("./blog")
+  |> post.template(post_template)
 
 fn post_template(post: Post(Nil), _all_posts: List(Post(Nil))) -> Element(Nil) {
   let lang = option.unwrap(post.language, "en")

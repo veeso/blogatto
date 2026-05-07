@@ -41,7 +41,7 @@ import blogatto
 import blogatto/config
 import blogatto/config/feed/atom
 import blogatto/config/feed/rss
-import blogatto/config/markdown
+import blogatto/config/post
 import blogatto/config/robots
 import blogatto/config/sitemap
 import blogatto/error
@@ -56,12 +56,12 @@ import lustre/element/html
 const site_url = "https://example.com"
 
 pub fn main() {
-  // Markdown config with custom heading component
-  let md =
-    markdown.default()
-    |> markdown.markdown_path("./blog")
-    |> markdown.route_prefix("blog")
-    |> markdown.h1(fn(id, children) {
+  // Post config with custom heading component
+  let post_config =
+    post.default()
+    |> post.path("./blog")
+    |> post.route_prefix("blog")
+    |> post.h1(fn(id, children) {
       html.h1([attribute.id(id), attribute.class("post-title")], children)
     })
 
@@ -85,7 +85,7 @@ pub fn main() {
     config.new(site_url)
     |> config.output_dir("./dist")
     |> config.static_dir("./static")
-    |> config.markdown(md)
+    |> config.post(post_config)
     |> config.route("/", home_view)
     |> config.rss_feed(rss_feed)
     |> config.atom_feed(atom_feed)
@@ -178,7 +178,7 @@ The dev server will:
 
 1. Perform an initial build by running the configured build command
 2. Serve the output directory over HTTP at `http://127.0.0.1:3000`
-3. Watch `src/`, markdown paths, and static assets for changes
+3. Watch `src/`, post source paths, and static assets for changes
 4. Debounce rapid file changes (~300ms) and rebuild automatically
 5. Live-reload the browser on successful rebuilds
 

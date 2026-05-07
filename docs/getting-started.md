@@ -52,18 +52,18 @@ The simplest Blogatto setup parses markdown files and writes HTML:
 ```gleam
 import blogatto
 import blogatto/config
-import blogatto/config/markdown
+import blogatto/config/post
 
 pub fn main() {
   let md =
-    markdown.default()
-    |> markdown.markdown_path("./blog")
+    post.default()
+    |> post.path("./blog")
 
   let cfg =
     config.new("https://example.com")
     |> config.output_dir("./dist")
     |> config.static_dir("./static")
-    |> config.markdown(md)
+    |> config.post(md)
 
   let assert Ok(Nil) = blogatto.build(cfg)
 }
@@ -98,7 +98,7 @@ Most blogs need a landing page that lists articles. Add a route with a view func
 ```gleam
 import blogatto
 import blogatto/config
-import blogatto/config/markdown
+import blogatto/config/post
 import blogatto/post.{type Post}
 import gleam/list
 import gleam/time/timestamp
@@ -108,15 +108,15 @@ import lustre/element/html
 
 pub fn main() {
   let md =
-    markdown.default()
-    |> markdown.markdown_path("./blog")
-    |> markdown.route_prefix("blog")
+    post.default()
+    |> post.path("./blog")
+    |> post.route_prefix("blog")
 
   let cfg =
     config.new("https://example.com")
     |> config.output_dir("./dist")
     |> config.static_dir("./static")
-    |> config.markdown(md)
+    |> config.post(md)
     |> config.route("/", home_view)
 
   let assert Ok(Nil) = blogatto.build(cfg)
