@@ -1,0 +1,12 @@
+[book]
+title = "Blogatto"
+description = "A Gleam framework for building static blogs with Lustre, Markdown, and Djot"
+authors = ["Christian Visintin"]
+language = "en"
+src = "."
+
+[output.html]
+default-theme = "light"
+preferred-dark-theme = "navy"
+git-repository-url = "https://github.com/veeso/blogatto"
+additional-css = []

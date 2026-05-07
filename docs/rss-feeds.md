@@ -1,12 +1,6 @@
----
-layout: default
-title: RSS feeds
-nav_order: 9
----
-
 # RSS feeds
 
-Blogatto generates RSS 2.0 feeds from your blog posts. You can configure multiple feeds with different filters (e.g., one per language) and customize how posts are serialized into feed items. RSS feeds work alongside [Atom feeds](atom-feeds) — both can be generated from the same build.
+Blogatto generates RSS 2.0 feeds from your blog posts. You can configure multiple feeds with different filters (e.g., one per language) and customize how posts are serialized into feed items. RSS feeds work alongside [Atom feeds](atom-feeds.md) — both can be generated from the same build.
 
 ## Basic setup
 

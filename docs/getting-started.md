@@ -1,9 +1,3 @@
----
-layout: default
-title: Getting started
-nav_order: 2
----
-
 # Getting started
 
 This guide walks you through installing Blogatto and building your first static blog.
@@ -159,7 +153,7 @@ See the [simple_blog example](https://github.com/veeso/blogatto/tree/main/exampl
 
 ## Next steps
 
-- [Blog posts](blog-posts) — learn about frontmatter, multilingual support, and post assets
-- [Configuration](configuration) — explore all configuration options
-- [Syntax highlighting](syntax-highlighting) — enable build-time code block highlighting
-- [Static pages](static-pages) — add more pages and use post data in views
+- [Blog posts](blog-posts.md) — learn about frontmatter, multilingual support, and post assets
+- [Configuration](configuration.md) — explore all configuration options
+- [Syntax highlighting](syntax-highlighting.md) — enable build-time code block highlighting
+- [Static pages](static-pages.md) — add more pages and use post data in views

@@ -78,6 +78,63 @@ There is no single-test runner flag in gleeunit; to run a specific test module, 
 
 GitHub Actions runs on push to main/master and on PRs: deps download, test, format check. Requires OTP 28 and Gleam 1.14.0.
 
+The `pages.yml` workflow builds the mdBook docs and deploys to GitHub Pages on push to `main` when `docs/**` changes (or via manual dispatch).
+
+## Documentation
+
+The user-facing docs live in `docs/` and are built with [mdBook](https://rust-lang.github.io/mdBook/). Domain: `blogat.to` (preserved via `docs/CNAME`). API reference docs are published separately on HexDocs from `///` doc comments.
+
+### Structure
+
+```
+docs/
+├── book.toml                  # mdBook config
+├── SUMMARY.md                 # Sidebar / table of contents — every doc page MUST be listed here
+├── CNAME                      # GitHub Pages custom domain (blogat.to)
+├── favicon.ico, logo.png, og_preview.jpeg  # Static assets, auto-copied by mdBook to book/
+├── theme/
+│   └── head.hbs               # Custom <head> injection: favicon.ico link + Open Graph / Twitter meta tags
+├── index.md                   # Landing page (mapped to "Introduction" in SUMMARY.md)
+├── getting-started.md         # Getting Started section
+├── example.md
+├── blog-posts.md              # Guides section
+├── static-pages.md
+├── post-components.md
+├── syntax-highlighting.md
+├── rss-feeds.md
+├── atom-feeds.md
+├── sitemap-and-robots.md
+├── dev-server.md
+├── configuration.md           # Reference section
+└── error-handling.md
+```
+
+mdBook is configured with `src = "."` so doc files live directly under `docs/` (no `src/` subdir). Build output goes to `docs/book/` (gitignored, produced in CI).
+
+mdBook does **not** automatically wire favicons (other than its built-in `theme/favicon.png` / `theme/favicon.svg`) or emit Open Graph / Twitter Card meta tags — those are injected via `docs/theme/head.hbs`, which mdBook appends inside every page's `<head>`. The OG image points at `https://blogat.to/og_preview.jpeg` (absolute URL, required by social-media scrapers); the favicon link uses `{{ path_to_root }}favicon.ico` so it resolves on every page. If you change the site description, OG image, or favicon filename, update `theme/head.hbs` accordingly.
+
+### Adding a new doc page
+
+1. Create the new `.md` file directly under `docs/` (flat layout — do not create subdirectories unless adding a whole new top-level section).
+2. Decide which top-level section it belongs to: **Getting Started**, **Guides**, or **Reference**. If none fit, add a new `# Section` heading to `SUMMARY.md`.
+3. **Always** register the new file in `docs/SUMMARY.md` under the chosen section as `- [Page title](filename.md)`. A page that is not in `SUMMARY.md` will not appear in the sidebar and is not reachable from navigation.
+4. Use ATX headings (`#`, `##`, …), start every page with a single `# Title` heading, and follow Markdown conventions enforced by markdownlint.
+5. Internal links to other docs use the `.md` extension, e.g. `[Configuration](configuration.md)` or `[Routing](blog-posts.md#custom-routing-with-route_builder)` for anchors. Do not use bare slugs (Jekyll-style) — mdBook resolves links by filename.
+6. Update `docs/index.md`'s documentation table if the new page is a top-level guide users should discover from the landing page.
+
+### Modifying or removing a doc page
+
+- Renaming or moving a file: update `docs/SUMMARY.md`, fix all `[text](old.md)` links across `docs/*.md`, and update the landing page table in `docs/index.md` if listed there.
+- Deleting a file: remove its entry from `docs/SUMMARY.md` and the landing page table, then grep `docs/` for stale links.
+- Always preserve `docs/CNAME` — it pins the `blogat.to` domain.
+
+### Local preview
+
+```bash
+mdbook serve docs --open    # Live-reload preview at http://localhost:3000
+mdbook build docs           # One-shot build to docs/book/
+```
+
 ## Conventions
 
 - Conventional commits (feat, fix, refactor, perf, doc, test, ci, chore) — changelog generated with git-cliff
@@ -86,3 +143,4 @@ GitHub Actions runs on push to main/master and on PRs: deps download, test, form
 - Module docs use `////` comments; public functions/types get `///` doc comments
 - Follow Gleam official conventions: qualified imports only (except types/constructors), snake_case functions, PascalCase types, singular module names
 - Libraries must never use `let assert` or `panic` — return `Result` instead
+- When adding a doc file under `docs/`, also register it in `docs/SUMMARY.md` under the matching section (see Documentation above)

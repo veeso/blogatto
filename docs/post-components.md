@@ -1,9 +1,3 @@
----
-layout: default
-title: Post components
-nav_order: 6
----
-
 # Post components
 
 Blogatto renders Markdown and [Djot](https://djot.net/) sources through the same set of [Maud](https://hexdocs.pm/maud/)-style components — view functions that control how each AST element becomes HTML. You can override any component to add classes, attributes, or entirely custom markup.
@@ -123,7 +117,7 @@ post.a(fn(href, title, children) {
 
 The `code` component receives `Some("gleam")` for fenced code blocks with a language tag, or `None` for inline code.
 
-> **Tip:** Blogatto supports build-time syntax highlighting via Smalto, which automatically tokenizes code blocks and renders styled `<span>` elements. When syntax highlighting is enabled, the `code` component receives pre-highlighted children. See [Syntax highlighting](syntax-highlighting) for the full guide.
+> **Tip:** Blogatto supports build-time syntax highlighting via Smalto, which automatically tokenizes code blocks and renders styled `<span>` elements. When syntax highlighting is enabled, the `code` component receives pre-highlighted children. See [Syntax highlighting](syntax-highlighting.md) for the full guide.
 
 Example — add language class to code blocks:
 

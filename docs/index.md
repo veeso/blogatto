@@ -1,9 +1,3 @@
----
-layout: default
-title: Blogatto
-nav_order: 1
----
-
 # Blogatto
 
 ![logo](https://blogat.to/logo.png)
@@ -50,18 +44,18 @@ The output is a fully static site ready to deploy to any static hosting provider
 
 | Guide                                        | Description                                               |
 | -------------------------------------------- | --------------------------------------------------------- |
-| [Getting started](getting-started)           | Installation, project setup, and your first build         |
-| [Example blog](example)                      | Walkthrough of the complete example project               |
-| [Blog posts](blog-posts)                     | Directory structure, frontmatter, multilingual support    |
-| [Configuration](configuration)               | Full configuration reference                              |
-| [Post components](post-components)           | Customizing Markdown and Djot rendering                   |
-| [Syntax highlighting](syntax-highlighting)   | Build-time code block highlighting with Smalto            |
-| [Static pages](static-pages)                 | Routes, view functions, and using post data               |
-| [RSS feeds](rss-feeds)                       | RSS 2.0 feed configuration, filtering, and serialization  |
-| [Atom feeds](atom-feeds)                     | Atom 1.0 feed configuration, filtering, and serialization |
-| [Sitemap and robots.txt](sitemap-and-robots) | Sitemap and crawler configuration                         |
-| [Dev server](dev-server)                     | File watching, auto-rebuild, and live reload              |
-| [Error handling](error-handling)             | Error types and recovery patterns                         |
+| [Getting started](getting-started.md)           | Installation, project setup, and your first build         |
+| [Example blog](example.md)                      | Walkthrough of the complete example project               |
+| [Blog posts](blog-posts.md)                     | Directory structure, frontmatter, multilingual support    |
+| [Configuration](configuration.md)               | Full configuration reference                              |
+| [Post components](post-components.md)           | Customizing Markdown and Djot rendering                   |
+| [Syntax highlighting](syntax-highlighting.md)   | Build-time code block highlighting with Smalto            |
+| [Static pages](static-pages.md)                 | Routes, view functions, and using post data               |
+| [RSS feeds](rss-feeds.md)                       | RSS 2.0 feed configuration, filtering, and serialization  |
+| [Atom feeds](atom-feeds.md)                     | Atom 1.0 feed configuration, filtering, and serialization |
+| [Sitemap and robots.txt](sitemap-and-robots.md) | Sitemap and crawler configuration                         |
+| [Dev server](dev-server.md)                     | File watching, auto-rebuild, and live reload              |
+| [Error handling](error-handling.md)             | Error types and recovery patterns                         |
 
 ## API reference
 
