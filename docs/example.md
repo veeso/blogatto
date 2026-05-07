@@ -53,15 +53,15 @@ The markdown config tells Blogatto where to find posts and how to render them:
 let syntax_config = code.default()
 
 let md_config =
-  markdown.default()
-  |> markdown.markdown_path("./blog")
-  |> markdown.route_prefix("blog")
-  |> markdown.template(blog_post_template)
-  |> markdown.syntax_highlighting(syntax_config)
-  |> markdown.pre(fn(children) {
+  post.default()
+  |> post.path("./blog")
+  |> post.route_prefix("blog")
+  |> post.template(blog_post_template)
+  |> post.syntax_highlighting(syntax_config)
+  |> post.pre(fn(children) {
     html.pre([attribute.class("code-block")], children)
   })
-  |> markdown.code(fn(language, children) {
+  |> post.code(fn(language, children) {
     let lang_class = case language {
       option.Some(lang) -> "language-" <> lang
       option.None -> ""
@@ -70,7 +70,7 @@ let md_config =
   })
 ```
 
-- `markdown_path("./blog")` — scan the `blog/` directory for post directories
+- `path("./blog")` — scan the `blog/` directory for post directories
 - `route_prefix("blog")` — output posts under `/blog/{slug}/`
 - `template(blog_post_template)` — wrap each post in a custom HTML page layout
 - `syntax_highlighting(syntax_config)` — enable build-time syntax highlighting for code blocks (see [Syntax highlighting](syntax-highlighting))
@@ -142,7 +142,7 @@ All pieces come together with the builder pattern:
 let cfg =
   config.new(site_url)
   |> config.output_dir("./dist")
-  |> config.markdown(md_config)
+  |> config.post(md_config)
   |> config.route("/", home_view)
   |> config.rss_feed(rss_feed)
   |> config.atom_feed(atom_feed)

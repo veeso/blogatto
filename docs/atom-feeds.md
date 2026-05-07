@@ -33,7 +33,7 @@ let cfg =
   |> config.atom_feed(atom_feed)
 ```
 
-This generates `dist/atom.xml` containing all blog posts with auto-generated summaries. The summary is built from the post excerpt, whose length is controlled by `markdown.excerpt_len()` (default: 200 characters).
+This generates `dist/atom.xml` containing all blog posts with auto-generated summaries. The summary is built from the post excerpt, whose length is controlled by `post.excerpt_len()` (default: 200 characters).
 
 ## AtomFeed fields
 

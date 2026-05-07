@@ -1,6 +1,6 @@
 import blogatto/config
 import blogatto/config/feed/rss
-import blogatto/config/markdown
+import blogatto/config/post as post_cfg
 import blogatto/config/robots
 import blogatto/config/sitemap
 import blogatto/post
@@ -49,7 +49,7 @@ pub fn new_has_empty_feeds_test() {
 
 pub fn new_has_no_markdown_config_test() {
   let cfg = config.new("https://example.com")
-  cfg.markdown_config
+  cfg.post_config
   |> should.equal(None)
 }
 
@@ -118,12 +118,12 @@ pub fn rss_feed_prepends_multiple_feeds_test() {
 }
 
 pub fn markdown_sets_markdown_config_test() {
-  let md = markdown.default()
+  let md = post_cfg.default()
   let cfg =
     config.new("https://example.com")
-    |> config.markdown(md)
+    |> config.post(md)
 
-  cfg.markdown_config
+  cfg.post_config
   |> should.be_some
 }
 
@@ -223,7 +223,7 @@ pub fn route_overwrites_duplicate_key_test() {
 }
 
 pub fn builder_pipeline_preserves_all_settings_test() {
-  let md = markdown.default()
+  let md = post_cfg.default()
   let robots_cfg = robots.new("https://example.com/sitemap.xml")
   let sm = sitemap.new("/sitemap.xml")
   let feed_cfg = rss.RssFeedConfig(..sample_feed_config(), title: "Blog")
@@ -232,7 +232,7 @@ pub fn builder_pipeline_preserves_all_settings_test() {
     config.new("https://example.com")
     |> config.output_dir("./build")
     |> config.static_dir("./static")
-    |> config.markdown(md)
+    |> config.post(md)
     |> config.robots(robots_cfg)
     |> config.sitemap(sm)
     |> config.rss_feed(feed_cfg)
@@ -243,7 +243,7 @@ pub fn builder_pipeline_preserves_all_settings_test() {
   cfg.site_url |> should.equal("https://example.com")
   cfg.output_dir |> should.equal("./build")
   cfg.static_dir |> should.equal(Some("./static"))
-  cfg.markdown_config |> should.be_some
+  cfg.post_config |> should.be_some
   cfg.robots |> should.equal(Some(robots_cfg))
   cfg.sitemap |> should.equal(Some(sm))
   cfg.rss_feeds |> should.equal([feed_cfg])

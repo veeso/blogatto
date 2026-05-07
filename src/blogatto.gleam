@@ -10,18 +10,18 @@
 //// ```gleam
 //// import blogatto
 //// import blogatto/config
-//// import blogatto/config/markdown
+//// import blogatto/config/post
 ////
 //// pub fn main() {
-////   let md =
-////     markdown.default()
-////     |> markdown.markdown_path("./blog")
+////   let post_config =
+////     post.default()
+////     |> post.path("./blog")
 ////
 ////   let cfg =
 ////     config.new("https://example.com")
 ////     |> config.output_dir("./dist")
 ////     |> config.static_dir("./static")
-////     |> config.markdown(md)
+////     |> config.post(post_config)
 ////
 ////   let assert Ok(Nil) = blogatto.build(cfg)
 //// }
@@ -30,9 +30,9 @@
 import blogatto/config
 import blogatto/config/feed as feed_config
 import blogatto/error
-import blogatto/internal/builder/blog
 import blogatto/internal/builder/feed
 import blogatto/internal/builder/pages
+import blogatto/internal/builder/post as post_builder
 import blogatto/internal/builder/robots
 import blogatto/internal/builder/sitemap
 import blogatto/internal/builder/static
@@ -52,7 +52,7 @@ import simplifile
 /// 1. Clean output directory and recreate it.
 /// 2. Copy static assets from `static_dir` to `output_dir`.
 /// 3. Generate `robots.txt` via webls.
-/// 4. Build blog pages — walk markdown paths, parse frontmatter, render
+/// 4. Build blog pages — walk post paths, parse frontmatter, render
 ///    via Maud components, write HTML, copy assets. Produces `List(Post(msg))`.
 /// 5. Render static pages from configured routes.
 /// 6. Generate RSS feeds via webls.
@@ -76,7 +76,7 @@ pub fn build(config: config.Config(msg)) -> Result(Nil, error.BlogattoError) {
   // Step 3: Generate robots.txt.
   use _ <- result.try(robots.build(config))
   // Step 4: Render blog posts.
-  use posts <- result.try(blog.build(config))
+  use posts <- result.try(post_builder.build(config))
   // Step 5: Render static pages.
   use _ <- result.try(pages.build(config, posts))
   // Step 6: Generate RSS feed.

@@ -13,13 +13,13 @@ Blogatto supports build-time syntax highlighting for code blocks in your markdow
 Syntax highlighting is disabled by default. Enable it by passing a `SyntaxHighlightingConfig` to the markdown configuration:
 
 ```gleam
-import blogatto/config/markdown
-import blogatto/config/markdown/code
+import blogatto/config/post
+import blogatto/config/post/code
 
 let md =
-  markdown.default()
-  |> markdown.markdown_path("./blog")
-  |> markdown.syntax_highlighting(code.default())
+  post.default()
+  |> post.path("./blog")
+  |> post.syntax_highlighting(code.default())
 ```
 
 `code.default()` includes grammars for 28 languages out of the box.
@@ -66,7 +66,7 @@ The default configuration supports the following languages (with aliases):
 If a language you need is not in the default set, add it with `code.add_language()`:
 
 ```gleam
-import blogatto/config/markdown/code
+import blogatto/config/post/code
 import smalto/languages/ocaml
 
 let syntax_config =
@@ -135,7 +135,7 @@ pre.code-block {
 If CSS classes are not enough, you can override how each token type is rendered using the setter functions on `SyntaxHighlightingConfig`. Each setter takes a function that receives the token text and returns a Lustre element:
 
 ```gleam
-import blogatto/config/markdown/code
+import blogatto/config/post/code
 import lustre/attribute
 import lustre/element
 import lustre/element/html
@@ -174,7 +174,7 @@ code.custom(fn(type_name, text) {
 For full control over the underlying Smalto rendering, use `code.smalto_config()` to pass a custom `smalto_lustre.Config` directly:
 
 ```gleam
-import blogatto/config/markdown/code
+import blogatto/config/post/code
 import smalto/lustre as smalto_lustre
 
 let smalto_cfg = smalto_lustre.default_config()
@@ -190,18 +190,18 @@ let syntax_config =
 Syntax highlighting controls the _contents_ of code blocks. To customize the wrapping `<pre>` and `<code>` elements, use the markdown component setters:
 
 ```gleam
-import blogatto/config/markdown
-import blogatto/config/markdown/code
+import blogatto/config/post
+import blogatto/config/post/code
 import gleam/option
 
 let md =
-  markdown.default()
-  |> markdown.markdown_path("./blog")
-  |> markdown.syntax_highlighting(code.default())
-  |> markdown.pre(fn(children) {
+  post.default()
+  |> post.path("./blog")
+  |> post.syntax_highlighting(code.default())
+  |> post.pre(fn(children) {
     html.pre([attribute.class("code-block")], children)
   })
-  |> markdown.code(fn(language, children) {
+  |> post.code(fn(language, children) {
     let lang_class = case language {
       option.Some(lang) -> "language-" <> lang
       option.None -> ""
@@ -215,8 +215,8 @@ let md =
 Putting it all together — a markdown config with syntax highlighting, custom wrapper classes, and a custom keyword style:
 
 ```gleam
-import blogatto/config/markdown
-import blogatto/config/markdown/code
+import blogatto/config/post
+import blogatto/config/post/code
 import gleam/option
 import lustre/attribute
 import lustre/element
@@ -232,14 +232,14 @@ let syntax_config =
   })
 
 let md =
-  markdown.default()
-  |> markdown.markdown_path("./blog")
-  |> markdown.route_prefix("blog")
-  |> markdown.syntax_highlighting(syntax_config)
-  |> markdown.pre(fn(children) {
+  post.default()
+  |> post.path("./blog")
+  |> post.route_prefix("blog")
+  |> post.syntax_highlighting(syntax_config)
+  |> post.pre(fn(children) {
     html.pre([attribute.class("code-block")], children)
   })
-  |> markdown.code(fn(language, children) {
+  |> post.code(fn(language, children) {
     let lang_class = case language {
       option.Some(lang) -> "language-" <> lang
       option.None -> ""

@@ -19,7 +19,7 @@ let cfg =
   config.new("https://example.com")
   |> config.output_dir("./dist")
   |> config.static_dir("./static")
-  |> config.markdown(md_config)
+  |> config.post(md_config)
   |> config.route("/", home_view)
   |> config.rss_feed(rss_config)
   |> config.atom_feed(atom_config)
@@ -39,7 +39,7 @@ Creates a new `Config` with the given base URL. The `site_url` is required becau
 | ----------------- | -------------------------------- |
 | `output_dir`      | `"./dist"`                       |
 | `static_dir`      | `None` (no static asset copying) |
-| `markdown_config` | `None` (no blog posts)           |
+| `post_config` | `None` (no blog posts)           |
 | `routes`          | Empty (no static pages)          |
 | `rss_feeds`       | Empty (no RSS feeds)             |
 | `atom_feeds`      | Empty (no Atom feeds)            |
@@ -66,28 +66,28 @@ config.new("https://example.com")
 
 For example, `./static/css/style.css` becomes `./dist/css/style.css`.
 
-### `config.markdown(config, markdown_config)`
+### `config.post(config, post_config)`
 
 Set the markdown configuration for blog post rendering. See [Markdown components](markdown-components) for component customization and [Blog posts](blog-posts) for routing details.
 
 ```gleam
-import blogatto/config/markdown
+import blogatto/config/post
 
-let md = markdown.default()
-  |> markdown.markdown_path("./blog")
+let md = post.default()
+  |> post.path("./blog")
 
 config.new("https://example.com")
-|> config.markdown(md)
+|> config.post(md)
 ```
 
 #### Markdown parsing options
 
-The `MarkdownConfig` includes an `Options` record that controls which markdown extensions are enabled during parsing. Use `markdown.options()` to override the defaults:
+The `PostConfig` includes an `Options` record that controls which markdown extensions are enabled during parsing. Use `post.options()` to override the defaults:
 
 ```gleam
-import blogatto/config/markdown
+import blogatto/config/post
 
-let opts = markdown.Options(
+let opts = post.Options(
   footnotes: True,
   heading_ids: True,
   tables: True,
@@ -96,9 +96,9 @@ let opts = markdown.Options(
   autolinks: True,
 )
 
-let md = markdown.default()
-  |> markdown.markdown_path("./blog")
-  |> markdown.options(opts)
+let md = post.default()
+  |> post.path("./blog")
+  |> post.options(opts)
 ```
 
 See [Markdown parsing options](blog-posts#markdown-parsing-options) for details on each option.
@@ -108,22 +108,22 @@ See [Markdown parsing options](blog-posts#markdown-parsing-options) for details 
 Enable build-time syntax highlighting for fenced code blocks:
 
 ```gleam
-import blogatto/config/markdown
-import blogatto/config/markdown/code
+import blogatto/config/post
+import blogatto/config/post/code
 
-let md = markdown.default()
-  |> markdown.markdown_path("./blog")
-  |> markdown.syntax_highlighting(code.default())
+let md = post.default()
+  |> post.path("./blog")
+  |> post.syntax_highlighting(code.default())
 ```
 
 See [Syntax highlighting](syntax-highlighting) for the full guide on supported languages, styling, and customization.
 
 #### Markdown routing options
 
-The `MarkdownConfig` controls how blog post URLs are generated. You can use either `route_prefix` or `route_builder` (not both — `route_builder` takes precedence):
+The `PostConfig` controls how blog post URLs are generated. You can use either `route_prefix` or `route_builder` (not both — `route_builder` takes precedence):
 
-- **`markdown.route_prefix(config, prefix)`** — set a static URL prefix for all posts (e.g., `"blog"` produces `/blog/{slug}/`)
-- **`markdown.route_builder(config, builder)`** — set a function that receives `PostMetadata` and returns a custom URL path per post
+- **`post.route_prefix(config, prefix)`** — set a static URL prefix for all posts (e.g., `"blog"` produces `/blog/{slug}/`)
+- **`post.route_builder(config, builder)`** — set a function that receives `PostMetadata` and returns a custom URL path per post
 
 See [Custom routing with `route_builder`](blog-posts#custom-routing-with-route_builder) for examples.
 
@@ -165,12 +165,12 @@ A minimal blog with no static pages:
 
 ```gleam
 let md =
-  markdown.default()
-  |> markdown.markdown_path("./blog")
+  post.default()
+  |> post.path("./blog")
 
 let cfg =
   config.new("https://example.com")
-  |> config.markdown(md)
+  |> config.post(md)
 ```
 
 ### Blog with homepage
@@ -179,14 +179,14 @@ A blog with a homepage listing recent posts:
 
 ```gleam
 let md =
-  markdown.default()
-  |> markdown.markdown_path("./blog")
-  |> markdown.route_prefix("blog")
+  post.default()
+  |> post.path("./blog")
+  |> post.route_prefix("blog")
 
 let cfg =
   config.new("https://example.com")
   |> config.static_dir("./static")
-  |> config.markdown(md)
+  |> config.post(md)
   |> config.route("/", home_view)
 ```
 
@@ -196,17 +196,17 @@ Blog, multiple pages, RSS, Atom, sitemap, and robots.txt:
 
 ```gleam
 let md =
-  markdown.default()
-  |> markdown.markdown_path("./blog")
-  |> markdown.route_prefix("blog")
-  |> markdown.excerpt_len(300)
-  |> markdown.template(post_template)
+  post.default()
+  |> post.path("./blog")
+  |> post.route_prefix("blog")
+  |> post.excerpt_len(300)
+  |> post.template(post_template)
 
 let cfg =
   config.new("https://example.com")
   |> config.output_dir("./dist")
   |> config.static_dir("./static")
-  |> config.markdown(md)
+  |> config.post(md)
   |> config.route("/", home_view)
   |> config.route("/about", about_view)
   |> config.rss_feed(rss_config)

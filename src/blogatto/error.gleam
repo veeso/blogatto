@@ -20,6 +20,8 @@ pub type BlogattoError {
   FrontmatterInvalidLine(String)
   /// Missing Frontmatter
   FrontmatterMissing
+  /// Invalid source file type
+  InvalidSourceType(String)
   /// Dev server error
   DevServer(String)
 }
@@ -36,6 +38,8 @@ pub fn describe_error(error: BlogattoError) -> String {
     FrontmatterInvalidLine(line) ->
       "Frontmatter contains invalid line: " <> line
     FrontmatterMissing -> "Markdown file is missing frontmatter"
+    InvalidSourceType(ext) ->
+      "Invalid source file type: " <> ext <> ". Supported types are .md"
     DevServer(msg) -> "Development server error: " <> msg
   }
 }

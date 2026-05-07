@@ -1,4 +1,4 @@
-//// This module exposes the configuration for syntax highlighting of code blocks in markdown files.
+//// This module exposes the configuration for syntax highlighting of code blocks in blog posts.
 
 import gleam/dict
 import gleam/list
@@ -53,7 +53,7 @@ pub opaque type SyntaxHighlightingConfig(msg) {
   )
 }
 
-/// Returns the default configuration for syntax highlighting of code blocks in markdown files.
+/// Returns the default configuration for syntax highlighting of code blocks in blog posts.
 pub fn default() -> SyntaxHighlightingConfig(msg) {
   SyntaxHighlightingConfig(
     config: smalto_lustre.default_config(),

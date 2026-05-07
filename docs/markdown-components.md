@@ -14,31 +14,31 @@ Markdown is parsed into an AST, then rendered bottom-up: children are rendered f
 
 ## Default components
 
-`markdown.default()` uses the default Maud components, which render each markdown element as its corresponding HTML element without additional attributes or styling.
+`post.default()` uses the default Maud components, which render each markdown element as its corresponding HTML element without additional attributes or styling.
 
 ```gleam
-import blogatto/config/markdown
+import blogatto/config/post
 
-let md = markdown.default()
-  |> markdown.markdown_path("./blog")
+let md = post.default()
+  |> post.path("./blog")
 ```
 
 ## Overriding components
 
-Each markdown element has a corresponding setter function on `MarkdownConfig`. Override individual components by piping through the setter:
+Each markdown element has a corresponding setter function on `PostConfig`. Override individual components by piping through the setter:
 
 ```gleam
-import blogatto/config/markdown
+import blogatto/config/post
 import lustre/attribute
 import lustre/element/html
 
 let md =
-  markdown.default()
-  |> markdown.markdown_path("./blog")
-  |> markdown.h1(fn(id, children) {
+  post.default()
+  |> post.path("./blog")
+  |> post.h1(fn(id, children) {
     html.h1([attribute.id(id), attribute.class("post-title")], children)
   })
-  |> markdown.p(fn(children) {
+  |> post.p(fn(children) {
     html.p([attribute.class("post-paragraph")], children)
   })
 ```
@@ -49,11 +49,11 @@ let md =
 
 | Setter            | Signature                                | Description        |
 | ----------------- | ---------------------------------------- | ------------------ |
-| `markdown.p`      | `fn(List(Element(msg))) -> Element(msg)` | Paragraphs         |
-| `markdown.strong` | `fn(List(Element(msg))) -> Element(msg)` | Bold text          |
-| `markdown.em`     | `fn(List(Element(msg))) -> Element(msg)` | Italic text        |
-| `markdown.del`    | `fn(List(Element(msg))) -> Element(msg)` | Strikethrough text |
-| `markdown.mark`   | `fn(List(Element(msg))) -> Element(msg)` | Highlighted text   |
+| `post.p`      | `fn(List(Element(msg))) -> Element(msg)` | Paragraphs         |
+| `post.strong` | `fn(List(Element(msg))) -> Element(msg)` | Bold text          |
+| `post.em`     | `fn(List(Element(msg))) -> Element(msg)` | Italic text        |
+| `post.del`    | `fn(List(Element(msg))) -> Element(msg)` | Strikethrough text |
+| `post.mark`   | `fn(List(Element(msg))) -> Element(msg)` | Highlighted text   |
 
 ### Headings
 
@@ -61,17 +61,17 @@ All heading setters take `fn(String, List(Element(msg))) -> Element(msg)` where 
 
 | Setter        | Description     |
 | ------------- | --------------- |
-| `markdown.h1` | Level 1 heading |
-| `markdown.h2` | Level 2 heading |
-| `markdown.h3` | Level 3 heading |
-| `markdown.h4` | Level 4 heading |
-| `markdown.h5` | Level 5 heading |
-| `markdown.h6` | Level 6 heading |
+| `post.h1` | Level 1 heading |
+| `post.h2` | Level 2 heading |
+| `post.h3` | Level 3 heading |
+| `post.h4` | Level 4 heading |
+| `post.h5` | Level 5 heading |
+| `post.h6` | Level 6 heading |
 
 Example with anchor links:
 
 ```gleam
-markdown.h2(fn(id, children) {
+post.h2(fn(id, children) {
   html.h2([attribute.id(id)], [
     html.a([attribute.href("#" <> id)], [element.text("#")]),
     element.text(" "),
@@ -84,8 +84,8 @@ markdown.h2(fn(id, children) {
 
 | Setter         | Signature                                                        | Description                            |
 | -------------- | ---------------------------------------------------------------- | -------------------------------------- |
-| `markdown.a`   | `fn(String, Option(String), List(Element(msg))) -> Element(msg)` | Links (href, optional title, children) |
-| `markdown.img` | `fn(String, String, Option(String)) -> Element(msg)`             | Images (src, alt text, optional title) |
+| `post.a`   | `fn(String, Option(String), List(Element(msg))) -> Element(msg)` | Links (href, optional title, children) |
+| `post.img` | `fn(String, String, Option(String)) -> Element(msg)`             | Images (src, alt text, optional title) |
 
 Example — open external links in a new tab:
 
@@ -93,7 +93,7 @@ Example — open external links in a new tab:
 import gleam/option.{None, Some}
 import gleam/string
 
-markdown.a(fn(href, title, children) {
+post.a(fn(href, title, children) {
   let attrs = case string.starts_with(href, "http") {
     True -> [
       attribute.href(href),
@@ -114,8 +114,8 @@ markdown.a(fn(href, title, children) {
 
 | Setter          | Signature                                                | Description                                                |
 | --------------- | -------------------------------------------------------- | ---------------------------------------------------------- |
-| `markdown.code` | `fn(Option(String), List(Element(msg))) -> Element(msg)` | Code spans and fenced blocks (optional language, children) |
-| `markdown.pre`  | `fn(List(Element(msg))) -> Element(msg)`                 | Preformatted code block wrapper                            |
+| `post.code` | `fn(Option(String), List(Element(msg))) -> Element(msg)` | Code spans and fenced blocks (optional language, children) |
+| `post.pre`  | `fn(List(Element(msg))) -> Element(msg)`                 | Preformatted code block wrapper                            |
 
 The `code` component receives `Some("gleam")` for fenced code blocks with a language tag, or `None` for inline code.
 
@@ -126,7 +126,7 @@ Example — add language class to code blocks:
 ```gleam
 import gleam/option.{None, Some}
 
-markdown.code(fn(lang, children) {
+post.code(fn(lang, children) {
   let class = case lang {
     Some(l) -> "language-" <> l
     None -> ""
@@ -139,30 +139,30 @@ markdown.code(fn(lang, children) {
 
 | Setter              | Signature                                             | Description                                     |
 | ------------------- | ----------------------------------------------------- | ----------------------------------------------- |
-| `markdown.ul`       | `fn(List(Element(msg))) -> Element(msg)`              | Unordered lists                                 |
-| `markdown.ol`       | `fn(Option(Int), List(Element(msg))) -> Element(msg)` | Ordered lists (optional start number, children) |
-| `markdown.li`       | `fn(List(Element(msg))) -> Element(msg)`              | List items                                      |
-| `markdown.checkbox` | `fn(Bool) -> Element(msg)`                            | Task list checkboxes (checked state)            |
+| `post.ul`       | `fn(List(Element(msg))) -> Element(msg)`              | Unordered lists                                 |
+| `post.ol`       | `fn(Option(Int), List(Element(msg))) -> Element(msg)` | Ordered lists (optional start number, children) |
+| `post.li`       | `fn(List(Element(msg))) -> Element(msg)`              | List items                                      |
+| `post.checkbox` | `fn(Bool) -> Element(msg)`                            | Task list checkboxes (checked state)            |
 
 ### Tables
 
 | Setter           | Signature                                           | Description                       |
 | ---------------- | --------------------------------------------------- | --------------------------------- |
-| `markdown.table` | `fn(List(Element(msg))) -> Element(msg)`            | Table wrapper                     |
-| `markdown.thead` | `fn(List(Element(msg))) -> Element(msg)`            | Table header group                |
-| `markdown.tbody` | `fn(List(Element(msg))) -> Element(msg)`            | Table body group                  |
-| `markdown.tr`    | `fn(List(Element(msg))) -> Element(msg)`            | Table row                         |
-| `markdown.th`    | `fn(Alignment, List(Element(msg))) -> Element(msg)` | Header cell (alignment, children) |
-| `markdown.td`    | `fn(Alignment, List(Element(msg))) -> Element(msg)` | Data cell (alignment, children)   |
+| `post.table` | `fn(List(Element(msg))) -> Element(msg)`            | Table wrapper                     |
+| `post.thead` | `fn(List(Element(msg))) -> Element(msg)`            | Table header group                |
+| `post.tbody` | `fn(List(Element(msg))) -> Element(msg)`            | Table body group                  |
+| `post.tr`    | `fn(List(Element(msg))) -> Element(msg)`            | Table row                         |
+| `post.th`    | `fn(Alignment, List(Element(msg))) -> Element(msg)` | Header cell (alignment, children) |
+| `post.td`    | `fn(Alignment, List(Element(msg))) -> Element(msg)` | Data cell (alignment, children)   |
 
 The `Alignment` type has three variants: `Left`, `Center`, `Right`.
 
 Example — add alignment classes to table cells:
 
 ```gleam
-import blogatto/config/markdown.{Left, Center, Right}
+import blogatto/config/post.{Left, Center, Right}
 
-markdown.td(fn(alignment, children) {
+post.td(fn(alignment, children) {
   let class = case alignment {
     Left -> "text-left"
     Center -> "text-center"
@@ -176,24 +176,24 @@ markdown.td(fn(alignment, children) {
 
 | Setter                | Signature                                     | Description                  |
 | --------------------- | --------------------------------------------- | ---------------------------- |
-| `markdown.blockquote` | `fn(List(Element(msg))) -> Element(msg)`      | Block quotes                 |
-| `markdown.hr`         | `fn() -> Element(msg)`                        | Horizontal rules             |
-| `markdown.footnote`   | `fn(Int, List(Element(msg))) -> Element(msg)` | Footnotes (number, children) |
+| `post.blockquote` | `fn(List(Element(msg))) -> Element(msg)`      | Block quotes                 |
+| `post.hr`         | `fn() -> Element(msg)`                        | Horizontal rules             |
+| `post.footnote`   | `fn(Int, List(Element(msg))) -> Element(msg)` | Footnotes (number, children) |
 
 ## Replacing all components at once
 
-Use `markdown.components()` to set a complete `Components` record:
+Use `post.components()` to set a complete `Components` record:
 
 ```gleam
-let my_components = markdown.Components(
+let my_components = post.Components(
   a: my_link,
   blockquote: my_blockquote,
   // ... all 27 fields
 )
 
 let md =
-  markdown.default()
-  |> markdown.components(my_components)
+  post.default()
+  |> post.components(my_components)
 ```
 
 In most cases, overriding individual components via the setter functions is more convenient.
