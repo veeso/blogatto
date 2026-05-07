@@ -1,5 +1,5 @@
-import blogatto/config/markdown.{Center, Left, Right}
-import blogatto/config/markdown/code
+import blogatto/config/post.{Center, Left, Right}
+import blogatto/config/post/code
 import gleam/option.{None, Some}
 import gleeunit/should
 import lustre/attribute
@@ -9,39 +9,39 @@ import lustre/element/html
 // --- default / default_components ---
 
 pub fn default_has_empty_paths_test() {
-  let cfg = markdown.default()
+  let cfg = post.default()
   cfg.paths
   |> should.equal([])
 }
 
 pub fn default_has_no_template_test() {
-  let cfg = markdown.default()
+  let cfg = post.default()
   cfg.template
   |> should.equal(None)
 }
 
 pub fn default_has_no_route_builder_test() {
-  let cfg = markdown.default()
+  let cfg = post.default()
   cfg.route_builder
   |> should.equal(None)
 }
 
 pub fn default_has_no_route_prefix_test() {
-  let cfg = markdown.default()
+  let cfg = post.default()
   cfg.route_prefix
   |> should.equal(None)
 }
 
 pub fn default_syntax_highlighting_is_default_test() {
-  let cfg = markdown.default()
+  let cfg = post.default()
   cfg.syntax_highlighting
   |> should.equal(None)
 }
 
 pub fn default_options_test() {
-  let cfg = markdown.default()
+  let cfg = post.default()
   cfg.options
-  |> should.equal(markdown.default_options())
+  |> should.equal(post.default_options())
 
   cfg.options.autolinks
   |> should.equal(True)
@@ -63,7 +63,7 @@ pub fn default_options_test() {
 }
 
 pub fn default_components_renders_paragraph_test() {
-  let comps = markdown.default_components()
+  let comps = post.default_components()
   let result = comps.p([html.text("hello")])
   result
   |> element.to_string
@@ -71,7 +71,7 @@ pub fn default_components_renders_paragraph_test() {
 }
 
 pub fn default_components_renders_h1_test() {
-  let comps = markdown.default_components()
+  let comps = post.default_components()
   let result = comps.h1("title", [html.text("Title")])
   result
   |> element.to_string
@@ -82,8 +82,8 @@ pub fn default_components_renders_h1_test() {
 
 pub fn excerpt_len_overrides_default_test() {
   let cfg =
-    markdown.default()
-    |> markdown.excerpt_len(100)
+    post.default()
+    |> post.excerpt_len(100)
 
   cfg.excerpt_len
   |> should.equal(100)
@@ -94,8 +94,8 @@ pub fn excerpt_len_overrides_default_test() {
 pub fn template_overrides_default_test() {
   let tmpl = fn(_post, _all_posts) { html.div([], [html.text("custom")]) }
   let cfg =
-    markdown.default()
-    |> markdown.template(tmpl)
+    post.default()
+    |> post.template(tmpl)
 
   cfg.template
   |> should.be_some
@@ -105,7 +105,7 @@ pub fn template_overrides_default_test() {
 
 pub fn options_overrides_defaults_test() {
   let custom_options =
-    markdown.Options(
+    post.Options(
       autolinks: False,
       footnotes: False,
       emojis_shortcodes: False,
@@ -115,8 +115,8 @@ pub fn options_overrides_defaults_test() {
     )
 
   let cfg =
-    markdown.default()
-    |> markdown.options(custom_options)
+    post.default()
+    |> post.options(custom_options)
 
   cfg.options
   |> should.equal(custom_options)
@@ -126,8 +126,8 @@ pub fn options_overrides_defaults_test() {
 
 pub fn route_prefix_adds_prefix_to_url_test() {
   let cfg =
-    markdown.default()
-    |> markdown.route_prefix("blog")
+    post.default()
+    |> post.route_prefix("blog")
 
   cfg.route_prefix
   |> should.equal(Some("blog"))
@@ -138,8 +138,8 @@ pub fn route_prefix_adds_prefix_to_url_test() {
 pub fn route_builder_overrides_default_url_test() {
   let builder = fn(_metadata) { "/custom-url/" }
   let cfg =
-    markdown.default()
-    |> markdown.route_builder(builder)
+    post.default()
+    |> post.route_builder(builder)
 
   cfg.route_builder
   |> should.equal(Some(builder))
@@ -149,8 +149,8 @@ pub fn route_builder_overrides_default_url_test() {
 
 pub fn markdown_path_adds_path_test() {
   let cfg =
-    markdown.default()
-    |> markdown.markdown_path("./blog")
+    post.default()
+    |> post.path("./blog")
 
   cfg.paths
   |> should.equal(["./blog"])
@@ -158,9 +158,9 @@ pub fn markdown_path_adds_path_test() {
 
 pub fn markdown_path_prepends_multiple_paths_test() {
   let cfg =
-    markdown.default()
-    |> markdown.markdown_path("./blog")
-    |> markdown.markdown_path("./articles")
+    post.default()
+    |> post.path("./blog")
+    |> post.path("./articles")
 
   // ./articles was prepended last, so it comes first
   cfg.paths
@@ -172,8 +172,8 @@ pub fn markdown_path_prepends_multiple_paths_test() {
 pub fn template_sets_template_function_test() {
   let tmpl = fn(_post, _all_posts) { html.div([], [html.text("custom")]) }
   let cfg =
-    markdown.default()
-    |> markdown.template(tmpl)
+    post.default()
+    |> post.template(tmpl)
 
   cfg.template
   |> should.be_some
@@ -187,8 +187,8 @@ pub fn syntax_highlighting_sets_config_test() {
       html.span([attribute.class("code-attr")], [html.text(text)])
     })
   let cfg =
-    markdown.default()
-    |> markdown.syntax_highlighting(custom_config)
+    post.default()
+    |> post.syntax_highlighting(custom_config)
 
   cfg.syntax_highlighting
   |> should.equal(Some(custom_config))
@@ -197,10 +197,10 @@ pub fn syntax_highlighting_sets_config_test() {
 // --- components setter ---
 
 pub fn components_replaces_all_components_test() {
-  let custom_comps = markdown.default_components()
+  let custom_comps = post.default_components()
   let cfg =
-    markdown.default()
-    |> markdown.components(custom_comps)
+    post.default()
+    |> post.components(custom_comps)
 
   // Verify components were set by testing a render
   let result = cfg.components.p([html.text("test")])
@@ -219,8 +219,8 @@ pub fn a_setter_replaces_link_component_test() {
     )
   }
   let cfg =
-    markdown.default()
-    |> markdown.a(custom_a)
+    post.default()
+    |> post.a(custom_a)
 
   cfg.components.a("https://example.com", None, [html.text("click")])
   |> element.to_string
@@ -232,8 +232,8 @@ pub fn blockquote_setter_replaces_component_test() {
     html.blockquote([attribute.class("quote")], children)
   }
   let cfg =
-    markdown.default()
-    |> markdown.blockquote(custom)
+    post.default()
+    |> post.blockquote(custom)
 
   cfg.components.blockquote([html.text("quoted")])
   |> element.to_string
@@ -248,8 +248,8 @@ pub fn checkbox_setter_replaces_component_test() {
     }
   }
   let cfg =
-    markdown.default()
-    |> markdown.checkbox(custom)
+    post.default()
+    |> post.checkbox(custom)
 
   cfg.components.checkbox(True)
   |> element.to_string
@@ -261,8 +261,8 @@ pub fn code_setter_replaces_component_test() {
     html.code([attribute.class("highlight")], children)
   }
   let cfg =
-    markdown.default()
-    |> markdown.code(custom)
+    post.default()
+    |> post.code(custom)
 
   cfg.components.code(Some("gleam"), [html.text("let x = 1")])
   |> element.to_string
@@ -272,8 +272,8 @@ pub fn code_setter_replaces_component_test() {
 pub fn del_setter_replaces_component_test() {
   let custom = fn(children) { html.s([], children) }
   let cfg =
-    markdown.default()
-    |> markdown.del(custom)
+    post.default()
+    |> post.del(custom)
 
   cfg.components.del([html.text("removed")])
   |> element.to_string
@@ -283,8 +283,8 @@ pub fn del_setter_replaces_component_test() {
 pub fn em_setter_replaces_component_test() {
   let custom = fn(children) { html.em([attribute.class("italic")], children) }
   let cfg =
-    markdown.default()
-    |> markdown.em(custom)
+    post.default()
+    |> post.em(custom)
 
   cfg.components.em([html.text("emphasis")])
   |> element.to_string
@@ -296,8 +296,8 @@ pub fn footnote_setter_replaces_component_test() {
     html.sup([], [html.text("[" <> int_to_string(n) <> "]"), ..children])
   }
   let cfg =
-    markdown.default()
-    |> markdown.footnote(custom)
+    post.default()
+    |> post.footnote(custom)
 
   cfg.components.footnote(1, [])
   |> element.to_string
@@ -309,8 +309,8 @@ pub fn h1_setter_replaces_component_test() {
     html.h1([attribute.id(id), attribute.class("heading")], children)
   }
   let cfg =
-    markdown.default()
-    |> markdown.h1(custom)
+    post.default()
+    |> post.h1(custom)
 
   cfg.components.h1("intro", [html.text("Intro")])
   |> element.to_string
@@ -322,8 +322,8 @@ pub fn h2_setter_replaces_component_test() {
     html.h2([attribute.id(id), attribute.class("h2")], children)
   }
   let cfg =
-    markdown.default()
-    |> markdown.h2(custom)
+    post.default()
+    |> post.h2(custom)
 
   cfg.components.h2("section", [html.text("Section")])
   |> element.to_string
@@ -335,8 +335,8 @@ pub fn h3_setter_replaces_component_test() {
     html.h3([attribute.id(id), attribute.class("h3")], children)
   }
   let cfg =
-    markdown.default()
-    |> markdown.h3(custom)
+    post.default()
+    |> post.h3(custom)
 
   cfg.components.h3("sub", [html.text("Sub")])
   |> element.to_string
@@ -348,8 +348,8 @@ pub fn h4_setter_replaces_component_test() {
     html.h4([attribute.id(id), attribute.class("h4")], children)
   }
   let cfg =
-    markdown.default()
-    |> markdown.h4(custom)
+    post.default()
+    |> post.h4(custom)
 
   cfg.components.h4("sub2", [html.text("Sub2")])
   |> element.to_string
@@ -361,8 +361,8 @@ pub fn h5_setter_replaces_component_test() {
     html.h5([attribute.id(id), attribute.class("h5")], children)
   }
   let cfg =
-    markdown.default()
-    |> markdown.h5(custom)
+    post.default()
+    |> post.h5(custom)
 
   cfg.components.h5("sub3", [html.text("Sub3")])
   |> element.to_string
@@ -374,8 +374,8 @@ pub fn h6_setter_replaces_component_test() {
     html.h6([attribute.id(id), attribute.class("h6")], children)
   }
   let cfg =
-    markdown.default()
-    |> markdown.h6(custom)
+    post.default()
+    |> post.h6(custom)
 
   cfg.components.h6("sub4", [html.text("Sub4")])
   |> element.to_string
@@ -385,8 +385,8 @@ pub fn h6_setter_replaces_component_test() {
 pub fn hr_setter_replaces_component_test() {
   let custom = fn() { html.div([attribute.class("separator")], []) }
   let cfg =
-    markdown.default()
-    |> markdown.hr(custom)
+    post.default()
+    |> post.hr(custom)
 
   cfg.components.hr()
   |> element.to_string
@@ -402,8 +402,8 @@ pub fn img_setter_replaces_component_test() {
     ])
   }
   let cfg =
-    markdown.default()
-    |> markdown.img(custom)
+    post.default()
+    |> post.img(custom)
 
   cfg.components.img("/photo.jpg", "A photo", None)
   |> element.to_string
@@ -413,8 +413,8 @@ pub fn img_setter_replaces_component_test() {
 pub fn li_setter_replaces_component_test() {
   let custom = fn(children) { html.li([attribute.class("item")], children) }
   let cfg =
-    markdown.default()
-    |> markdown.li(custom)
+    post.default()
+    |> post.li(custom)
 
   cfg.components.li([html.text("item")])
   |> element.to_string
@@ -426,8 +426,8 @@ pub fn mark_setter_replaces_component_test() {
     html.mark([attribute.class("highlight")], children)
   }
   let cfg =
-    markdown.default()
-    |> markdown.mark(custom)
+    post.default()
+    |> post.mark(custom)
 
   cfg.components.mark([html.text("marked")])
   |> element.to_string
@@ -439,8 +439,8 @@ pub fn ol_setter_replaces_component_test() {
     html.ol([attribute.class("ordered")], children)
   }
   let cfg =
-    markdown.default()
-    |> markdown.ol(custom)
+    post.default()
+    |> post.ol(custom)
 
   cfg.components.ol(Some(1), [html.li([], [html.text("first")])])
   |> element.to_string
@@ -450,8 +450,8 @@ pub fn ol_setter_replaces_component_test() {
 pub fn p_setter_replaces_component_test() {
   let custom = fn(children) { html.p([attribute.class("paragraph")], children) }
   let cfg =
-    markdown.default()
-    |> markdown.p(custom)
+    post.default()
+    |> post.p(custom)
 
   cfg.components.p([html.text("text")])
   |> element.to_string
@@ -463,8 +463,8 @@ pub fn pre_setter_replaces_component_test() {
     html.pre([attribute.class("code-block")], children)
   }
   let cfg =
-    markdown.default()
-    |> markdown.pre(custom)
+    post.default()
+    |> post.pre(custom)
 
   cfg.components.pre([html.text("code")])
   |> element.to_string
@@ -474,8 +474,8 @@ pub fn pre_setter_replaces_component_test() {
 pub fn strong_setter_replaces_component_test() {
   let custom = fn(children) { html.strong([attribute.class("bold")], children) }
   let cfg =
-    markdown.default()
-    |> markdown.strong(custom)
+    post.default()
+    |> post.strong(custom)
 
   cfg.components.strong([html.text("bold")])
   |> element.to_string
@@ -485,8 +485,8 @@ pub fn strong_setter_replaces_component_test() {
 pub fn table_setter_replaces_component_test() {
   let custom = fn(children) { html.table([attribute.class("tbl")], children) }
   let cfg =
-    markdown.default()
-    |> markdown.table(custom)
+    post.default()
+    |> post.table(custom)
 
   cfg.components.table([])
   |> element.to_string
@@ -496,8 +496,8 @@ pub fn table_setter_replaces_component_test() {
 pub fn tbody_setter_replaces_component_test() {
   let custom = fn(children) { html.tbody([attribute.class("body")], children) }
   let cfg =
-    markdown.default()
-    |> markdown.tbody(custom)
+    post.default()
+    |> post.tbody(custom)
 
   cfg.components.tbody([])
   |> element.to_string
@@ -509,8 +509,8 @@ pub fn td_setter_replaces_component_test() {
     html.td([attribute.class("cell")], children)
   }
   let cfg =
-    markdown.default()
-    |> markdown.td(custom)
+    post.default()
+    |> post.td(custom)
 
   cfg.components.td(Left, [html.text("data")])
   |> element.to_string
@@ -522,8 +522,8 @@ pub fn th_setter_replaces_component_test() {
     html.th([attribute.class("header")], children)
   }
   let cfg =
-    markdown.default()
-    |> markdown.th(custom)
+    post.default()
+    |> post.th(custom)
 
   cfg.components.th(Left, [html.text("col")])
   |> element.to_string
@@ -533,8 +533,8 @@ pub fn th_setter_replaces_component_test() {
 pub fn thead_setter_replaces_component_test() {
   let custom = fn(children) { html.thead([attribute.class("head")], children) }
   let cfg =
-    markdown.default()
-    |> markdown.thead(custom)
+    post.default()
+    |> post.thead(custom)
 
   cfg.components.thead([])
   |> element.to_string
@@ -544,8 +544,8 @@ pub fn thead_setter_replaces_component_test() {
 pub fn tr_setter_replaces_component_test() {
   let custom = fn(children) { html.tr([attribute.class("row")], children) }
   let cfg =
-    markdown.default()
-    |> markdown.tr(custom)
+    post.default()
+    |> post.tr(custom)
 
   cfg.components.tr([])
   |> element.to_string
@@ -555,8 +555,8 @@ pub fn tr_setter_replaces_component_test() {
 pub fn ul_setter_replaces_component_test() {
   let custom = fn(children) { html.ul([attribute.class("list")], children) }
   let cfg =
-    markdown.default()
-    |> markdown.ul(custom)
+    post.default()
+    |> post.ul(custom)
 
   cfg.components.ul([html.li([], [html.text("item")])])
   |> element.to_string
@@ -573,8 +573,8 @@ pub fn td_setter_with_center_alignment_test() {
     }
   }
   let cfg =
-    markdown.default()
-    |> markdown.td(custom)
+    post.default()
+    |> post.td(custom)
 
   cfg.components.td(Center, [html.text("data")])
   |> element.to_string
@@ -589,8 +589,8 @@ pub fn td_setter_with_right_alignment_test() {
     }
   }
   let cfg =
-    markdown.default()
-    |> markdown.td(custom)
+    post.default()
+    |> post.td(custom)
 
   cfg.components.td(Right, [html.text("data")])
   |> element.to_string
@@ -605,8 +605,8 @@ pub fn th_setter_with_center_alignment_test() {
     }
   }
   let cfg =
-    markdown.default()
-    |> markdown.th(custom)
+    post.default()
+    |> post.th(custom)
 
   cfg.components.th(Center, [html.text("col")])
   |> element.to_string
@@ -621,8 +621,8 @@ pub fn th_setter_with_right_alignment_test() {
     }
   }
   let cfg =
-    markdown.default()
-    |> markdown.th(custom)
+    post.default()
+    |> post.th(custom)
 
   cfg.components.th(Right, [html.text("col")])
   |> element.to_string
@@ -633,14 +633,12 @@ pub fn th_setter_with_right_alignment_test() {
 
 pub fn multiple_component_setters_compose_test() {
   let cfg =
-    markdown.default()
-    |> markdown.p(fn(children) {
-      html.p([attribute.class("custom-p")], children)
-    })
-    |> markdown.strong(fn(children) {
+    post.default()
+    |> post.p(fn(children) { html.p([attribute.class("custom-p")], children) })
+    |> post.strong(fn(children) {
       html.strong([attribute.class("custom-bold")], children)
     })
-    |> markdown.h1(fn(id, children) {
+    |> post.h1(fn(id, children) {
       html.h1([attribute.id(id), attribute.class("custom-h1")], children)
     })
 

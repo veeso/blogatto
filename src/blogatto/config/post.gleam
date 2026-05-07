@@ -1,47 +1,48 @@
-//// Configuration for rendering blog articles from markdown files.
+//// Configuration for discovering and rendering blog posts.
 ////
-//// The `MarkdownConfig` controls how markdown files are discovered, parsed,
-//// and rendered into HTML. It holds `Components` used for rendering
-//// markdown AST nodes, the filesystem paths to search for markdown files,
-//// and an optional template function for customizing blog post page layout.
+//// The `PostConfig` controls how blog post source files (currently markdown)
+//// are discovered, parsed, and rendered into HTML. It holds `Components`
+//// used for rendering markdown AST nodes, the filesystem paths to search
+//// for post directories, and an optional template function for customizing
+//// the blog post page layout.
 ////
 //// ## Example
 ////
 //// ```gleam
-//// import blogatto/config/markdown
+//// import blogatto/config/post
 ////
-//// let md_config =
-////   markdown.default()
-////   |> markdown.markdown_path("./blog")
-////   |> markdown.h1(fn(id, children) {
+//// let post_config =
+////   post.default()
+////   |> post.path("./blog")
+////   |> post.h1(fn(id, children) {
 ////     html.h1([attribute.id(id), attribute.class("title")], children)
 ////   })
 //// ```
 
-import blogatto/config/markdown/code
+import blogatto/config/post/code
 import blogatto/post.{type Post, type PostMetadata}
 import gleam/list
 import gleam/option.{type Option, None}
 import lustre/element.{type Element}
 import maud/components as maud_components
 
-/// Configuration for discovering and rendering blog articles from markdown files.
+/// Configuration for discovering and rendering blog posts.
 ///
 /// The `components` field specifies the components used to render each markdown
 /// AST node (headings, paragraphs, code blocks, etc.).
-/// The `paths` field lists directories to recursively search for markdown post directories.
+/// The `paths` field lists directories to recursively search for post directories.
 /// The `route_prefix` field sets the URL prefix under which blog posts are placed
 /// in the output directory (e.g., `"blog"` produces `output_dir/blog/{slug}/index.html`).
 /// The `template` field optionally overrides the default blog post page template.
-pub type MarkdownConfig(msg) {
-  MarkdownConfig(
+pub type PostConfig(msg) {
+  PostConfig(
     /// Components used for rendering markdown AST nodes into Lustre elements.
     components: Components(msg),
     /// Maximum character length for auto-generated post excerpts. (default: 200)
     excerpt_len: Int,
-    /// Markdown rendering options
+    /// Markdown rendering options. Applies to `.md` source files only.
     options: Options,
-    /// Directories to recursively search for markdown post directories.
+    /// Directories to recursively search for post directories.
     paths: List(String),
     /// URL prefix for blog post output paths. When `None`, posts are written
     /// directly under `output_dir/{slug}/index.html`. When `Some("blog")`,
@@ -54,9 +55,9 @@ pub type MarkdownConfig(msg) {
     /// If not provided the default builder will be used (i.e. `/{route_prefix?}/{lang}/{slug}/` or `/{route_prefix?}/{slug}/` if language is `None`).
     route_builder: Option(fn(PostMetadata) -> String),
     /// Configuration for syntax highlighting in code blocks.
-    /// 
+    ///
     /// If not provided, syntax highlighting is disabled by default.
-    /// You can enable it with `markdown.syntax_highlighting(config, code.default())`, or customize it with your own configuration.
+    /// You can enable it with `post.syntax_highlighting(config, code.default())`, or customize it with your own configuration.
     syntax_highlighting: Option(code.SyntaxHighlightingConfig(msg)),
     /// Optional custom template for rendering a blog post page.
     /// Receives the parsed `Post`, and all the other posts, and returns a full page element.
@@ -114,23 +115,23 @@ pub type Components(msg) {
   )
 }
 
-/// Options for markdown parsing and rendering.
+/// Options for markdown parsing and rendering. Applies to `.md` source files only.
 pub type Options {
   Options(
     /// Enable footnote parsing. (Default: True)
-    /// 
+    ///
     /// <https://help.obsidian.md/syntax#Footnotes>
     footnotes: Bool,
     /// Custom IDs for headings. Enabling this will add IDs to all headings regardless of whether an explicit ID was provided or not. (Default: False)
-    /// 
+    ///
     /// <https://www.markdownguide.org/extended-syntax/#heading-ids>
     heading_ids: Bool,
     /// Enable table parsing. (Default: True)
-    /// 
+    ///
     /// <https://help.obsidian.md/advanced-syntax#Tables>
     tables: Bool,
     /// Enable task list parsing. (Default: True)
-    /// 
+    ///
     /// <https://github.github.com/gfm/#task-list-items-extension->
     tasklists: Bool,
     /// Emoji shortcodes (e.g., `:smile:`) are converted to Unicode emojis. (Default: True)
@@ -141,10 +142,10 @@ pub type Options {
   )
 }
 
-/// Create a default `MarkdownConfig` with default components,
+/// Create a default `PostConfig` with default components,
 /// no search paths, no route prefix, no custom route builder, and no custom template.
-pub fn default() -> MarkdownConfig(msg) {
-  MarkdownConfig(
+pub fn default() -> PostConfig(msg) {
+  PostConfig(
     components: default_components(),
     excerpt_len: 200,
     options: default_options(),
@@ -157,7 +158,7 @@ pub fn default() -> MarkdownConfig(msg) {
 }
 
 /// Return the default markdown parsing options, with:
-/// 
+///
 /// - Footnotes enabled
 /// - Heading IDs disabled
 /// - Table parsing enabled
@@ -181,39 +182,30 @@ pub fn default_components() -> Components(msg) {
   from_maud_components(maud_components.default())
 }
 
-/// Set the `Components` used for rendering markdown.
+/// Set the `Components` used for rendering posts.
 pub fn components(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   components: Components(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(..config, components:)
+) -> PostConfig(msg) {
+  PostConfig(..config, components:)
 }
 
 /// Set the maximum character length for auto-generated post excerpts.
-pub fn excerpt_len(
-  config: MarkdownConfig(msg),
-  len: Int,
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(..config, excerpt_len: len)
+pub fn excerpt_len(config: PostConfig(msg), len: Int) -> PostConfig(msg) {
+  PostConfig(..config, excerpt_len: len)
 }
 
-/// Add a directory path to search for markdown post directories.
+/// Add a directory path to search for post directories.
 ///
 /// Paths are searched recursively, so adding `"./blog"` also covers
 /// `"./blog/nested"`. There is no need to add subdirectories separately.
-pub fn markdown_path(
-  config: MarkdownConfig(msg),
-  path: String,
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(..config, paths: list.prepend(config.paths, path))
+pub fn path(config: PostConfig(msg), path: String) -> PostConfig(msg) {
+  PostConfig(..config, paths: list.prepend(config.paths, path))
 }
 
 /// Set markdown parsing options.
-pub fn options(
-  config: MarkdownConfig(msg),
-  options: Options,
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(..config, options:)
+pub fn options(config: PostConfig(msg), options: Options) -> PostConfig(msg) {
+  PostConfig(..config, options:)
 }
 
 /// Set the URL prefix used for blog post output paths.
@@ -227,38 +219,35 @@ pub fn options(
 /// `"https://example.com"` and a route prefix of `"blog"`, post URLs
 /// become `"https://example.com/blog/{slug}/"`.
 pub fn route_prefix(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   prefix: String,
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(..config, route_prefix: option.Some(prefix))
+) -> PostConfig(msg) {
+  PostConfig(..config, route_prefix: option.Some(prefix))
 }
 
 /// Set a custom route builder function for blog post URLs.
-/// 
+///
 /// The route builder receives the `PostMetadata` and returns the URL path for that post (e.g., `"/my-post/"` or `"/it/my-post/"`).
 /// Do not add `index.html` to the returned path.
-/// 
+///
 /// When set, the `route_prefix` field is IGNORED!
 /// This allows you to have full control over the post URLs,
 /// including the ability to place them outside of the route prefix or to use a completely different URL structure.
-/// 
+///
 /// If not provided the default builder will be used (i.e. `/{route_prefix?}/{lang}/{slug}/` or `/{route_prefix?}/{slug}/` if language is `None`).
 pub fn route_builder(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   builder: fn(PostMetadata) -> String,
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(..config, route_builder: option.Some(builder))
+) -> PostConfig(msg) {
+  PostConfig(..config, route_builder: option.Some(builder))
 }
 
 /// Set the configuration for syntax highlighting in code blocks.
 pub fn syntax_highlighting(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   syntax_highlighting: code.SyntaxHighlightingConfig(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
-    ..config,
-    syntax_highlighting: option.Some(syntax_highlighting),
-  )
+) -> PostConfig(msg) {
+  PostConfig(..config, syntax_highlighting: option.Some(syntax_highlighting))
 }
 
 /// Set a custom template function for rendering blog post pages.
@@ -267,10 +256,10 @@ pub fn syntax_highlighting(
 /// and all the other posts, and returns the complete page element. When not set, Blogatto uses
 /// a minimal default template with the post title and contents.
 pub fn template(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   template: fn(Post(msg), List(Post(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(..config, template: option.Some(template))
+) -> PostConfig(msg) {
+  PostConfig(..config, template: option.Some(template))
 }
 
 // --- Component setters ---
@@ -280,18 +269,18 @@ pub fn template(
 /// The first argument is the link href, the second is an optional title,
 /// and the third is the list of children elements.
 pub fn a(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(String, Option(String), List(Element(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(..config, components: Components(..config.components, a: view))
+) -> PostConfig(msg) {
+  PostConfig(..config, components: Components(..config.components, a: view))
 }
 
 /// Set the `blockquote` component used for block quotes.
 pub fn blockquote(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(List(Element(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
+) -> PostConfig(msg) {
+  PostConfig(
     ..config,
     components: Components(..config.components, blockquote: view),
   )
@@ -301,10 +290,10 @@ pub fn blockquote(
 ///
 /// The argument indicates whether the checkbox is checked.
 pub fn checkbox(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(Bool) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
+) -> PostConfig(msg) {
+  PostConfig(
     ..config,
     components: Components(..config.components, checkbox: view),
   )
@@ -315,45 +304,36 @@ pub fn checkbox(
 /// The first argument is the optional language identifier (e.g. `Some("gleam")`
 /// for fenced code blocks with a language tag, `None` for inline code).
 pub fn code(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(Option(String), List(Element(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
-    ..config,
-    components: Components(..config.components, code: view),
-  )
+) -> PostConfig(msg) {
+  PostConfig(..config, components: Components(..config.components, code: view))
 }
 
 /// Set the `del` component used for strikethrough text.
 pub fn del(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(List(Element(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
-    ..config,
-    components: Components(..config.components, del: view),
-  )
+) -> PostConfig(msg) {
+  PostConfig(..config, components: Components(..config.components, del: view))
 }
 
 /// Set the `em` component used for emphasized (italic) text.
 pub fn em(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(List(Element(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
-    ..config,
-    components: Components(..config.components, em: view),
-  )
+) -> PostConfig(msg) {
+  PostConfig(..config, components: Components(..config.components, em: view))
 }
 
 /// Set the `footnote` component used for footnote references.
 ///
 /// The first argument is the footnote number, the second is the children elements.
 pub fn footnote(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(Int, List(Element(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
+) -> PostConfig(msg) {
+  PostConfig(
     ..config,
     components: Components(..config.components, footnote: view),
   )
@@ -363,89 +343,68 @@ pub fn footnote(
 ///
 /// The first argument is the heading id, the second is the children elements.
 pub fn h1(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(String, List(Element(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
-    ..config,
-    components: Components(..config.components, h1: view),
-  )
+) -> PostConfig(msg) {
+  PostConfig(..config, components: Components(..config.components, h1: view))
 }
 
 /// Set the `h2` component used for level 2 headings.
 ///
 /// The first argument is the heading id, the second is the children elements.
 pub fn h2(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(String, List(Element(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
-    ..config,
-    components: Components(..config.components, h2: view),
-  )
+) -> PostConfig(msg) {
+  PostConfig(..config, components: Components(..config.components, h2: view))
 }
 
 /// Set the `h3` component used for level 3 headings.
 ///
 /// The first argument is the heading id, the second is the children elements.
 pub fn h3(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(String, List(Element(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
-    ..config,
-    components: Components(..config.components, h3: view),
-  )
+) -> PostConfig(msg) {
+  PostConfig(..config, components: Components(..config.components, h3: view))
 }
 
 /// Set the `h4` component used for level 4 headings.
 ///
 /// The first argument is the heading id, the second is the children elements.
 pub fn h4(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(String, List(Element(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
-    ..config,
-    components: Components(..config.components, h4: view),
-  )
+) -> PostConfig(msg) {
+  PostConfig(..config, components: Components(..config.components, h4: view))
 }
 
 /// Set the `h5` component used for level 5 headings.
 ///
 /// The first argument is the heading id, the second is the children elements.
 pub fn h5(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(String, List(Element(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
-    ..config,
-    components: Components(..config.components, h5: view),
-  )
+) -> PostConfig(msg) {
+  PostConfig(..config, components: Components(..config.components, h5: view))
 }
 
 /// Set the `h6` component used for level 6 headings.
 ///
 /// The first argument is the heading id, the second is the children elements.
 pub fn h6(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(String, List(Element(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
-    ..config,
-    components: Components(..config.components, h6: view),
-  )
+) -> PostConfig(msg) {
+  PostConfig(..config, components: Components(..config.components, h6: view))
 }
 
 /// Set the `hr` component used for thematic breaks (horizontal rules).
 pub fn hr(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn() -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
-    ..config,
-    components: Components(..config.components, hr: view),
-  )
+) -> PostConfig(msg) {
+  PostConfig(..config, components: Components(..config.components, hr: view))
 }
 
 /// Set the `img` component used for images.
@@ -453,35 +412,26 @@ pub fn hr(
 /// The first argument is the image URI, the second is the alt text,
 /// and the third is an optional title.
 pub fn img(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(String, String, Option(String)) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
-    ..config,
-    components: Components(..config.components, img: view),
-  )
+) -> PostConfig(msg) {
+  PostConfig(..config, components: Components(..config.components, img: view))
 }
 
 /// Set the `li` component used for list items.
 pub fn li(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(List(Element(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
-    ..config,
-    components: Components(..config.components, li: view),
-  )
+) -> PostConfig(msg) {
+  PostConfig(..config, components: Components(..config.components, li: view))
 }
 
 /// Set the `mark` component used for highlighted text.
 pub fn mark(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(List(Element(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
-    ..config,
-    components: Components(..config.components, mark: view),
-  )
+) -> PostConfig(msg) {
+  PostConfig(..config, components: Components(..config.components, mark: view))
 }
 
 /// Set the `ol` component used for ordered lists.
@@ -489,40 +439,34 @@ pub fn mark(
 /// The first argument is an optional start number, the second is the
 /// list of children elements.
 pub fn ol(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(Option(Int), List(Element(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
-    ..config,
-    components: Components(..config.components, ol: view),
-  )
+) -> PostConfig(msg) {
+  PostConfig(..config, components: Components(..config.components, ol: view))
 }
 
 /// Set the `p` component used for paragraphs.
 pub fn p(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(List(Element(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(..config, components: Components(..config.components, p: view))
+) -> PostConfig(msg) {
+  PostConfig(..config, components: Components(..config.components, p: view))
 }
 
 /// Set the `pre` component used for preformatted code blocks.
 pub fn pre(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(List(Element(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
-    ..config,
-    components: Components(..config.components, pre: view),
-  )
+) -> PostConfig(msg) {
+  PostConfig(..config, components: Components(..config.components, pre: view))
 }
 
 /// Set the `strong` component used for bold text.
 pub fn strong(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(List(Element(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
+) -> PostConfig(msg) {
+  PostConfig(
     ..config,
     components: Components(..config.components, strong: view),
   )
@@ -530,24 +474,18 @@ pub fn strong(
 
 /// Set the `table` component used for tables.
 pub fn table(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(List(Element(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
-    ..config,
-    components: Components(..config.components, table: view),
-  )
+) -> PostConfig(msg) {
+  PostConfig(..config, components: Components(..config.components, table: view))
 }
 
 /// Set the `tbody` component used for table body groups.
 pub fn tbody(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(List(Element(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
-    ..config,
-    components: Components(..config.components, tbody: view),
-  )
+) -> PostConfig(msg) {
+  PostConfig(..config, components: Components(..config.components, tbody: view))
 }
 
 /// Set the `td` component used for table data cells.
@@ -555,13 +493,10 @@ pub fn tbody(
 /// The first argument is the column alignment, the second is the
 /// list of children elements.
 pub fn td(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(Alignment, List(Element(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
-    ..config,
-    components: Components(..config.components, td: view),
-  )
+) -> PostConfig(msg) {
+  PostConfig(..config, components: Components(..config.components, td: view))
 }
 
 /// Set the `th` component used for table header cells.
@@ -569,46 +504,34 @@ pub fn td(
 /// The first argument is the column alignment, the second is the
 /// list of children elements.
 pub fn th(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(Alignment, List(Element(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
-    ..config,
-    components: Components(..config.components, th: view),
-  )
+) -> PostConfig(msg) {
+  PostConfig(..config, components: Components(..config.components, th: view))
 }
 
 /// Set the `thead` component used for table header groups.
 pub fn thead(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(List(Element(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
-    ..config,
-    components: Components(..config.components, thead: view),
-  )
+) -> PostConfig(msg) {
+  PostConfig(..config, components: Components(..config.components, thead: view))
 }
 
 /// Set the `tr` component used for table rows.
 pub fn tr(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(List(Element(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
-    ..config,
-    components: Components(..config.components, tr: view),
-  )
+) -> PostConfig(msg) {
+  PostConfig(..config, components: Components(..config.components, tr: view))
 }
 
 /// Set the `ul` component used for unordered lists.
 pub fn ul(
-  config: MarkdownConfig(msg),
+  config: PostConfig(msg),
   view: fn(List(Element(msg))) -> Element(msg),
-) -> MarkdownConfig(msg) {
-  MarkdownConfig(
-    ..config,
-    components: Components(..config.components, ul: view),
-  )
+) -> PostConfig(msg) {
+  PostConfig(..config, components: Components(..config.components, ul: view))
 }
 
 // Convert maud `Components` to blogatto `Components`.

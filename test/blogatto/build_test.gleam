@@ -1,7 +1,7 @@
 import blogatto
 import blogatto/config
 import blogatto/config/feed/rss.{type RssFeedConfig, RssFeedConfig}
-import blogatto/config/markdown
+import blogatto/config/post as post_cfg
 import blogatto/config/robots.{Robot, RobotsConfig}
 import blogatto/config/sitemap
 import blogatto/error
@@ -68,12 +68,12 @@ fn config_with_blog(
   blog_dir: String,
 ) -> config.Config(msg) {
   let md_config =
-    markdown.default()
-    |> markdown.markdown_path(blog_dir)
+    post_cfg.default()
+    |> post_cfg.path(blog_dir)
 
   config.new("https://example.com")
   |> config.output_dir(output_dir)
-  |> config.markdown(md_config)
+  |> config.post(md_config)
 }
 
 fn minimal_feed_config(output: String) -> RssFeedConfig(msg) {
@@ -874,13 +874,13 @@ pub fn build_full_pipeline_with_all_features_test() {
     let sitemap_cfg = sitemap.new("/sitemap.xml")
 
     let md_config =
-      markdown.default()
-      |> markdown.markdown_path(blog)
+      post_cfg.default()
+      |> post_cfg.path(blog)
 
     config.new("https://example.com")
     |> config.output_dir(output)
     |> config.static_dir(static_src)
-    |> config.markdown(md_config)
+    |> config.post(md_config)
     |> config.robots(robots_cfg)
     |> config.route("/", simple_view)
     |> config.rss_feed(minimal_feed_config("/rss.xml"))
@@ -1259,9 +1259,9 @@ pub fn build_with_custom_options_renders_table_test() {
     )
 
     let md_config =
-      markdown.default()
-      |> markdown.markdown_path(blog)
-      |> markdown.options(markdown.Options(
+      post_cfg.default()
+      |> post_cfg.path(blog)
+      |> post_cfg.options(post_cfg.Options(
         footnotes: True,
         heading_ids: False,
         tables: True,
@@ -1272,7 +1272,7 @@ pub fn build_with_custom_options_renders_table_test() {
 
     config.new("https://example.com")
     |> config.output_dir(output)
-    |> config.markdown(md_config)
+    |> config.post(md_config)
     |> blogatto.build()
     |> should.be_ok
 
@@ -1301,9 +1301,9 @@ pub fn build_with_tables_disabled_skips_table_rendering_test() {
     )
 
     let md_config =
-      markdown.default()
-      |> markdown.markdown_path(blog)
-      |> markdown.options(markdown.Options(
+      post_cfg.default()
+      |> post_cfg.path(blog)
+      |> post_cfg.options(post_cfg.Options(
         footnotes: True,
         heading_ids: False,
         tables: False,
@@ -1314,7 +1314,7 @@ pub fn build_with_tables_disabled_skips_table_rendering_test() {
 
     config.new("https://example.com")
     |> config.output_dir(output)
-    |> config.markdown(md_config)
+    |> config.post(md_config)
     |> blogatto.build()
     |> should.be_ok
 

@@ -148,11 +148,11 @@ pub fn start(server: DevServer(msg)) -> Result(Nil, error.BlogattoError) {
   Ok(Nil)
 }
 
-/// Compute paths to watch for changes based on the given config. This should include all markdown files, src, and static assets.
+/// Compute paths to watch for changes based on the given config. This should include all post source files, src, and static assets.
 fn paths_to_watch(config: config.Config(msg)) -> List(String) {
   let paths =
-    config.markdown_config
-    |> option.map(fn(markdown_config) { markdown_config.paths })
+    config.post_config
+    |> option.map(fn(post_config) { post_config.paths })
     |> option.unwrap(or: [])
     |> list.prepend("./src/")
 

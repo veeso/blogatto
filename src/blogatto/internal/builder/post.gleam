@@ -1,13 +1,15 @@
 //// Internal builder for blog post pages.
 ////
-//// Handles markdown file discovery, frontmatter parsing, rendering
-//// markdown to Lustre elements via Maud components, and writing
-//// blog post HTML pages to the output directory.
+//// Handles source file discovery, frontmatter parsing, asset copying, and
+//// writing blog post HTML pages. The actual parsing/rendering of each source
+//// format is delegated to a sibling submodule (currently `post/markdown`),
+//// so additional formats can be added without touching the orchestration
+//// pipeline.
 
 import blogatto/config
-import blogatto/config/markdown
-import blogatto/config/markdown/code
+import blogatto/config/post as post_cfg
 import blogatto/error
+import blogatto/internal/builder/post/markdown
 import blogatto/internal/date
 import blogatto/internal/excerpt
 import blogatto/internal/frontmatter
@@ -24,9 +26,6 @@ import gleam/time/timestamp
 import lustre/attribute
 import lustre/element.{type Element}
 import lustre/element/html
-import maud
-import maud/components as maud_components
-import mork/document as mork_document
 import simplifile
 import str
 
@@ -37,9 +36,15 @@ type PostInfo(msg) {
     html_path: String,
     /// Directory where to copy assets to
     assets_dir: String,
-    /// Paths to existing assets to copy, relative to the markdown file
+    /// Paths to existing assets to copy, relative to the source file
     assets: List(String),
   )
+}
+
+/// Supported post source file types. 
+/// This is used to determine the builder to use for a given source file based on its extension.
+type PostSourceType {
+  Markdown
 }
 
 type Frontmatter {
@@ -54,30 +59,30 @@ type Frontmatter {
 }
 
 type PostFiles {
-  PostFiles(markdowns: List(String), assets: List(String))
+  PostFiles(sources: List(String), assets: List(String))
 }
 
-type MarkdownFile {
-  MarkdownFile(path: String, content: String, language: Option(String))
+type SourceFile {
+  SourceFile(path: String, content: String, language: Option(String))
 }
 
-/// Build the blog posts based on the blog configuration.
-/// 
+/// Build the blog posts based on the post configuration.
+///
 /// In case of success, returns a list of Post(msg) values representing the discovered and rendered blog posts,
 /// which can be used by the feed and sitemap builders.
 pub fn build(
   config: config.Config(msg),
 ) -> Result(List(post.Post(msg)), error.BlogattoError) {
-  case config.markdown_config {
-    option.Some(markdown_config) -> {
-      use posts <- result.try(parse_all_posts_dir(config, markdown_config))
+  case config.post_config {
+    option.Some(post_config) -> {
+      use posts <- result.try(parse_all_posts_dir(config, post_config))
       use built_posts <- result.try(
         list.try_map(posts, fn(post_info) {
           let other_posts =
             posts
             |> list.filter(fn(p) { p.post.slug != post_info.post.slug })
             |> list.map(fn(p) { p.post })
-          build_post(post_info, markdown_config, other_posts)
+          build_post(post_info, post_config, other_posts)
         }),
       )
       // Sort posts by date, newest first.
@@ -92,12 +97,12 @@ pub fn build(
 }
 
 /// Build a single blog post page based on the provided PostInfo(msg) and configuration.
-/// 
-/// The blog post is rendered to HTML via Maud components, and the resulting HTML page is written to the output directory.
-/// Assets are copied to the same output directory, preserving their relative paths to the markdown file.
+///
+/// The blog post is rendered to HTML via the configured template, and the resulting HTML page is written to the output directory.
+/// Assets are copied to the same output directory, preserving their relative paths to the source file.
 fn build_post(
   post_info: PostInfo(msg),
-  markdown_config: markdown.MarkdownConfig(msg),
+  post_config: post_cfg.PostConfig(msg),
   all_posts: List(post.Post(msg)),
 ) -> Result(post.Post(msg), error.BlogattoError) {
   // create the output directory for the post if it doesn't exist
@@ -108,7 +113,7 @@ fn build_post(
   )
   // write the HTML file for the post
   let render_template =
-    option.unwrap(markdown_config.template, or: default_template)
+    option.unwrap(post_config.template, or: default_template)
   let html_content =
     post_info.post
     |> render_template(all_posts)
@@ -119,7 +124,7 @@ fn build_post(
     |> simplifile.write(html_content)
     |> result.map_error(error.File),
   )
-  // copy assets to the output directory, preserving their relative paths to the markdown file
+  // copy assets to the output directory, preserving their relative paths to the source file
   use _ <- result.try(
     post_info.assets
     |> list.try_map(fn(asset_path) {
@@ -134,7 +139,7 @@ fn build_post(
   Ok(post_info.post)
 }
 
-/// Default template to use to wrap the rendered markdown content of a blog post.
+/// Default template to use to wrap the rendered content of a blog post.
 /// Uses the post's language for the `lang` attribute (falls back to `"en"`),
 /// includes a viewport meta tag, and preloads the featured image when present.
 fn default_template(
@@ -168,23 +173,24 @@ fn default_template(
   ])
 }
 
-/// Helper function to discover all markdown files in the configured markdown paths, parse them into PostInfo(msg) values, and return a list of all posts to be built.
+/// Discover all source files in the configured paths, parse them into
+/// PostInfo(msg) values, and return a flat list of all posts to be built.
 fn parse_all_posts_dir(
   config: config.Config(msg),
-  markdown_config: markdown.MarkdownConfig(msg),
+  post_config: post_cfg.PostConfig(msg),
 ) -> Result(List(PostInfo(msg)), error.BlogattoError) {
-  markdown_config.paths
-  |> list.try_map(fn(path) { parse_all_posts(path, config, markdown_config) })
+  post_config.paths
+  |> list.try_map(fn(path) { parse_all_posts(path, config, post_config) })
   |> result.map(list.flatten)
 }
 
 /// Find all posts in a single directory and parse them into Post(msg) values.
 /// This involves walking the directory, discovering post directories, parsing frontmatter,
-/// rendering markdown via Maud components, and constructing Post(msg) values.
+/// rendering source content via the matching submodule, and constructing Post(msg) values.
 fn parse_all_posts(
   search_directory: String,
   config: config.Config(msg),
-  markdown_config: markdown.MarkdownConfig(msg),
+  post_config: post_cfg.PostConfig(msg),
 ) -> Result(List(PostInfo(msg)), error.BlogattoError) {
   use all_posts <- result.try(find_posts(search_directory))
 
@@ -192,14 +198,14 @@ fn parse_all_posts(
   |> dict.to_list()
   |> list.try_map(fn(post_data) {
     let #(_parent_directory, post_files) = post_data
-    parse_posts(post_files, config, markdown_config)
+    parse_posts(post_files, config, post_config)
   })
   |> result.map(list.flatten)
 }
 
-/// Find all markdown files under a single directory, group them by parent directory,
-/// filter out directories without markdown files, and separate markdown files from
-/// non-markdown assets.
+/// Find all source files under a single directory, group them by parent directory,
+/// filter out directories without any source files, and separate source files from
+/// non-source assets.
 fn find_posts(
   search_path: String,
 ) -> Result(Dict(String, PostFiles), error.BlogattoError) {
@@ -208,46 +214,52 @@ fn find_posts(
     |> simplifile.get_files()
     |> result.map_error(error.File),
   )
-  // let's group directory by parent path, then filter out those that don't contain any markdown files,
-  // then for each directory we have left, we can separate markdown files from non-markdown assets.
+  // group files by parent directory, drop directories without any source files,
+  // then split each remaining directory into source files vs non-source assets.
   all_files
   |> list.group(path.parent)
-  |> dict.filter(fn(_dir, files) {
-    list.any(files, fn(file) { filepath.extension(file) == Ok("md") })
-  })
+  |> dict.filter(fn(_dir, files) { list.any(files, is_source_file) })
   |> dict.map_values(fn(_dir, files) {
-    let #(markdowns, assets) =
-      list.partition(files, fn(file) { filepath.extension(file) == Ok("md") })
-    PostFiles(markdowns, assets)
+    let #(sources, assets) = list.partition(files, is_source_file)
+    PostFiles(sources, assets)
   })
   |> Ok
 }
 
-/// Parse all markdown files in a post directory into `PostInfo(msg)` values.
+/// Whether the given file path is a recognized post source file.
+fn is_source_file(file: String) -> Bool {
+  case filepath.extension(file) {
+    Ok(ext) -> ext == markdown.extension
+    Error(_) -> False
+  }
+}
+
+/// Parse all source files in a post directory into `PostInfo(msg)` values.
 fn parse_posts(
   post_files: PostFiles,
   config: config.Config(msg),
-  markdown_config: markdown.MarkdownConfig(msg),
+  post_config: post_cfg.PostConfig(msg),
 ) -> Result(List(PostInfo(msg)), error.BlogattoError) {
-  use markdown_files <- result.try(list.try_map(
-    post_files.markdowns,
-    read_markdown_file,
+  use source_files <- result.try(list.try_map(
+    post_files.sources,
+    read_source_file,
   ))
 
-  list.try_map(markdown_files, fn(markdown_file) {
-    parse_post(markdown_file, config, markdown_config, post_files.assets)
+  list.try_map(source_files, fn(source_file) {
+    parse_post(source_file, config, post_config, post_files.assets)
   })
 }
 
-/// Parse a single markdown file into a `PostInfo(msg)` value.
+/// Parse a single source file into a `PostInfo(msg)` value.
 fn parse_post(
-  markdown_file: MarkdownFile,
+  source_file: SourceFile,
   config: config.Config(msg),
-  markdown_config: markdown.MarkdownConfig(msg),
+  post_config: post_cfg.PostConfig(msg),
   assets: List(String),
 ) -> Result(PostInfo(msg), error.BlogattoError) {
   // parse frontmatter
-  use frontmatter <- result.try(parse_frontmatter(markdown_file.content))
+  use frontmatter <- result.try(parse_frontmatter(source_file.content))
+  use source_type <- result.try(source_type(source_file))
 
   // build post metadata
   let post_metadata =
@@ -257,32 +269,28 @@ fn parse_post(
       date: frontmatter.date,
       description: frontmatter.description,
       featured_image: frontmatter.featured_image,
-      language: markdown_file.language,
+      language: source_file.language,
       extras: frontmatter.extras,
     )
 
   let url_path =
     post_url_path(
-      markdown_config.route_prefix,
-      markdown_config.route_builder,
+      post_config.route_prefix,
+      post_config.route_builder,
       post_metadata,
     )
-  let html_path = markdown_html_path(config.output_dir, url_path)
+  let html_path = post_html_path(config.output_dir, url_path)
   let url = post_url(config.site_url, url_path)
 
   // assets dir is the parent of the HTML file
   let assets_dir = path.parent(html_path)
-  // render markdown to Lustre via Maud components
+  // render the source content via the matching submodule (markdown for now)
   let rendered_components =
-    maud.render_markdown(
-      markdown_file.content,
-      mork_options(markdown_config.options),
-      to_maud_components(markdown_config),
-    )
+    render(post_config, source_file.content, source_type)
   let excerpt =
     rendered_components
-    |> excerpt.extract(markdown_config.excerpt_len)
-    |> excerpt.truncate_at_word_boundary(markdown_config.excerpt_len)
+    |> excerpt.extract(post_config.excerpt_len)
+    |> excerpt.truncate_at_word_boundary(post_config.excerpt_len)
   // finally return the PostInfo with all the data needed to build the post page and link it in the feed and sitemap
   Ok(PostInfo(
     html_path: html_path,
@@ -303,10 +311,21 @@ fn parse_post(
   ))
 }
 
-/// Helper function to read a markdown file and return its content along with its language (if specified in the filename).
-fn read_markdown_file(
+/// Render the source content of a post to Lustre elements via the matching submodule based on the source type.
+fn render(
+  config: post_cfg.PostConfig(msg),
+  content: String,
+  source_type: PostSourceType,
+) -> List(Element(msg)) {
+  case source_type {
+    Markdown -> markdown.render(config, content)
+  }
+}
+
+/// Read a source file and return its content along with its language (if specified in the filename).
+fn read_source_file(
   file_path: String,
-) -> Result(MarkdownFile, error.BlogattoError) {
+) -> Result(SourceFile, error.BlogattoError) {
   use content <- result.try(
     file_path
     |> simplifile.read(from: _)
@@ -314,11 +333,11 @@ fn read_markdown_file(
   )
   let language = path.language(file_path)
 
-  Ok(MarkdownFile(file_path, content, language))
+  Ok(SourceFile(file_path, content, language))
 }
 
 /// Compute the URL path for a blog post based on the optional route prefix, optional route builder, and post metadata.
-/// 
+///
 /// This function returns the URL path relative to the site root, which is used for linking the post in the feed and sitemap, and for computing the output HTML path.
 fn post_url_path(
   route_prefix: Option(String),
@@ -332,7 +351,7 @@ fn post_url_path(
 }
 
 /// Compute the URL path for a blog post based on the route builder and post metadata.
-/// 
+///
 /// The output of the `route_builder` is used as-is with some sanitization: if it doesn't end with a trailing slash, one is added.
 fn post_url_path_from_route_builder(
   route_builder: fn(post.PostMetadata) -> String,
@@ -356,7 +375,7 @@ fn post_url_path_from_route_builder(
 }
 
 /// Compute the URL path for a blog post based on the optional route prefix and post metadata.
-/// 
+///
 /// The URL path is constructed using the optional `route_prefix`, optional language subdirectory, slug,
 /// and always ends with a trailing slash. For example, given `route_prefix = Some("blog")`,
 /// `slug = "my-post"`, and `language = None`, the result is `"/blog/my-post/"`.
@@ -376,26 +395,26 @@ fn post_url_path_from_prefix(
 }
 
 /// Determine the output HTML path for a blog post based on the output directory and its URL path from the site root.
-fn markdown_html_path(output_dir: String, path: String) -> String {
+fn post_html_path(output_dir: String, url_path: String) -> String {
   output_dir
-  |> path.join(path)
+  |> path.join(url_path)
   |> path.join("index.html")
 }
 
 /// Compute the absolute URL for a blog post.
 ///
 /// Combines `site_url` with the URL path from the site root.
-fn post_url(site_url: String, path: String) -> String {
+fn post_url(site_url: String, url_path: String) -> String {
   // Strip trailing slash from site_url to avoid double slashes.
   let base = case string.ends_with(site_url, "/") {
     True -> string.drop_end(site_url, 1)
     False -> site_url
   }
-  base <> path
+  base <> url_path
 }
 
-/// Helper function to parse the frontmatter of a markdown file and extract the required fields (title, date, description) along with any additional fields.
-/// 
+/// Helper function to parse the frontmatter of a source file and extract the required fields (title, date, description) along with any additional fields.
+///
 /// Slug is either parsed from the frontmatter or generated from the title using `slugify`. Date is parsed into a `timestamp.Timestamp` value.
 fn parse_frontmatter(
   content: String,
@@ -451,118 +470,13 @@ fn get_frontmatter_optional_field(
   |> option.from_result
 }
 
-// --- Maud component conversion (internal) ---
-
-/// Convert blogatto `Components` to maud `Components`.
-fn to_maud_components(
-  config: markdown.MarkdownConfig(msg),
-) -> maud_components.Components(msg) {
-  let c = config.components
-  maud_components.Components(
-    a: c.a,
-    blockquote: c.blockquote,
-    checkbox: c.checkbox,
-    code: code_component(config.syntax_highlighting, c.code),
-    del: c.del,
-    em: c.em,
-    footnote: c.footnote,
-    h1: c.h1,
-    h2: c.h2,
-    h3: c.h3,
-    h4: c.h4,
-    h5: c.h5,
-    h6: c.h6,
-    hr: c.hr,
-    img: c.img,
-    li: c.li,
-    mark: c.mark,
-    ol: c.ol,
-    p: c.p,
-    pre: c.pre,
-    strong: c.strong,
-    table: c.table,
-    tbody: c.tbody,
-    td: fn(alignment, children) {
-      c.td(from_maud_alignment(alignment), children)
-    },
-    th: fn(alignment, children) {
-      c.th(from_maud_alignment(alignment), children)
-    },
-    thead: c.thead,
-    tr: c.tr,
-    ul: c.ul,
-  )
-}
-
-/// Helper function to convert blogatto `code.SyntaxHighlightingConfig` to a Maud component for rendering code blocks with syntax highlighting.
-/// When syntax highlighting is configured and a matching language grammar is found,
-/// the code block's text content is tokenized via smalto and rendered as highlighted Lustre elements.
-/// Otherwise, the original code component is used as-is.
-fn code_component(
-  syntax_highlighting: Option(code.SyntaxHighlightingConfig(msg)),
-  code_fn: fn(Option(String), List(Element(msg))) -> Element(msg),
-) -> fn(Option(String), List(Element(msg))) -> Element(msg) {
-  case syntax_highlighting {
-    option.None -> code_fn
-    option.Some(config) -> {
-      fn(language: Option(String), children: List(Element(msg))) -> Element(msg) {
-        case language {
-          option.Some(lang) -> {
-            // Extract raw text from children and unescape HTML entities,
-            // since element.to_string HTML-escapes text content.
-            // Each child is converted individually to avoid fragment
-            // comment markers that element.fragment adds.
-            let source =
-              children
-              |> list.map(element.to_string)
-              |> string.join("")
-              |> unescape_html()
-            case code.highlight(config, lang, source) {
-              Ok(highlighted) -> code_fn(language, highlighted)
-              Error(_) -> code_fn(language, children)
-            }
-          }
-          option.None -> code_fn(language, children)
-        }
-      }
-    }
+/// Helper function to determine the post source type based on the file extension of the source file.
+fn source_type(
+  source: SourceFile,
+) -> Result(PostSourceType, error.BlogattoError) {
+  case filepath.extension(source.path) {
+    Ok(ext) if ext == markdown.extension -> Ok(Markdown)
+    Ok(ext) -> Error(error.InvalidSourceType(ext))
+    Error(_) -> Error(error.InvalidSourceType("unknown"))
   }
-}
-
-/// Unescape HTML entities in a string. Used to recover raw source code from
-/// Lustre text elements which HTML-escape their content via houdini.
-/// The `&amp;` entity must be unescaped last to avoid double-unescaping
-/// sequences like `&amp;lt;`.
-fn unescape_html(html: String) -> String {
-  html
-  |> string.replace("&lt;", "<")
-  |> string.replace("&gt;", ">")
-  |> string.replace("&quot;", "\"")
-  |> string.replace("&#39;", "'")
-  |> string.replace("&amp;", "&")
-}
-
-/// Convert maud `Alignment` to blogatto `Alignment`.
-fn from_maud_alignment(
-  alignment: maud_components.Alignment,
-) -> markdown.Alignment {
-  case alignment {
-    maud_components.Left -> markdown.Left
-    maud_components.Center -> markdown.Center
-    maud_components.Right -> markdown.Right
-  }
-}
-
-/// Convert blogatto `markdown.Options` to mork `mork_document.Options`.
-fn mork_options(options: markdown.Options) -> mork_document.Options {
-  mork_document.Options(
-    // we already parse frontmatter separately, so we can tell mork to ignore it
-    strip_frontmatter: True,
-    footnotes: options.footnotes,
-    heading_ids: options.heading_ids,
-    tables: options.tables,
-    tasklists: options.tasklists,
-    emojis: options.emojis_shortcodes,
-    autolinks: options.autolinks,
-  )
 }

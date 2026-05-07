@@ -2,29 +2,29 @@
 ////
 //// The `Config` type holds all settings needed to build a static blog site.
 //// Use `new(site_url)` to create a configuration with the required base URL,
-//// then pipe it through the builder functions to set up feeds, routes, markdown,
+//// then pipe it through the builder functions to set up feeds, routes, posts,
 //// sitemap, robots, and static assets.
 ////
 //// ## Example
 ////
 //// ```gleam
 //// import blogatto/config
-//// import blogatto/config/markdown
+//// import blogatto/config/post
 ////
-//// let md =
-////   markdown.default()
-////   |> markdown.markdown_path("./blog")
+//// let post_config =
+////   post.default()
+////   |> post.path("./blog")
 ////
 //// let cfg =
 ////   config.new("https://example.com")
 ////   |> config.output_dir("./dist")
 ////   |> config.static_dir("./static")
-////   |> config.markdown(md)
+////   |> config.post(post_config)
 //// ```
 
 import blogatto/config/feed/atom as atom_feed_config
 import blogatto/config/feed/rss as rss_feed_config
-import blogatto/config/markdown
+import blogatto/config/post as post_config
 import blogatto/config/robots
 import blogatto/config/sitemap
 import blogatto/post
@@ -41,10 +41,10 @@ pub type Config(msg) {
   Config(
     /// Atom feeds to generate, each with its own filter/serialize/output settings.
     atom_feeds: List(atom_feed_config.AtomFeed(msg)),
-    /// Markdown configuration for rendering blog articles. When `None`, no blog posts are built.
-    markdown_config: Option(markdown.MarkdownConfig(msg)),
     /// Output directory for the built site. Default: `"./dist"`.
     output_dir: String,
+    /// Post configuration for rendering blog articles. When `None`, no blog posts are built.
+    post_config: Option(post_config.PostConfig(msg)),
     /// Robots.txt configuration. When `None`, no robots.txt is generated.
     robots: Option(robots.RobotsConfig),
     /// Static routes mapping URL paths to view functions.
@@ -69,12 +69,12 @@ pub type Config(msg) {
 /// The `site_url` is required because it is used to produce absolute URLs
 /// in sitemaps, RSS feeds, and robots.txt (e.g., `"https://example.com"`).
 ///
-/// Use the builder functions to further configure feeds, routes, markdown, and more.
+/// Use the builder functions to further configure feeds, routes, posts, and more.
 pub fn new(site_url: String) -> Config(msg) {
   Config(
     atom_feeds: [],
-    markdown_config: None,
     output_dir: "./dist",
+    post_config: None,
     robots: None,
     routes: dict.new(),
     rss_feeds: [],
@@ -92,12 +92,12 @@ pub fn atom_feed(
   Config(..config, atom_feeds: list.prepend(config.atom_feeds, feed))
 }
 
-/// Set the markdown configuration for blog post rendering.
-pub fn markdown(
+/// Set the post configuration for blog post rendering.
+pub fn post(
   config: Config(msg),
-  markdown_config: markdown.MarkdownConfig(msg),
+  post_config: post_config.PostConfig(msg),
 ) -> Config(msg) {
-  Config(..config, markdown_config: Some(markdown_config))
+  Config(..config, post_config: Some(post_config))
 }
 
 /// Set the output directory path for the built site.

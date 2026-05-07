@@ -28,18 +28,18 @@ If your build configuration lives directly in `main()`, move it to a separate mo
 // src/my_blog/blog.gleam
 
 import blogatto/config
-import blogatto/config/markdown
+import blogatto/config/post
 
 pub fn config() -> config.Config(Nil) {
   let md =
-    markdown.default()
-    |> markdown.markdown_path("./blog")
-    |> markdown.route_prefix("blog")
+    post.default()
+    |> post.path("./blog")
+    |> post.route_prefix("blog")
 
   config.new("https://example.com")
   |> config.output_dir("./dist")
   |> config.static_dir("./static")
-  |> config.markdown(md)
+  |> config.post(md)
   |> config.route("/", home_view)
 }
 
@@ -259,7 +259,7 @@ The dev server watches these directories based on your config:
 | Source                  | Derived from                   |
 | ----------------------- | ------------------------------ |
 | Gleam source code       | `src/` (always watched)        |
-| Blog post directories   | `config.markdown_config.paths` |
+| Blog post directories   | `config.post_config.paths` |
 | Static assets directory | `config.static_dir`            |
 
 The output directory itself is **not** watched — it is rebuilt by the build command.

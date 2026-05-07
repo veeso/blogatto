@@ -8,8 +8,8 @@
 import blogatto/config
 import blogatto/config/feed/atom
 import blogatto/config/feed/rss
-import blogatto/config/markdown
-import blogatto/config/markdown/code
+import blogatto/config/post as post_cfg
+import blogatto/config/post/code
 import blogatto/config/robots
 import blogatto/config/sitemap
 import blogatto/post.{type Post}
@@ -29,17 +29,17 @@ pub fn config() -> config.Config(Nil) {
     code.default()
     |> code.smalto_config(themes.material_light())
 
-  // Markdown configuration: search the blog/ directory for posts
-  let md_config =
-    markdown.default()
-    |> markdown.markdown_path("./blog")
-    |> markdown.route_prefix("blog")
-    |> markdown.template(blog_post_template)
-    |> markdown.syntax_highlighting(syntax_config)
-    |> markdown.pre(fn(children) {
+  // Post configuration: search the blog/ directory for posts
+  let post_config =
+    post_cfg.default()
+    |> post_cfg.path("./blog")
+    |> post_cfg.route_prefix("blog")
+    |> post_cfg.template(blog_post_template)
+    |> post_cfg.syntax_highlighting(syntax_config)
+    |> post_cfg.pre(fn(children) {
       html.pre([attribute.class("code-block")], children)
     })
-    |> markdown.code(fn(language, children) {
+    |> post_cfg.code(fn(language, children) {
       let lang_class = case language {
         option.Some(lang) -> "language-" <> lang
         option.None -> ""
@@ -95,7 +95,7 @@ pub fn config() -> config.Config(Nil) {
 
   config.new(site_url)
   |> config.output_dir("./dist")
-  |> config.markdown(md_config)
+  |> config.post(post_config)
   |> config.route("/", home_view)
   |> config.rss_feed(rss_feed)
   |> config.atom_feed(atom_feed)

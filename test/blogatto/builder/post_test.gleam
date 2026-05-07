@@ -1,8 +1,8 @@
 import blogatto/config
-import blogatto/config/markdown
-import blogatto/config/markdown/code
+import blogatto/config/post as post_cfg
+import blogatto/config/post/code
 import blogatto/error
-import blogatto/internal/builder/blog as blog_builder
+import blogatto/internal/builder/post as post_builder
 import blogatto/internal/path
 import blogatto/post
 import gleam/dict
@@ -74,12 +74,12 @@ fn sample_markdown_with_extras() -> String {
 /// Config without route_prefix — posts go directly under output_dir.
 fn minimal_config(output_dir: String, blog_dir: String) -> config.Config(msg) {
   let md_config =
-    markdown.default()
-    |> markdown.markdown_path(blog_dir)
+    post_cfg.default()
+    |> post_cfg.path(blog_dir)
 
   config.new("https://example.com")
   |> config.output_dir(output_dir)
-  |> config.markdown(md_config)
+  |> config.post(md_config)
 }
 
 /// Config with a route_prefix.
@@ -89,13 +89,13 @@ fn prefixed_config(
   prefix: String,
 ) -> config.Config(msg) {
   let md_config =
-    markdown.default()
-    |> markdown.markdown_path(blog_dir)
-    |> markdown.route_prefix(prefix)
+    post_cfg.default()
+    |> post_cfg.path(blog_dir)
+    |> post_cfg.route_prefix(prefix)
 
   config.new("https://example.com")
   |> config.output_dir(output_dir)
-  |> config.markdown(md_config)
+  |> config.post(md_config)
 }
 
 fn config_with_template(
@@ -104,13 +104,13 @@ fn config_with_template(
   tmpl: fn(post.Post(msg), List(post.Post(msg))) -> element.Element(msg),
 ) -> config.Config(msg) {
   let md_config =
-    markdown.default()
-    |> markdown.markdown_path(blog_dir)
-    |> markdown.template(tmpl)
+    post_cfg.default()
+    |> post_cfg.path(blog_dir)
+    |> post_cfg.template(tmpl)
 
   config.new("https://example.com")
   |> config.output_dir(output_dir)
-  |> config.markdown(md_config)
+  |> config.post(md_config)
 }
 
 /// Config with a custom route_builder.
@@ -120,29 +120,29 @@ fn route_builder_config(
   builder: fn(post.PostMetadata) -> String,
 ) -> config.Config(msg) {
   let md_config =
-    markdown.default()
-    |> markdown.markdown_path(blog_dir)
-    |> markdown.route_builder(builder)
+    post_cfg.default()
+    |> post_cfg.path(blog_dir)
+    |> post_cfg.route_builder(builder)
 
   config.new("https://example.com")
   |> config.output_dir(output_dir)
-  |> config.markdown(md_config)
+  |> config.post(md_config)
 }
 
 /// Config with custom markdown options.
 fn config_with_options(
   output_dir: String,
   blog_dir: String,
-  options: markdown.Options,
+  options: post_cfg.Options,
 ) -> config.Config(msg) {
   let md_config =
-    markdown.default()
-    |> markdown.markdown_path(blog_dir)
-    |> markdown.options(options)
+    post_cfg.default()
+    |> post_cfg.path(blog_dir)
+    |> post_cfg.options(options)
 
   config.new("https://example.com")
   |> config.output_dir(output_dir)
-  |> config.markdown(md_config)
+  |> config.post(md_config)
 }
 
 /// Config with both route_prefix and route_builder (builder should win).
@@ -153,14 +153,14 @@ fn route_builder_with_prefix_config(
   builder: fn(post.PostMetadata) -> String,
 ) -> config.Config(msg) {
   let md_config =
-    markdown.default()
-    |> markdown.markdown_path(blog_dir)
-    |> markdown.route_prefix(prefix)
-    |> markdown.route_builder(builder)
+    post_cfg.default()
+    |> post_cfg.path(blog_dir)
+    |> post_cfg.route_prefix(prefix)
+    |> post_cfg.route_builder(builder)
 
   config.new("https://example.com")
   |> config.output_dir(output_dir)
-  |> config.markdown(md_config)
+  |> config.post(md_config)
 }
 
 fn create_post_dir(blog_dir: String, slug: String) -> String {
@@ -230,7 +230,7 @@ pub fn build_without_markdown_config_returns_empty_list_test() {
       config.new("https://example.com")
       |> config.output_dir(dir)
 
-    blog_builder.build(cfg)
+    post_builder.build(cfg)
     |> should.be_ok
     |> should.equal([])
   }
@@ -244,7 +244,7 @@ pub fn build_with_empty_blog_dir_returns_empty_list_test() {
     use blog <- temporary.create(temporary.directory())
 
     minimal_config(dir, blog)
-    |> blog_builder.build()
+    |> post_builder.build()
     |> should.be_ok
     |> should.equal([])
   }
@@ -262,7 +262,7 @@ pub fn build_single_post_returns_one_post_test() {
 
     let posts =
       minimal_config(dir, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     list.length(posts) |> should.equal(1)
@@ -279,7 +279,7 @@ pub fn build_single_post_has_correct_title_test() {
 
     let assert [post] =
       minimal_config(dir, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     post.title |> should.equal("Hello World")
@@ -296,7 +296,7 @@ pub fn build_single_post_has_correct_slug_test() {
 
     let assert [post] =
       minimal_config(dir, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     post.slug |> should.equal("hello-world")
@@ -313,7 +313,7 @@ pub fn build_single_post_has_correct_description_test() {
 
     let assert [post] =
       minimal_config(dir, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     post.description |> should.equal("A test post")
@@ -330,7 +330,7 @@ pub fn build_single_post_default_language_is_none_test() {
 
     let assert [post] =
       minimal_config(dir, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     post.language |> should.equal(option.None)
@@ -346,7 +346,7 @@ pub fn build_single_post_creates_html_file_test() {
     write_markdown(post_dir, "index.md", sample_markdown())
 
     minimal_config(dir, blog)
-    |> blog_builder.build()
+    |> post_builder.build()
     |> should.be_ok
 
     // with no route_prefix, HTML goes directly under output_dir/slug/
@@ -367,7 +367,7 @@ pub fn build_single_post_html_contains_rendered_markdown_test() {
     write_markdown(post_dir, "index.md", sample_markdown())
 
     minimal_config(dir, blog)
-    |> blog_builder.build()
+    |> post_builder.build()
     |> should.be_ok
 
     let html_path = expected_html_path(dir, "hello-world")
@@ -387,7 +387,7 @@ pub fn build_single_post_html_is_a_full_document_test() {
     write_markdown(post_dir, "index.md", sample_markdown())
 
     minimal_config(dir, blog)
-    |> blog_builder.build()
+    |> post_builder.build()
     |> should.be_ok
 
     let html_path = expected_html_path(dir, "hello-world")
@@ -409,7 +409,7 @@ pub fn build_post_with_featured_image_test() {
 
     let assert [post] =
       minimal_config(dir, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     post.featured_image |> should.equal(option.Some("/images/hero.jpg"))
@@ -426,7 +426,7 @@ pub fn build_post_without_featured_image_is_none_test() {
 
     let assert [post] =
       minimal_config(dir, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     post.featured_image |> should.equal(option.None)
@@ -442,7 +442,7 @@ pub fn build_post_featured_image_appears_in_html_test() {
     write_markdown(post_dir, "index.md", sample_markdown_with_featured_image())
 
     minimal_config(dir, blog)
-    |> blog_builder.build()
+    |> post_builder.build()
     |> should.be_ok
 
     let html_path = expected_html_path(dir, "featured-post")
@@ -465,7 +465,7 @@ pub fn build_post_with_extras_collects_extra_fields_test() {
 
     let assert [post] =
       minimal_config(dir, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     dict.get(post.extras, "author") |> should.be_ok |> should.equal("Alice")
@@ -483,7 +483,7 @@ pub fn build_post_extras_excludes_known_fields_test() {
 
     let assert [post] =
       minimal_config(dir, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     dict.get(post.extras, "title") |> should.be_error
@@ -516,7 +516,7 @@ pub fn build_multilingual_post_returns_multiple_posts_test() {
 
     let posts =
       minimal_config(dir, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     list.length(posts) |> should.equal(2)
@@ -544,7 +544,7 @@ pub fn build_multilingual_post_has_correct_languages_test() {
 
     let posts =
       minimal_config(dir, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     let languages =
@@ -578,7 +578,7 @@ pub fn build_multilingual_post_creates_language_subdirectory_test() {
     )
 
     minimal_config(dir, blog)
-    |> blog_builder.build()
+    |> post_builder.build()
     |> should.be_ok
 
     // Italian post goes under the language subdirectory
@@ -610,7 +610,7 @@ pub fn build_multilingual_post_italian_html_contains_italian_content_test() {
     )
 
     minimal_config(dir, blog)
-    |> blog_builder.build()
+    |> post_builder.build()
     |> should.be_ok
 
     let it_path = expected_localized_html_path(dir, "it", "hello-world")
@@ -655,7 +655,7 @@ pub fn build_multiple_posts_returns_all_test() {
 
     let posts =
       minimal_config(dir, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     list.length(posts) |> should.equal(2)
@@ -694,7 +694,7 @@ pub fn build_multiple_posts_creates_separate_html_files_test() {
     )
 
     minimal_config(dir, blog)
-    |> blog_builder.build()
+    |> post_builder.build()
     |> should.be_ok
 
     simplifile.is_file(expected_html_path(dir, "first-post"))
@@ -730,7 +730,7 @@ pub fn build_copies_assets_alongside_html_test() {
       simplifile.write(post_dir <> "/photo.jpg", "fake-image-data")
 
     minimal_config(dir, blog)
-    |> blog_builder.build()
+    |> post_builder.build()
     |> should.be_ok
 
     let assets_dir = expected_assets_dir(dir, "image-post")
@@ -767,7 +767,7 @@ pub fn build_copies_multiple_assets_test() {
     let assert Ok(_) = simplifile.write(post_dir <> "/diagram.svg", "svg-data")
 
     minimal_config(dir, blog)
-    |> blog_builder.build()
+    |> post_builder.build()
     |> should.be_ok
 
     let assets_dir = expected_assets_dir(dir, "multi-asset")
@@ -815,7 +815,7 @@ pub fn build_with_custom_template_applies_template_test() {
     }
 
     config_with_template(dir, blog, custom_template)
-    |> blog_builder.build()
+    |> post_builder.build()
     |> should.be_ok
 
     let html_path = expected_html_path(dir, "custom-tmpl")
@@ -846,7 +846,7 @@ pub fn build_default_template_contains_meta_description_test() {
     )
 
     minimal_config(dir, blog)
-    |> blog_builder.build()
+    |> post_builder.build()
     |> should.be_ok
 
     let html_path = expected_html_path(dir, "meta-test")
@@ -876,7 +876,7 @@ pub fn build_default_template_contains_title_test() {
     )
 
     minimal_config(dir, blog)
-    |> blog_builder.build()
+    |> post_builder.build()
     |> should.be_ok
 
     let html_path = expected_html_path(dir, "title-test")
@@ -907,7 +907,7 @@ pub fn build_default_template_contains_viewport_meta_test() {
     )
 
     minimal_config(dir, blog)
-    |> blog_builder.build()
+    |> post_builder.build()
     |> should.be_ok
 
     let html_path = expected_html_path(dir, "viewport-test")
@@ -936,7 +936,7 @@ pub fn build_default_template_uses_post_language_for_lang_attr_test() {
     )
 
     minimal_config(dir, blog)
-    |> blog_builder.build()
+    |> post_builder.build()
     |> should.be_ok
 
     let html_path = expected_localized_html_path(dir, "fr", "lang-test")
@@ -965,7 +965,7 @@ pub fn build_default_template_falls_back_to_en_for_default_language_test() {
     )
 
     minimal_config(dir, blog)
-    |> blog_builder.build()
+    |> post_builder.build()
     |> should.be_ok
 
     let html_path = expected_html_path(dir, "en-fallback")
@@ -994,7 +994,7 @@ pub fn build_default_template_wraps_content_in_article_test() {
     )
 
     minimal_config(dir, blog)
-    |> blog_builder.build()
+    |> post_builder.build()
     |> should.be_ok
 
     let html_path = expected_html_path(dir, "article-test")
@@ -1020,7 +1020,7 @@ pub fn build_returns_error_for_missing_title_test() {
 
     let result =
       minimal_config(dir, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
 
     result |> should.be_error
 
@@ -1048,7 +1048,7 @@ pub fn build_auto_generates_slug_from_title_when_missing_test() {
 
     let assert [post] =
       minimal_config(dir, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     post.slug |> should.equal("my-amazing-post")
@@ -1075,7 +1075,7 @@ pub fn build_uses_explicit_slug_over_auto_generated_test() {
 
     let assert [post] =
       minimal_config(dir, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     post.slug |> should.equal("custom-slug")
@@ -1096,7 +1096,7 @@ pub fn build_returns_error_for_missing_date_test() {
 
     let result =
       minimal_config(dir, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
 
     result |> should.be_error
 
@@ -1119,7 +1119,7 @@ pub fn build_returns_error_for_missing_description_test() {
 
     let result =
       minimal_config(dir, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
 
     result |> should.be_error
 
@@ -1142,7 +1142,7 @@ pub fn build_returns_error_for_invalid_date_format_test() {
 
     let result =
       minimal_config(dir, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
 
     result |> should.be_error
 
@@ -1165,7 +1165,7 @@ pub fn build_returns_error_for_missing_frontmatter_test() {
 
     let result =
       minimal_config(dir, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
 
     result |> should.be_error
 
@@ -1180,7 +1180,7 @@ pub fn build_returns_error_for_nonexistent_blog_dir_test() {
 
     let result =
       minimal_config(dir, "/tmp/nonexistent_blogatto_test_dir_xyz")
-      |> blog_builder.build()
+      |> post_builder.build()
 
     result |> should.be_error
 
@@ -1211,7 +1211,7 @@ pub fn build_post_has_non_empty_contents_test() {
 
     let assert [post] =
       minimal_config(dir, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     list.is_empty(post.contents) |> should.be_false
@@ -1253,18 +1253,18 @@ pub fn build_with_multiple_markdown_paths_returns_all_posts_test() {
     )
 
     let md_config =
-      markdown.default()
-      |> markdown.markdown_path(blog1)
-      |> markdown.markdown_path(blog2)
+      post_cfg.default()
+      |> post_cfg.path(blog1)
+      |> post_cfg.path(blog2)
 
     let cfg =
       config.new("https://example.com")
       |> config.output_dir(dir)
-      |> config.markdown(md_config)
+      |> config.post(md_config)
 
     let posts =
       cfg
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     list.length(posts) |> should.equal(2)
@@ -1306,18 +1306,18 @@ pub fn build_with_multiple_paths_produces_no_duplicates_test() {
     )
 
     let md_config =
-      markdown.default()
-      |> markdown.markdown_path(blog1)
-      |> markdown.markdown_path(blog2)
+      post_cfg.default()
+      |> post_cfg.path(blog1)
+      |> post_cfg.path(blog2)
 
     let cfg =
       config.new("https://example.com")
       |> config.output_dir(dir)
-      |> config.markdown(md_config)
+      |> config.post(md_config)
 
     let posts =
       cfg
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     let titles =
@@ -1345,7 +1345,7 @@ pub fn build_post_with_only_frontmatter_and_no_body_test() {
 
     let assert [post] =
       minimal_config(dir, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     post.title |> should.equal("Empty Body")
@@ -1373,7 +1373,7 @@ pub fn build_with_route_prefix_places_html_under_prefix_test() {
     )
 
     prefixed_config(dir, blog, "blog")
-    |> blog_builder.build()
+    |> post_builder.build()
     |> should.be_ok
 
     let html_path = expected_prefixed_html_path(dir, "blog", "prefixed")
@@ -1403,7 +1403,7 @@ pub fn build_with_route_prefix_and_language_test() {
     )
 
     prefixed_config(dir, blog, "blog")
-    |> blog_builder.build()
+    |> post_builder.build()
     |> should.be_ok
 
     // output_dir/blog/es/prefix-lang/index.html
@@ -1435,7 +1435,7 @@ pub fn build_with_route_prefix_html_contains_content_test() {
     )
 
     prefixed_config(dir, blog, "articles")
-    |> blog_builder.build()
+    |> post_builder.build()
     |> should.be_ok
 
     let html_path =
@@ -1465,7 +1465,7 @@ pub fn build_without_route_prefix_does_not_embed_source_path_test() {
     )
 
     minimal_config(dir, blog)
-    |> blog_builder.build()
+    |> post_builder.build()
     |> should.be_ok
 
     // HTML should be at output_dir/no-prefix/index.html, NOT under blog source path
@@ -1497,7 +1497,7 @@ pub fn build_route_prefix_copies_assets_under_prefix_test() {
     let assert Ok(_) = simplifile.write(post_dir <> "/photo.png", "image-bytes")
 
     prefixed_config(dir, blog, "blog")
-    |> blog_builder.build()
+    |> post_builder.build()
     |> should.be_ok
 
     let assets_dir =
@@ -1534,7 +1534,7 @@ pub fn build_with_route_builder_places_html_at_custom_path_test() {
     }
 
     route_builder_config(dir, blog, builder)
-    |> blog_builder.build()
+    |> post_builder.build()
     |> should.be_ok
 
     let html_path =
@@ -1572,7 +1572,7 @@ pub fn build_with_route_builder_sets_correct_post_url_test() {
 
     let assert [built_post] =
       route_builder_config(dir, blog, builder)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     built_post.url
@@ -1604,7 +1604,7 @@ pub fn build_with_route_builder_ignores_route_prefix_test() {
 
     // Both prefix and builder set; builder should take precedence
     route_builder_with_prefix_config(dir, blog, "blog", builder)
-    |> blog_builder.build()
+    |> post_builder.build()
     |> should.be_ok
 
     // HTML should be at /custom/ignore-prefix/, NOT /blog/ignore-prefix/
@@ -1652,7 +1652,7 @@ pub fn build_with_route_builder_adds_trailing_slash_test() {
 
     let assert [built_post] =
       route_builder_config(dir, blog, builder)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     // URL should still have trailing slash
@@ -1686,7 +1686,7 @@ pub fn build_with_route_builder_adds_leading_slash_test() {
 
     let assert [built_post] =
       route_builder_config(dir, blog, builder)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     // URL should have leading slash (no malformed URL)
@@ -1723,7 +1723,7 @@ pub fn build_with_route_builder_using_language_test() {
 
     let assert [built_post] =
       route_builder_config(dir, blog, builder)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     built_post.url
@@ -1764,7 +1764,7 @@ pub fn build_with_default_options_renders_table_test() {
 
     let assert [built_post] =
       minimal_config(output, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     let html =
@@ -1798,7 +1798,7 @@ pub fn build_with_tables_disabled_does_not_render_table_test() {
     )
 
     let opts =
-      markdown.Options(
+      post_cfg.Options(
         footnotes: True,
         heading_ids: False,
         tables: False,
@@ -1809,7 +1809,7 @@ pub fn build_with_tables_disabled_does_not_render_table_test() {
 
     let assert [built_post] =
       config_with_options(output, blog, opts)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     let html =
@@ -1841,7 +1841,7 @@ pub fn build_with_heading_ids_enabled_adds_ids_test() {
     )
 
     let opts =
-      markdown.Options(
+      post_cfg.Options(
         footnotes: True,
         heading_ids: True,
         tables: True,
@@ -1852,7 +1852,7 @@ pub fn build_with_heading_ids_enabled_adds_ids_test() {
 
     let assert [built_post] =
       config_with_options(output, blog, opts)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     let html =
@@ -1887,7 +1887,7 @@ pub fn build_with_tasklists_enabled_renders_checkboxes_test() {
 
     let assert [built_post] =
       minimal_config(output, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     let html =
@@ -1919,7 +1919,7 @@ pub fn build_with_tasklists_disabled_does_not_render_checkboxes_test() {
     )
 
     let opts =
-      markdown.Options(
+      post_cfg.Options(
         footnotes: True,
         heading_ids: False,
         tables: True,
@@ -1930,7 +1930,7 @@ pub fn build_with_tasklists_disabled_does_not_render_checkboxes_test() {
 
     let assert [built_post] =
       config_with_options(output, blog, opts)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     let html =
@@ -1949,13 +1949,13 @@ fn config_with_syntax_highlighting(
   blog_dir: String,
 ) -> config.Config(msg) {
   let md_config =
-    markdown.default()
-    |> markdown.markdown_path(blog_dir)
-    |> markdown.syntax_highlighting(code.default())
+    post_cfg.default()
+    |> post_cfg.path(blog_dir)
+    |> post_cfg.syntax_highlighting(code.default())
 
   config.new("https://example.com")
   |> config.output_dir(output_dir)
-  |> config.markdown(md_config)
+  |> config.post(md_config)
 }
 
 pub fn build_with_syntax_highlighting_renders_highlighted_code_test() {
@@ -1979,7 +1979,7 @@ pub fn build_with_syntax_highlighting_renders_highlighted_code_test() {
 
     let assert [built_post] =
       config_with_syntax_highlighting(output, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     let html =
@@ -2016,7 +2016,7 @@ pub fn build_with_syntax_highlighting_falls_back_for_unknown_language_test() {
 
     let assert [built_post] =
       config_with_syntax_highlighting(output, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     let html =
@@ -2051,7 +2051,7 @@ pub fn build_with_syntax_highlighting_no_language_falls_back_test() {
 
     let assert [built_post] =
       config_with_syntax_highlighting(output, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     let html =
@@ -2086,7 +2086,7 @@ pub fn build_with_syntax_highlighting_handles_html_entities_in_code_test() {
 
     let assert [built_post] =
       config_with_syntax_highlighting(output, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     let html =
@@ -2122,7 +2122,7 @@ pub fn build_without_syntax_highlighting_renders_plain_code_test() {
 
     let assert [built_post] =
       minimal_config(output, blog)
-      |> blog_builder.build()
+      |> post_builder.build()
       |> should.be_ok
 
     let html =

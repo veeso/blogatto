@@ -24,7 +24,7 @@ blog/
     diagram.png
 ```
 
-Blogatto searches all directories listed in `markdown.markdown_path()` recursively.
+Blogatto searches all directories listed in `post.path()` recursively.
 
 ## Frontmatter
 
@@ -141,19 +141,19 @@ Without a `route_prefix`:
 
 ### Custom routing with `route_builder`
 
-For full control over post URLs, use `markdown.route_builder()` instead of `route_prefix`. The route builder receives a `PostMetadata` value and returns the URL path for that post. When set, the `route_prefix` is ignored.
+For full control over post URLs, use `post.route_builder()` instead of `route_prefix`. The route builder receives a `PostMetadata` value and returns the URL path for that post. When set, the `route_prefix` is ignored.
 
 ```gleam
-import blogatto/config/markdown
+import blogatto/config/post
 import blogatto/post
 import gleam/int
 import gleam/option
 import gleam/time/calendar
 
 let md =
-  markdown.default()
-  |> markdown.markdown_path("./blog")
-  |> markdown.route_builder(fn(meta: post.PostMetadata) {
+  post.default()
+  |> post.path("./blog")
+  |> post.route_builder(fn(meta: post.PostMetadata) {
     let #(year, month, _day) = calendar.to_date(meta.date)
     "/blog/" <> int.to_string(year) <> "/" <> int.to_string(month) <> "/" <> meta.slug <> "/"
   })
@@ -164,7 +164,7 @@ This produces date-based URLs like `/blog/2024/1/my-post/` and filesystem paths 
 The route builder can also incorporate language:
 
 ```gleam
-markdown.route_builder(fn(meta: post.PostMetadata) {
+post.route_builder(fn(meta: post.PostMetadata) {
   let lang_prefix = case meta.language {
     option.Some(lang) -> "/" <> lang
     option.None -> ""
@@ -224,12 +224,12 @@ If `photo.jpg` is in the same directory as `index.md`, it will be copied to the 
 
 ## Markdown parsing options
 
-Blogatto exposes markdown parsing options that control which extensions are enabled. Use `markdown.options()` to override the defaults returned by `markdown.default_options()`:
+Blogatto exposes markdown parsing options that control which extensions are enabled. Use `post.options()` to override the defaults returned by `post.default_options()`:
 
 ```gleam
-import blogatto/config/markdown
+import blogatto/config/post
 
-let opts = markdown.Options(
+let opts = post.Options(
   footnotes: True,
   heading_ids: True,
   tables: True,
@@ -238,9 +238,9 @@ let opts = markdown.Options(
   autolinks: True,
 )
 
-let md = markdown.default()
-  |> markdown.markdown_path("./blog")
-  |> markdown.options(opts)
+let md = post.default()
+  |> post.path("./blog")
+  |> post.options(opts)
 ```
 
 ### Options reference
@@ -254,7 +254,7 @@ let md = markdown.default()
 | `emojis_shortcodes` | `True`  | Convert emoji shortcodes (e.g., `:smile:`) to Unicode emojis                                                                   |
 | `autolinks`         | `True`  | Automatically convert plain URLs into clickable links                                                                          |
 
-All options default to `True` except `heading_ids`, which defaults to `False`. To get the default options explicitly, use `markdown.default_options()`.
+All options default to `True` except `heading_ids`, which defaults to `False`. To get the default options explicitly, use `post.default_options()`.
 
 ## The Post type
 
