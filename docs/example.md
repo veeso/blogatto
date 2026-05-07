@@ -1,9 +1,3 @@
----
-layout: default
-title: Example blog
-nav_order: 3
----
-
 # Example blog
 
 Blogatto ships with a complete working example at [`examples/simple_blog`](https://github.com/veeso/blogatto/tree/main/examples/simple_blog). This page walks through it step by step so you can see how all the pieces fit together.
@@ -73,7 +67,7 @@ let md_config =
 - `path("./blog")` — scan the `blog/` directory for post directories
 - `route_prefix("blog")` — output posts under `/blog/{slug}/`
 - `template(blog_post_template)` — wrap each post in a custom HTML page layout
-- `syntax_highlighting(syntax_config)` — enable build-time syntax highlighting for code blocks (see [Syntax highlighting](syntax-highlighting))
+- `syntax_highlighting(syntax_config)` — enable build-time syntax highlighting for code blocks (see [Syntax highlighting](syntax-highlighting.md))
 - `pre` and `code` — add CSS classes to code block wrappers for styling
 
 ### RSS feed
@@ -369,4 +363,4 @@ cd examples/simple_blog
 gleam run -m simple_blog/dev
 ```
 
-This starts a local server at `http://127.0.0.1:3000` that watches for file changes, rebuilds the site, and live-reloads the browser. See [Dev server](dev-server) for full documentation.
+This starts a local server at `http://127.0.0.1:3000` that watches for file changes, rebuilds the site, and live-reloads the browser. See [Dev server](dev-server.md) for full documentation.

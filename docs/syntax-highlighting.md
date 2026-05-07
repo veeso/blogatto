@@ -1,9 +1,3 @@
----
-layout: default
-title: Syntax highlighting
-nav_order: 7
----
-
 # Syntax highlighting
 
 Blogatto supports build-time syntax highlighting for code blocks in your Markdown files via [Smalto](https://hexdocs.pm/smalto/). When enabled, fenced code blocks with a language tag (e.g., `` ```gleam ``) are highlighted at build time, producing styled HTML with no client-side JavaScript required.

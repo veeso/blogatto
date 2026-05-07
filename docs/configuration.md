@@ -1,9 +1,3 @@
----
-layout: default
-title: Configuration
-nav_order: 5
----
-
 # Configuration
 
 Blogatto uses a builder pattern for configuration. Start with `config.new(site_url)` and pipe through setter functions to configure each feature.
@@ -68,7 +62,7 @@ For example, `./static/css/style.css` becomes `./dist/css/style.css`.
 
 ### `config.post(config, post_config)`
 
-Set the post configuration for blog post rendering (applies to both Markdown and Djot sources). See [Post components](post-components) for component customization and [Blog posts](blog-posts) for routing details.
+Set the post configuration for blog post rendering (applies to both Markdown and Djot sources). See [Post components](post-components.md) for component customization and [Blog posts](blog-posts.md) for routing details.
 
 ```gleam
 import blogatto/config/post
@@ -101,7 +95,7 @@ let md = post.default()
   |> post.options(opts)
 ```
 
-See [Markdown parsing options](blog-posts#markdown-parsing-options) for details on each option.
+See [Markdown parsing options](blog-posts.md#markdown-parsing-options) for details on each option.
 
 #### Syntax highlighting
 
@@ -116,7 +110,7 @@ let md = post.default()
   |> post.syntax_highlighting(code.default())
 ```
 
-See [Syntax highlighting](syntax-highlighting) for the full guide on supported languages, styling, and customization.
+See [Syntax highlighting](syntax-highlighting.md) for the full guide on supported languages, styling, and customization.
 
 #### Markdown routing options
 
@@ -125,7 +119,7 @@ The `PostConfig` controls how blog post URLs are generated. You can use either `
 - **`post.route_prefix(config, prefix)`** — set a static URL prefix for all posts (e.g., `"blog"` produces `/blog/{slug}/`)
 - **`post.route_builder(config, builder)`** — set a function that receives `PostMetadata` and returns a custom URL path per post
 
-See [Custom routing with `route_builder`](blog-posts#custom-routing-with-route_builder) for examples.
+See [Custom routing with `route_builder`](blog-posts.md#custom-routing-with-route_builder) for examples.
 
 ### `config.route(config, path, view)`
 
@@ -139,23 +133,23 @@ config.new("https://example.com")
 |> config.route("/about", about_view)
 ```
 
-See [Static pages](static-pages) for more on writing view functions.
+See [Static pages](static-pages.md) for more on writing view functions.
 
 ### `config.rss_feed(config, rss_feed_config)`
 
-Add an RSS feed configuration. Can be called multiple times to generate multiple feeds. See [RSS feeds](rss-feeds).
+Add an RSS feed configuration. Can be called multiple times to generate multiple feeds. See [RSS feeds](rss-feeds.md).
 
 ### `config.atom_feed(config, atom_feed_config)`
 
-Add an Atom 1.0 feed configuration. Can be called multiple times to generate multiple feeds. See [Atom feeds](atom-feeds).
+Add an Atom 1.0 feed configuration. Can be called multiple times to generate multiple feeds. See [Atom feeds](atom-feeds.md).
 
 ### `config.sitemap(config, sitemap_config)`
 
-Set the sitemap configuration. See [Sitemap and robots.txt](sitemap-and-robots).
+Set the sitemap configuration. See [Sitemap and robots.txt](sitemap-and-robots.md).
 
 ### `config.robots(config, robots_config)`
 
-Set the robots.txt configuration. See [Sitemap and robots.txt](sitemap-and-robots).
+Set the robots.txt configuration. See [Sitemap and robots.txt](sitemap-and-robots.md).
 
 ## Common configurations
 

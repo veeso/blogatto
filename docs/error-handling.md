@@ -1,9 +1,3 @@
----
-layout: default
-title: Error handling
-nav_order: 13
----
-
 # Error handling
 
 All Blogatto build functions return `Result(Nil, BlogattoError)`. The library never panics — every failure is surfaced as a `Result`.

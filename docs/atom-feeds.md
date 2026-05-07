@@ -1,12 +1,6 @@
----
-layout: default
-title: Atom feeds
-nav_order: 10
----
-
 # Atom feeds
 
-Blogatto generates Atom 1.0 feeds from your blog posts. You can configure multiple feeds with different filters (e.g., one per language) and customize how posts are serialized into feed entries. Atom feeds work alongside [RSS feeds](rss-feeds) — both can be generated from the same build.
+Blogatto generates Atom 1.0 feeds from your blog posts. You can configure multiple feeds with different filters (e.g., one per language) and customize how posts are serialized into feed entries. Atom feeds work alongside [RSS feeds](rss-feeds.md) — both can be generated from the same build.
 
 ## Basic setup
 

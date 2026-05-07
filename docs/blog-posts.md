@@ -1,9 +1,3 @@
----
-layout: default
-title: Blog posts
-nav_order: 4
----
-
 # Blog posts
 
 Blogatto discovers blog posts from Markdown or Djot files with YAML frontmatter. This guide covers the supported source formats, directory convention, frontmatter fields, multilingual support, and post assets.

@@ -1,9 +1,3 @@
----
-layout: default
-title: Dev server
-nav_order: 12
----
-
 # Dev server
 
 Blogatto includes a built-in development server that watches your source files for changes, automatically rebuilds the site, and live-reloads the browser. This eliminates the need for Docker or external servers during development.
