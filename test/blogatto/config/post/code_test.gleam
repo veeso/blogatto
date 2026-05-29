@@ -246,6 +246,53 @@ pub fn highlight_md_alias_for_markdown_test() {
   |> should.be_true
 }
 
+// --- Info string with title/filename suffix ---
+
+pub fn highlight_language_with_colon_suffix_test() {
+  let config = code.default()
+
+  // authors carry a filename/title after a colon, e.g. ```cpp:main.ino
+  code.highlight(config, "cpp:main.ino", "int x = 1;")
+  |> should.be_ok
+  |> element.fragment()
+  |> element.to_string()
+  |> string.contains("int")
+  |> should.be_true
+}
+
+pub fn highlight_language_with_space_suffix_test() {
+  let config = code.default()
+
+  // CommonMark treats everything after the first space as extra info
+  code.highlight(config, "cpp main.ino", "int x = 1;")
+  |> should.be_ok
+  |> element.fragment()
+  |> element.to_string()
+  |> string.contains("int")
+  |> should.be_true
+}
+
+pub fn highlight_bare_language_still_works_test() {
+  let config = code.default()
+
+  // the plain language name keeps resolving exactly as before
+  code.highlight(config, "cpp", "int x = 1;")
+  |> should.be_ok
+  |> element.fragment()
+  |> element.to_string()
+  |> string.contains("int")
+  |> should.be_true
+}
+
+pub fn highlight_unknown_language_with_suffix_returns_error_test() {
+  let config = code.default()
+
+  // an unknown leading token must still fail, suffix or not
+  code.highlight(config, "brainfuck:hello.bf", "+++.")
+  |> should.be_error
+  |> should.equal(Nil)
+}
+
 // --- smalto_config ---
 
 pub fn smalto_config_applies_custom_lustre_config_test() {
