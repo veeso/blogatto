@@ -2,6 +2,8 @@
 
 import gleam/dict
 import gleam/list
+import gleam/result
+import gleam/string
 import lustre/element.{type Element}
 import smalto
 import smalto/grammar
@@ -116,17 +118,47 @@ pub fn default() -> SyntaxHighlightingConfig(msg) {
 
 /// Highlights source code for the given language, returning highlighted Lustre elements.
 /// Returns Error(Nil) if the language is not in the configured languages dictionary.
+///
+/// The `language` argument is the code fence info string, which may carry more
+/// than the language name. CommonMark treats everything up to the first space as
+/// the language, and authors commonly append a title or filename after a `:`
+/// (e.g. `cpp:main.ino`). The full info string is matched first so explicitly
+/// registered language names keep working, then the leading token is tried as a
+/// fallback so these decorated fences still resolve to a grammar.
 pub fn highlight(
   config: SyntaxHighlightingConfig(msg),
   language: String,
   source: String,
 ) -> Result(List(Element(msg)), Nil) {
-  case dict.get(config.languages, language) {
+  let grammar_fn =
+    dict.get(config.languages, language)
+    |> result.or(dict.get(config.languages, language_token(language)))
+
+  case grammar_fn {
     Ok(grammar_fn) -> {
       let tokens = smalto.to_tokens(source, grammar_fn())
       Ok(smalto_lustre.to_lustre(tokens, config.config))
     }
     Error(_) -> Error(Nil)
+  }
+}
+
+/// Extracts the leading language token from a code fence info string by
+/// dropping anything from the first space or `:` onwards, e.g. both
+/// `cpp main.ino` and `cpp:main.ino` yield `cpp`. A string with neither
+/// separator is returned unchanged.
+fn language_token(language: String) -> String {
+  language
+  |> before_separator(" ")
+  |> before_separator(":")
+}
+
+/// Returns the part of `input` before the first occurrence of `separator`, or
+/// the whole `input` if the separator is absent.
+fn before_separator(input: String, separator: String) -> String {
+  case string.split_once(input, separator) {
+    Ok(#(before, _)) -> before
+    Error(_) -> input
   }
 }
 
