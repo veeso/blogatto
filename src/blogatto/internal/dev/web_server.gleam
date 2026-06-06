@@ -66,25 +66,25 @@ fn handle_request(
   }
 }
 
+/// Interval between SSE heartbeat probes, used to detect dead client
+/// connections.
+const sse_heartbeat_interval: Int = 15_000
+
 fn sse_init(
   rebuild_subject: Subject(message.RebuildMessage),
-) -> fn(Subject(message.SseMessage)) ->
-  Result(actor.Initialised(Nil, message.SseMessage, Nil), String) {
+) -> fn(Subject(message.SseMessage)) -> Subject(message.SseMessage) {
   fn(subject) {
     rebuild_actor.register_sse_client(rebuild_subject, subject)
-    actor.initialised(Nil)
-    |> Ok
+    process.send_after(subject, sse_heartbeat_interval, message.Heartbeat)
+    subject
   }
 }
 
 fn sse_loop(
-  state: Result(actor.Initialised(Nil, message.SseMessage, Nil), String),
+  subject: Subject(message.SseMessage),
   msg: message.SseMessage,
   conn: mist.SSEConnection,
-) -> actor.Next(
-  Result(actor.Initialised(Nil, message.SseMessage, Nil), String),
-  message.SseMessage,
-) {
+) -> actor.Next(Subject(message.SseMessage), message.SseMessage) {
   case msg {
     message.Reload -> {
       let event =
@@ -92,7 +92,22 @@ fn sse_loop(
         |> mist.event
         |> mist.event_name("reload")
       case mist.send_event(conn, event) {
-        Ok(_) -> actor.continue(state)
+        Ok(_) -> actor.continue(subject)
+        Error(_) -> actor.stop()
+      }
+    }
+    message.Heartbeat -> {
+      // Probe the socket, a failed write means the client disconnected, which 
+      // stops the actor.
+      let ping =
+        string_tree.from_string("ping")
+        |> mist.event
+        |> mist.event_name("ping")
+      case mist.send_event(conn, ping) {
+        Ok(_) -> {
+          process.send_after(subject, sse_heartbeat_interval, message.Heartbeat)
+          actor.continue(subject)
+        }
         Error(_) -> actor.stop()
       }
     }
@@ -137,7 +152,7 @@ fn serve_page(
   }
 }
 
-pub const live_reload_script = "<script>new EventSource('/__blogatto_dev/reload').addEventListener('reload',function(){location.reload()});</script>"
+pub const live_reload_script = "<script>(function(){var u='/__blogatto_dev/reload';var es=null;function open(){es=new EventSource(u);es.addEventListener('reload',function(){location.reload()});}function close(){if(es){es.close();es=null;}}open();window.addEventListener('pagehide',close);document.addEventListener('freeze',close);window.addEventListener('pageshow',function(e){if(e.persisted&&!es){open();}});})();</script>"
 
 /// Append the live reload script to HTML content. When `live_reload` is
 /// `True`, the script is injected just before `</body>`. If no closing body
