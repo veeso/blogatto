@@ -15,4 +15,7 @@ pub type RebuildMessage {
 /// Message type for server-sent events to the client.
 pub type SseMessage {
   Reload
+  /// Periodic self-message used to probe the SSE socket so dead connections
+  /// (clients that disconnected) can be detected and reaped.
+  Heartbeat
 }
