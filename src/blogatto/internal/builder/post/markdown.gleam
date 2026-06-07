@@ -10,24 +10,66 @@
 
 import blogatto/config/post.{type PostConfig}
 import blogatto/config/post/code
+import blogatto/internal/builder/post/footnote
+import gleam/dict
+import gleam/int
 import gleam/list
 import gleam/option.{type Option}
 import gleam/string
 import lustre/element.{type Element}
 import maud
 import maud/components as maud_components
+import mork
 import mork/document as mork_document
 
 /// File extension recognized by the markdown source format.
 pub const extension: String = "md"
 
 /// Render markdown `content` to Lustre elements using the post configuration.
+///
+/// The document body is rendered first, then the footnote definitions are
+/// rendered separately into an anchored `<section><ol>` (with back-links) so
+/// footnotes are navigable, matching the djot renderer. maud's own footnote
+/// append (bare paragraphs, no anchors) is bypassed by clearing the
+/// document's footnotes before rendering the body.
 pub fn render(config: PostConfig(msg), content: String) -> List(Element(msg)) {
-  maud.render_markdown(
-    content,
-    mork_options(config.options),
-    to_maud_components(config),
-  )
+  let components = to_maud_components(config)
+  let document =
+    mork.parse_with_options(
+      options: mork_options(config.options),
+      input: content,
+    )
+  let body =
+    maud.render_document(
+      mork_document.Document(..document, footnotes: dict.new()),
+      components,
+    )
+  list.append(body, render_footnotes(document, components))
+}
+
+/// Render the markdown footnote definitions into an anchored `<section><ol>`,
+/// ordered by footnote number. Each definition's blocks are rendered through
+/// maud so they share the configured components.
+fn render_footnotes(
+  document: mork_document.Document,
+  components: maud_components.Components(msg),
+) -> List(Element(msg)) {
+  document.footnotes
+  |> dict.values
+  |> list.sort(fn(a, b) { int.compare(a.num, b.num) })
+  |> list.map(fn(data) {
+    let body =
+      maud.render_document(
+        mork_document.Document(
+          ..document,
+          blocks: data.blocks,
+          footnotes: dict.new(),
+        ),
+        components,
+      )
+    footnote.item(data.num, body)
+  })
+  |> footnote.section
 }
 
 /// Convert blogatto `Components` to maud `Components`, wrapping the `code`

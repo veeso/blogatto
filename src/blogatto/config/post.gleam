@@ -21,9 +21,12 @@
 
 import blogatto/config/post/code
 import blogatto/post.{type Post, type PostMetadata}
+import gleam/int
 import gleam/list
 import gleam/option.{type Option, None}
+import lustre/attribute
 import lustre/element.{type Element}
+import lustre/element/html
 import maud/components as maud_components
 
 /// Configuration for discovering and rendering blog posts.
@@ -179,7 +182,23 @@ pub fn default_options() -> Options {
 /// Return the default components, rendering each markdown element as its
 /// corresponding HTML element without additional attributes or styling.
 pub fn default_components() -> Components(msg) {
-  from_maud_components(maud_components.default())
+  Components(
+    ..from_maud_components(maud_components.default()),
+    footnote: default_footnote,
+  )
+}
+
+/// Default footnote reference marker: a superscript link to the footnote
+/// definition (`#fn-N`), anchored (`id="fnref-N"`) so the definition can link
+/// back. `number` is the footnote number; `children` is the marker text.
+fn default_footnote(number: Int, children: List(Element(msg))) -> Element(msg) {
+  let num = int.to_string(number)
+  html.sup([], [
+    html.a(
+      [attribute.id("fnref-" <> num), attribute.href("#fn-" <> num)],
+      children,
+    ),
+  ])
 }
 
 /// Set the `Components` used for rendering posts.
