@@ -203,6 +203,12 @@ fn render_inline(inline: jot.Inline, ctx: Context(msg)) -> Element(msg) {
       element.element("ins", [], render_inlines(inlines, ctx))
     jot.Mark(content: inlines) ->
       ctx.components.mark(render_inlines(inlines, ctx))
+    // No `sup`/`sub` components are exposed by `Components`, so fall back to
+    // raw `<sup>`/`<sub>` elements preserving the inline children.
+    jot.Superscript(content: inlines) ->
+      element.element("sup", [], render_inlines(inlines, ctx))
+    jot.Subscript(content: inlines) ->
+      element.element("sub", [], render_inlines(inlines, ctx))
     jot.Footnote(reference: reference) -> {
       let number =
         ctx.footnote_numbers
