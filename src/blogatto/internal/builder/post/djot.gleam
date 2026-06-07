@@ -5,6 +5,7 @@
 //// approach so other source formats can be added as sibling submodules.
 
 import blogatto/config/post.{type Components, type PostConfig}
+import blogatto/internal/builder/post/footnote
 import frontmatter as fm_extractor
 import gleam/dict.{type Dict}
 import gleam/int
@@ -63,47 +64,14 @@ fn render_footnotes(
   footnotes: Dict(String, List(jot.Container)),
   ctx: Context(msg),
 ) -> List(Element(msg)) {
-  let items =
-    ordered_refs
-    |> list.filter_map(fn(reference) {
-      use containers <- result.map(dict.get(footnotes, reference))
-      let number =
-        ctx.footnote_numbers |> dict.get(reference) |> result.unwrap(0)
-      render_footnote_item(number, containers, ctx)
-    })
-  case items {
-    [] -> []
-    _ -> [
-      element.element("section", [attribute.class("footnotes")], [
-        element.element("ol", [], items),
-      ]),
-    ]
-  }
-}
-
-/// Render a single footnote definition as an `<li id="fn-N">` containing the
-/// definition body followed by a back-link to its reference site.
-fn render_footnote_item(
-  number: Int,
-  containers: List(jot.Container),
-  ctx: Context(msg),
-) -> Element(msg) {
-  let num = int.to_string(number)
-  let body = list.map(containers, render_container(_, ctx, jot.Loose))
-  let backlink =
-    element.element(
-      "a",
-      [
-        attribute.href("#fnref-" <> num),
-        attribute.class("footnote-backref"),
-      ],
-      [element.text("↩")],
-    )
-  element.element(
-    "li",
-    [attribute.id("fn-" <> num)],
-    list.append(body, [backlink]),
-  )
+  ordered_refs
+  |> list.filter_map(fn(reference) {
+    use containers <- result.map(dict.get(footnotes, reference))
+    let number = ctx.footnote_numbers |> dict.get(reference) |> result.unwrap(0)
+    let body = list.map(containers, render_container(_, ctx, jot.Loose))
+    footnote.item(number, body)
+  })
+  |> footnote.section
 }
 
 /// Assign a footnote number to each reference in order of first appearance.
@@ -316,18 +284,10 @@ fn render_inline(inline: jot.Inline, ctx: Context(msg)) -> Element(msg) {
         ctx.footnote_numbers
         |> dict.get(reference)
         |> result.unwrap(0)
-      let num = int.to_string(number)
-      // Render the marker directly: it must carry both an `id` (the back-link
-      // target) and an `href` to the definition, which the `footnote`
-      // component (number + children only) cannot express. The visible text is
-      // the number, not the raw reference key (jot keeps its leading `^`).
-      element.element("sup", [], [
-        element.element(
-          "a",
-          [attribute.id("fnref-" <> num), attribute.href("#fn-" <> num)],
-          [element.text(num)],
-        ),
-      ])
+      // The visible marker text is the number, not the raw reference key (jot
+      // keeps its leading `^`). The default `footnote` component renders it as
+      // a link to the definition.
+      ctx.components.footnote(number, [element.text(int.to_string(number))])
     }
     jot.Code(content: text) -> ctx.components.code(None, [element.text(text)])
     jot.MathInline(content: latex) ->

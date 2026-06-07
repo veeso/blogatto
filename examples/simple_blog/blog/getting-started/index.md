@@ -43,4 +43,16 @@ A post directory contains:
 
 Run `gleam run` to build your site. The generated HTML, feeds, and sitemap will be written to the output directory.
 
+## Footnotes
+
+Blogatto supports footnotes in Markdown posts[^obsidian]. References are
+rendered as clickable links to the definitions at the bottom of the post[^nav],
+and each definition links back to where it was referenced[^backref].
+
 Happy blogging!
+
+[^obsidian]: Footnotes use the Obsidian syntax: `[^label]` for the reference and `[^label]: ...` for the definition.
+
+[^nav]: Click a footnote number to jump to its definition.
+
+[^backref]: Use the back-link to return to the reference.
