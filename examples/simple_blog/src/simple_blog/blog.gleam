@@ -13,6 +13,7 @@ import blogatto/config/post/code
 import blogatto/config/robots
 import blogatto/config/sitemap
 import blogatto/post.{type Post}
+import gleam/dict
 import gleam/list
 import gleam/option
 import gleam/time/timestamp
@@ -36,15 +37,35 @@ pub fn config() -> config.Config(Nil) {
     |> post_cfg.route_prefix("blog")
     |> post_cfg.template(blog_post_template)
     |> post_cfg.syntax_highlighting(syntax_config)
-    |> post_cfg.pre(fn(children) {
+    |> post_cfg.pre(fn(_attributes, children) {
       html.pre([attribute.class("code-block")], children)
     })
-    |> post_cfg.code(fn(language, children) {
+    |> post_cfg.code(fn(attributes, language, children) {
       let lang_class = case language {
         option.Some(lang) -> "language-" <> lang
         option.None -> ""
       }
-      html.code([attribute.class(lang_class)], children)
+      // Djot lets an author annotate a fenced code block, e.g.
+      // ` ```gleam {title="hello.gleam"} `. When a title is present we render a
+      // caption above the code; otherwise we fall back to a bare `<code>`.
+      case dict.get(attributes, "title") {
+        Ok(title) ->
+          html.figure([attribute.class("code-figure")], [
+            html.figcaption([], [element.text(title)]),
+            html.code([attribute.class(lang_class)], children),
+          ])
+        Error(_) -> html.code([attribute.class(lang_class)], children)
+      }
+    })
+    |> post_cfg.blockquote(fn(attributes, children) {
+      // A blockquote annotated with `{.pull}` in djot becomes a pull-quote;
+      // any other blockquote keeps the default styling. Before block
+      // attributes were exposed this required content sniffing.
+      let class = case dict.get(attributes, "class") {
+        Ok("pull") -> "blockquote pull-quote"
+        _ -> "blockquote"
+      }
+      html.blockquote([attribute.class(class)], children)
     })
 
   // RSS feed configuration

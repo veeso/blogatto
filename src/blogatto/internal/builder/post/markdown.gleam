@@ -120,12 +120,18 @@ fn to_maud_components(
 /// elements. Otherwise, the original code component is used as-is.
 fn code_component(
   syntax_highlighting: Option(code.SyntaxHighlightingConfig(msg)),
-  code_fn: fn(Option(String), List(Element(msg))) -> Element(msg),
-) -> fn(Option(String), List(Element(msg))) -> Element(msg) {
+  code_fn: fn(dict.Dict(String, String), Option(String), List(Element(msg))) ->
+    Element(msg),
+) -> fn(dict.Dict(String, String), Option(String), List(Element(msg))) ->
+  Element(msg) {
   case syntax_highlighting {
     option.None -> code_fn
     option.Some(config) -> {
-      fn(language: Option(String), children: List(Element(msg))) -> Element(msg) {
+      fn(
+        attributes: dict.Dict(String, String),
+        language: Option(String),
+        children: List(Element(msg)),
+      ) -> Element(msg) {
         case language {
           option.Some(lang) -> {
             // Extract raw text from children and unescape HTML entities,
@@ -138,11 +144,11 @@ fn code_component(
               |> string.join("")
               |> unescape_html()
             case code.highlight(config, lang, source) {
-              Ok(highlighted) -> code_fn(language, highlighted)
-              Error(_) -> code_fn(language, children)
+              Ok(highlighted) -> code_fn(attributes, language, highlighted)
+              Error(_) -> code_fn(attributes, language, children)
             }
           }
-          option.None -> code_fn(language, children)
+          option.None -> code_fn(attributes, language, children)
         }
       }
     }

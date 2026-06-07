@@ -14,13 +14,14 @@
 //// let post_config =
 ////   post.default()
 ////   |> post.path("./blog")
-////   |> post.h1(fn(id, children) {
+////   |> post.h1(fn(_attributes, id, children) {
 ////     html.h1([attribute.id(id), attribute.class("title")], children)
 ////   })
 //// ```
 
 import blogatto/config/post/code
 import blogatto/post.{type Post, type PostMetadata}
+import gleam/dict.{type Dict}
 import gleam/int
 import gleam/list
 import gleam/option.{type Option, None}
@@ -85,28 +86,40 @@ pub type Alignment {
 /// to the parent component function as a `List(Element(msg))`. When implementing
 /// a custom component, you must pass the children into the element you return,
 /// otherwise they will not appear in the output.
+///
+/// Components for every element that can carry author-supplied attributes
+/// (`a`, `blockquote`, `code`, `h1`–`h6`, `img`, `p`, `pre`) receive a
+/// `Dict(String, String)` of those attributes as their first argument. These
+/// are the annotations attached to the element in the source document (for
+/// example `{.class key="value"}` in djot), letting a component react to
+/// per-element styling instead of resorting to content sniffing. On the
+/// markdown path the dictionary is always empty, since CommonMark has no block
+/// attribute syntax.
 pub type Components(msg) {
   Components(
-    a: fn(String, Option(String), List(Element(msg))) -> Element(msg),
-    blockquote: fn(List(Element(msg))) -> Element(msg),
+    a: fn(Dict(String, String), String, Option(String), List(Element(msg))) ->
+      Element(msg),
+    blockquote: fn(Dict(String, String), List(Element(msg))) -> Element(msg),
     checkbox: fn(Bool) -> Element(msg),
-    code: fn(Option(String), List(Element(msg))) -> Element(msg),
+    code: fn(Dict(String, String), Option(String), List(Element(msg))) ->
+      Element(msg),
     del: fn(List(Element(msg))) -> Element(msg),
     em: fn(List(Element(msg))) -> Element(msg),
     footnote: fn(Int, List(Element(msg))) -> Element(msg),
-    h1: fn(String, List(Element(msg))) -> Element(msg),
-    h2: fn(String, List(Element(msg))) -> Element(msg),
-    h3: fn(String, List(Element(msg))) -> Element(msg),
-    h4: fn(String, List(Element(msg))) -> Element(msg),
-    h5: fn(String, List(Element(msg))) -> Element(msg),
-    h6: fn(String, List(Element(msg))) -> Element(msg),
+    h1: fn(Dict(String, String), String, List(Element(msg))) -> Element(msg),
+    h2: fn(Dict(String, String), String, List(Element(msg))) -> Element(msg),
+    h3: fn(Dict(String, String), String, List(Element(msg))) -> Element(msg),
+    h4: fn(Dict(String, String), String, List(Element(msg))) -> Element(msg),
+    h5: fn(Dict(String, String), String, List(Element(msg))) -> Element(msg),
+    h6: fn(Dict(String, String), String, List(Element(msg))) -> Element(msg),
     hr: fn() -> Element(msg),
-    img: fn(String, String, Option(String)) -> Element(msg),
+    img: fn(Dict(String, String), String, String, Option(String)) ->
+      Element(msg),
     li: fn(List(Element(msg))) -> Element(msg),
     mark: fn(List(Element(msg))) -> Element(msg),
     ol: fn(Option(Int), List(Element(msg))) -> Element(msg),
-    p: fn(List(Element(msg))) -> Element(msg),
-    pre: fn(List(Element(msg))) -> Element(msg),
+    p: fn(Dict(String, String), List(Element(msg))) -> Element(msg),
+    pre: fn(Dict(String, String), List(Element(msg))) -> Element(msg),
     strong: fn(List(Element(msg))) -> Element(msg),
     table: fn(List(Element(msg))) -> Element(msg),
     tbody: fn(List(Element(msg))) -> Element(msg),
@@ -285,19 +298,24 @@ pub fn template(
 
 /// Set the `a` component used for links.
 ///
-/// The first argument is the link href, the second is an optional title,
-/// and the third is the list of children elements.
+/// The first argument is the link's attributes, the second is the link href,
+/// the third is an optional title, and the fourth is the list of children
+/// elements.
 pub fn a(
   config: PostConfig(msg),
-  view: fn(String, Option(String), List(Element(msg))) -> Element(msg),
+  view: fn(Dict(String, String), String, Option(String), List(Element(msg))) ->
+    Element(msg),
 ) -> PostConfig(msg) {
   PostConfig(..config, components: Components(..config.components, a: view))
 }
 
 /// Set the `blockquote` component used for block quotes.
+///
+/// The first argument is the blockquote's attributes, the second is the list of
+/// children elements.
 pub fn blockquote(
   config: PostConfig(msg),
-  view: fn(List(Element(msg))) -> Element(msg),
+  view: fn(Dict(String, String), List(Element(msg))) -> Element(msg),
 ) -> PostConfig(msg) {
   PostConfig(
     ..config,
@@ -320,11 +338,14 @@ pub fn checkbox(
 
 /// Set the `code` component used for inline code and code blocks.
 ///
-/// The first argument is the optional language identifier (e.g. `Some("gleam")`
-/// for fenced code blocks with a language tag, `None` for inline code).
+/// The first argument is the code's attributes (only fenced code blocks carry
+/// these; inline code receives an empty dictionary). The second is the optional
+/// language identifier (e.g. `Some("gleam")` for fenced code blocks with a
+/// language tag, `None` for inline code). The third is the children.
 pub fn code(
   config: PostConfig(msg),
-  view: fn(Option(String), List(Element(msg))) -> Element(msg),
+  view: fn(Dict(String, String), Option(String), List(Element(msg))) ->
+    Element(msg),
 ) -> PostConfig(msg) {
   PostConfig(..config, components: Components(..config.components, code: view))
 }
@@ -360,60 +381,66 @@ pub fn footnote(
 
 /// Set the `h1` component used for level 1 headings.
 ///
-/// The first argument is the heading id, the second is the children elements.
+/// The first argument is the heading's attributes, the second is the heading id,
+/// the third is the children elements.
 pub fn h1(
   config: PostConfig(msg),
-  view: fn(String, List(Element(msg))) -> Element(msg),
+  view: fn(Dict(String, String), String, List(Element(msg))) -> Element(msg),
 ) -> PostConfig(msg) {
   PostConfig(..config, components: Components(..config.components, h1: view))
 }
 
 /// Set the `h2` component used for level 2 headings.
 ///
-/// The first argument is the heading id, the second is the children elements.
+/// The first argument is the heading's attributes, the second is the heading id,
+/// the third is the children elements.
 pub fn h2(
   config: PostConfig(msg),
-  view: fn(String, List(Element(msg))) -> Element(msg),
+  view: fn(Dict(String, String), String, List(Element(msg))) -> Element(msg),
 ) -> PostConfig(msg) {
   PostConfig(..config, components: Components(..config.components, h2: view))
 }
 
 /// Set the `h3` component used for level 3 headings.
 ///
-/// The first argument is the heading id, the second is the children elements.
+/// The first argument is the heading's attributes, the second is the heading id,
+/// the third is the children elements.
 pub fn h3(
   config: PostConfig(msg),
-  view: fn(String, List(Element(msg))) -> Element(msg),
+  view: fn(Dict(String, String), String, List(Element(msg))) -> Element(msg),
 ) -> PostConfig(msg) {
   PostConfig(..config, components: Components(..config.components, h3: view))
 }
 
 /// Set the `h4` component used for level 4 headings.
 ///
-/// The first argument is the heading id, the second is the children elements.
+/// The first argument is the heading's attributes, the second is the heading id,
+/// the third is the children elements.
 pub fn h4(
   config: PostConfig(msg),
-  view: fn(String, List(Element(msg))) -> Element(msg),
+  view: fn(Dict(String, String), String, List(Element(msg))) -> Element(msg),
 ) -> PostConfig(msg) {
   PostConfig(..config, components: Components(..config.components, h4: view))
 }
 
 /// Set the `h5` component used for level 5 headings.
 ///
-/// The first argument is the heading id, the second is the children elements.
+/// The first argument is the heading's attributes, the second is the heading id,
+/// the third is the children elements.
 pub fn h5(
   config: PostConfig(msg),
-  view: fn(String, List(Element(msg))) -> Element(msg),
+  view: fn(Dict(String, String), String, List(Element(msg))) -> Element(msg),
 ) -> PostConfig(msg) {
   PostConfig(..config, components: Components(..config.components, h5: view))
 }
 
 /// Set the `h6` component used for level 6 headings.
 ///
-/// The first argument is the heading id, the second is the children elements.
+/// The first argument is the heading's attributes, the second is the heading id,
+/// the third is the children elements.
 pub fn h6(
   config: PostConfig(msg),
-  view: fn(String, List(Element(msg))) -> Element(msg),
+  view: fn(Dict(String, String), String, List(Element(msg))) -> Element(msg),
 ) -> PostConfig(msg) {
   PostConfig(..config, components: Components(..config.components, h6: view))
 }
@@ -428,11 +455,11 @@ pub fn hr(
 
 /// Set the `img` component used for images.
 ///
-/// The first argument is the image URI, the second is the alt text,
-/// and the third is an optional title.
+/// The first argument is the image's attributes, the second is the image URI,
+/// the third is the alt text, and the fourth is an optional title.
 pub fn img(
   config: PostConfig(msg),
-  view: fn(String, String, Option(String)) -> Element(msg),
+  view: fn(Dict(String, String), String, String, Option(String)) -> Element(msg),
 ) -> PostConfig(msg) {
   PostConfig(..config, components: Components(..config.components, img: view))
 }
@@ -465,17 +492,23 @@ pub fn ol(
 }
 
 /// Set the `p` component used for paragraphs.
+///
+/// The first argument is the paragraph's attributes, the second is the list of
+/// children elements.
 pub fn p(
   config: PostConfig(msg),
-  view: fn(List(Element(msg))) -> Element(msg),
+  view: fn(Dict(String, String), List(Element(msg))) -> Element(msg),
 ) -> PostConfig(msg) {
   PostConfig(..config, components: Components(..config.components, p: view))
 }
 
 /// Set the `pre` component used for preformatted code blocks.
+///
+/// The first argument is the code block's attributes, the second is the list of
+/// children elements.
 pub fn pre(
   config: PostConfig(msg),
-  view: fn(List(Element(msg))) -> Element(msg),
+  view: fn(Dict(String, String), List(Element(msg))) -> Element(msg),
 ) -> PostConfig(msg) {
   PostConfig(..config, components: Components(..config.components, pre: view))
 }

@@ -194,10 +194,10 @@ let md =
   post.default()
   |> post.path("./blog")
   |> post.syntax_highlighting(code.default())
-  |> post.pre(fn(children) {
+  |> post.pre(fn(_attributes, children) {
     html.pre([attribute.class("code-block")], children)
   })
-  |> post.code(fn(language, children) {
+  |> post.code(fn(_attributes, language, children) {
     let lang_class = case language {
       option.Some(lang) -> "language-" <> lang
       option.None -> ""
@@ -232,10 +232,10 @@ let md =
   |> post.path("./blog")
   |> post.route_prefix("blog")
   |> post.syntax_highlighting(syntax_config)
-  |> post.pre(fn(children) {
+  |> post.pre(fn(_attributes, children) {
     html.pre([attribute.class("code-block")], children)
   })
-  |> post.code(fn(language, children) {
+  |> post.code(fn(_attributes, language, children) {
     let lang_class = case language {
       option.Some(lang) -> "language-" <> lang
       option.None -> ""

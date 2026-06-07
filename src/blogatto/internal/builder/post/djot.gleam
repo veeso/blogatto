@@ -140,22 +140,33 @@ fn render_container(
   case container {
     jot.ThematicBreak -> ctx.components.hr()
 
-    jot.Paragraph(attributes: _, content: inlines) -> {
+    jot.Paragraph(attributes: attrs, content: inlines) -> {
       let children = render_inlines(inlines, ctx)
       case layout {
         jot.Tight -> element.fragment(children)
-        jot.Loose -> ctx.components.p(children)
+        jot.Loose -> ctx.components.p(attrs, children)
       }
     }
 
     jot.Heading(attributes: attrs, level: level, content: inlines) -> {
       let id = attrs |> dict.get("id") |> result.unwrap("")
-      render_heading(level, id, render_inlines(inlines, ctx), ctx.components)
+      // The id is passed separately, so drop it from the attribute dictionary
+      // to avoid the component rendering a duplicate `id` attribute.
+      let attrs = dict.delete(attrs, "id")
+      render_heading(
+        level,
+        attrs,
+        id,
+        render_inlines(inlines, ctx),
+        ctx.components,
+      )
     }
 
-    jot.Codeblock(attributes: _, language: language, content: text) ->
-      ctx.components.pre([
-        ctx.components.code(language, [element.text(text)]),
+    jot.Codeblock(attributes: attrs, language: language, content: text) ->
+      // Code-block attributes belong to the `code` element (where the language
+      // also lives); the `pre` wrapper receives an empty dictionary.
+      ctx.components.pre(dict.new(), [
+        ctx.components.code(attrs, language, [element.text(text)]),
       ])
 
     jot.RawBlock(content: content) ->
@@ -182,10 +193,10 @@ fn render_container(
       |> ctx.components.ol(start_attr, _)
     }
 
-    jot.BlockQuote(attributes: _, items: items) ->
+    jot.BlockQuote(attributes: attrs, items: items) ->
       items
       |> list.map(render_container(_, ctx, jot.Loose))
-      |> ctx.components.blockquote
+      |> ctx.components.blockquote(attrs, _)
 
     jot.Div(class: _, attributes: attrs, items: items) ->
       element.element(
@@ -198,17 +209,18 @@ fn render_container(
 
 fn render_heading(
   level: Int,
+  attributes: Dict(String, String),
   id: String,
   children: List(Element(msg)),
   components: Components(msg),
 ) -> Element(msg) {
   case level {
-    1 -> components.h1(id, children)
-    2 -> components.h2(id, children)
-    3 -> components.h3(id, children)
-    4 -> components.h4(id, children)
-    5 -> components.h5(id, children)
-    _ -> components.h6(id, children)
+    1 -> components.h1(attributes, id, children)
+    2 -> components.h2(attributes, id, children)
+    3 -> components.h3(attributes, id, children)
+    4 -> components.h4(attributes, id, children)
+    5 -> components.h5(attributes, id, children)
+    _ -> components.h6(attributes, id, children)
   }
 }
 
@@ -247,13 +259,19 @@ fn render_inline(inline: jot.Inline, ctx: Context(msg)) -> Element(msg) {
     jot.Link(attributes: attrs, content: text, destination: destination) -> {
       let href = destination_to_url(destination, ctx.references)
       let title = attrs |> dict.get("title") |> option.from_result
-      ctx.components.a(href, title, render_inlines(text, ctx))
+      // The title is passed separately, so drop it from the attribute
+      // dictionary to avoid the component rendering a duplicate `title`.
+      let attrs = dict.delete(attrs, "title")
+      ctx.components.a(attrs, href, title, render_inlines(text, ctx))
     }
     jot.Image(attributes: attrs, content: text, destination: destination) -> {
       let uri = destination_to_url(destination, ctx.references)
       let alt = inlines_to_text(text)
       let title = attrs |> dict.get("title") |> option.from_result
-      ctx.components.img(uri, alt, title)
+      // The title is passed separately, so drop it from the attribute
+      // dictionary to avoid the component rendering a duplicate `title`.
+      let attrs = dict.delete(attrs, "title")
+      ctx.components.img(attrs, uri, alt, title)
     }
     jot.Span(attributes: attrs, content: inlines) ->
       element.element(
@@ -289,7 +307,8 @@ fn render_inline(inline: jot.Inline, ctx: Context(msg)) -> Element(msg) {
       // a link to the definition.
       ctx.components.footnote(number, [element.text(int.to_string(number))])
     }
-    jot.Code(content: text) -> ctx.components.code(None, [element.text(text)])
+    jot.Code(content: text) ->
+      ctx.components.code(dict.new(), None, [element.text(text)])
     jot.MathInline(content: latex) ->
       element.element("span", [attribute.class("math inline")], [
         element.text("\\(" <> latex <> "\\)"),
