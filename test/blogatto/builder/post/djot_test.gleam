@@ -195,6 +195,22 @@ pub fn footnote_reference_test() {
   html |> string.contains("a") |> should.be_true
 }
 
+pub fn footnote_definition_content_is_rendered_test() {
+  let source = "Body text[^a].\n\n[^a]: A footnote.\n"
+  let html = render(source)
+  html |> string.contains("A footnote.") |> should.be_true
+}
+
+pub fn footnote_definitions_render_in_key_sorted_order_test() {
+  let source = "First[^b] second[^a].\n\n[^a]: Alpha.\n\n[^b]: Bravo.\n"
+  let html = render(source)
+  let assert Ok(alpha_index) = string.split_once(html, "Alpha.")
+  let assert Ok(bravo_index) = string.split_once(html, "Bravo.")
+  // "Alpha." (key "a") must appear before "Bravo." (key "b").
+  { string.length(alpha_index.0) < string.length(bravo_index.0) }
+  |> should.be_true
+}
+
 // --- div ---
 
 pub fn div_test() {

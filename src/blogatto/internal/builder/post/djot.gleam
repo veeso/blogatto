@@ -43,7 +43,26 @@ pub fn render(config: PostConfig(msg), content: String) -> List(Element(msg)) {
       references: document.references,
       footnote_numbers: build_footnote_numbers(document.footnotes),
     )
-  list.map(document.content, render_container(_, context, jot.Loose))
+  let content =
+    list.map(document.content, render_container(_, context, jot.Loose))
+  let footnotes = render_footnotes(document.footnotes, context)
+  list.append(content, footnotes)
+}
+
+/// Render the footnote definitions, appended after the document content and
+/// sorted by reference key for deterministic output. Mirrors the markdown
+/// renderer (maud), which appends footnote bodies with no wrapping section, so
+/// both source formats produce the same structure.
+fn render_footnotes(
+  footnotes: Dict(String, List(jot.Container)),
+  ctx: Context(msg),
+) -> List(Element(msg)) {
+  footnotes
+  |> dict.to_list
+  |> list.sort(fn(a, b) { string.compare(a.0, b.0) })
+  |> list.flat_map(fn(pair) {
+    list.map(pair.1, render_container(_, ctx, jot.Loose))
+  })
 }
 
 /// Assign a stable footnote number to each footnote reference in the
