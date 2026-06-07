@@ -33,29 +33,50 @@ import lustre/element/html
 let md =
   post.default()
   |> post.path("./blog")
-  |> post.h1(fn(id, children) {
+  |> post.h1(fn(_attributes, id, children) {
     html.h1([attribute.id(id), attribute.class("post-title")], children)
   })
-  |> post.p(fn(children) {
+  |> post.p(fn(_attributes, children) {
     html.p([attribute.class("post-paragraph")], children)
   })
 ```
+
+## Element attributes
+
+Components for every element that can carry author-supplied attributes — `a`, `blockquote`, `code`, `h1`–`h6`, `img`, `p`, and `pre` — receive those attributes as a `Dict(String, String)` in their **first** argument. In [Djot](https://djot.net/) you attach attributes to a block or inline with `{...}` syntax: a class with `{.class-name}`, or arbitrary key/value pairs with `{key="value"}`. This lets a component react to per-element annotations instead of sniffing the rendered content.
+
+```gleam
+import gleam/dict
+
+// A blockquote annotated with `{.pull}` becomes a pull-quote.
+post.blockquote(fn(attributes, children) {
+  let class = case dict.get(attributes, "class") {
+    Ok("pull") -> "blockquote pull-quote"
+    _ -> "blockquote"
+  }
+  html.blockquote([attribute.class(class)], children)
+})
+```
+
+The attribute `Dict` is always the first parameter; the existing arguments (heading id, link href/title, code language, image src/alt/title) keep their order after it. Components that don't need the attributes can ignore the parameter with a leading underscore (`fn(_attributes, children) { ... }`).
+
+> **Markdown note:** CommonMark has no block attribute syntax, so on the Markdown path the dictionary is always empty. Element attributes are a Djot feature.
 
 ## Component reference
 
 ### Text elements
 
-| Setter        | Signature                                | Description        |
-| ------------- | ---------------------------------------- | ------------------ |
-| `post.p`      | `fn(List(Element(msg))) -> Element(msg)` | Paragraphs         |
-| `post.strong` | `fn(List(Element(msg))) -> Element(msg)` | Bold text          |
-| `post.em`     | `fn(List(Element(msg))) -> Element(msg)` | Italic text        |
-| `post.del`    | `fn(List(Element(msg))) -> Element(msg)` | Strikethrough text |
-| `post.mark`   | `fn(List(Element(msg))) -> Element(msg)` | Highlighted text   |
+| Setter        | Signature                                                      | Description                       |
+| ------------- | -------------------------------------------------------------- | --------------------------------- |
+| `post.p`      | `fn(Dict(String, String), List(Element(msg))) -> Element(msg)` | Paragraphs (attributes, children) |
+| `post.strong` | `fn(List(Element(msg))) -> Element(msg)`                       | Bold text                         |
+| `post.em`     | `fn(List(Element(msg))) -> Element(msg)`                       | Italic text                       |
+| `post.del`    | `fn(List(Element(msg))) -> Element(msg)`                       | Strikethrough text                |
+| `post.mark`   | `fn(List(Element(msg))) -> Element(msg)`                       | Highlighted text                  |
 
 ### Headings
 
-All heading setters take `fn(String, List(Element(msg))) -> Element(msg)` where the first argument is a generated heading ID (useful for anchor links).
+All heading setters take `fn(Dict(String, String), String, List(Element(msg))) -> Element(msg)` where the first argument is the element's attributes and the second is the generated heading ID (useful for anchor links).
 
 | Setter    | Description     |
 | --------- | --------------- |
@@ -69,7 +90,7 @@ All heading setters take `fn(String, List(Element(msg))) -> Element(msg)` where 
 Example with anchor links:
 
 ```gleam
-post.h2(fn(id, children) {
+post.h2(fn(_attributes, id, children) {
   html.h2([attribute.id(id)], [
     html.a([attribute.href("#" <> id)], [element.text("#")]),
     element.text(" "),
@@ -80,10 +101,10 @@ post.h2(fn(id, children) {
 
 ### Links and images
 
-| Setter     | Signature                                                        | Description                            |
-| ---------- | ---------------------------------------------------------------- | -------------------------------------- |
-| `post.a`   | `fn(String, Option(String), List(Element(msg))) -> Element(msg)` | Links (href, optional title, children) |
-| `post.img` | `fn(String, String, Option(String)) -> Element(msg)`             | Images (src, alt text, optional title) |
+| Setter     | Signature                                                                              | Description                                        |
+| ---------- | -------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| `post.a`   | `fn(Dict(String, String), String, Option(String), List(Element(msg))) -> Element(msg)` | Links (attributes, href, optional title, children) |
+| `post.img` | `fn(Dict(String, String), String, String, Option(String)) -> Element(msg)`             | Images (attributes, src, alt text, optional title) |
 
 Example — open external links in a new tab:
 
@@ -91,7 +112,7 @@ Example — open external links in a new tab:
 import gleam/option.{None, Some}
 import gleam/string
 
-post.a(fn(href, title, children) {
+post.a(fn(_attributes, href, title, children) {
   let attrs = case string.starts_with(href, "http") {
     True -> [
       attribute.href(href),
@@ -110,12 +131,12 @@ post.a(fn(href, title, children) {
 
 ### Code
 
-| Setter      | Signature                                                | Description                                                |
-| ----------- | -------------------------------------------------------- | ---------------------------------------------------------- |
-| `post.code` | `fn(Option(String), List(Element(msg))) -> Element(msg)` | Code spans and fenced blocks (optional language, children) |
-| `post.pre`  | `fn(List(Element(msg))) -> Element(msg)`                 | Preformatted code block wrapper                            |
+| Setter      | Signature                                                                      | Description                                                            |
+| ----------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------- |
+| `post.code` | `fn(Dict(String, String), Option(String), List(Element(msg))) -> Element(msg)` | Code spans and fenced blocks (attributes, optional language, children) |
+| `post.pre`  | `fn(Dict(String, String), List(Element(msg))) -> Element(msg)`                 | Preformatted code block wrapper (attributes, children)                 |
 
-The `code` component receives `Some("gleam")` for fenced code blocks with a language tag, or `None` for inline code.
+The `code` component receives `Some("gleam")` for fenced code blocks with a language tag, or `None` for inline code. Only fenced blocks carry attributes; inline code receives an empty dictionary.
 
 > **Tip:** Blogatto supports build-time syntax highlighting via Smalto, which automatically tokenizes code blocks and renders styled `<span>` elements. When syntax highlighting is enabled, the `code` component receives pre-highlighted children. See [Syntax highlighting](syntax-highlighting.md) for the full guide.
 
@@ -124,12 +145,33 @@ Example — add language class to code blocks:
 ```gleam
 import gleam/option.{None, Some}
 
-post.code(fn(lang, children) {
+post.code(fn(_attributes, lang, children) {
   let class = case lang {
     Some(l) -> "language-" <> l
     None -> ""
   }
   html.code([attribute.class(class)], children)
+})
+```
+
+In Djot you can also annotate a fenced block, e.g. `` {title="hello.gleam"} `` on the line before the fence, and read it from `attributes`:
+
+```gleam
+import gleam/dict
+
+post.code(fn(attributes, lang, children) {
+  let class = case lang {
+    Some(l) -> "language-" <> l
+    None -> ""
+  }
+  case dict.get(attributes, "title") {
+    Ok(title) ->
+      html.figure([attribute.class("code-figure")], [
+        html.figcaption([], [element.text(title)]),
+        html.code([attribute.class(class)], children),
+      ])
+    Error(_) -> html.code([attribute.class(class)], children)
+  }
 })
 ```
 
@@ -172,11 +214,11 @@ post.td(fn(alignment, children) {
 
 ### Other elements
 
-| Setter            | Signature                                     | Description                  |
-| ----------------- | --------------------------------------------- | ---------------------------- |
-| `post.blockquote` | `fn(List(Element(msg))) -> Element(msg)`      | Block quotes                 |
-| `post.hr`         | `fn() -> Element(msg)`                        | Horizontal rules             |
-| `post.footnote`   | `fn(Int, List(Element(msg))) -> Element(msg)` | Footnotes (number, children) |
+| Setter            | Signature                                                      | Description                         |
+| ----------------- | -------------------------------------------------------------- | ----------------------------------- |
+| `post.blockquote` | `fn(Dict(String, String), List(Element(msg))) -> Element(msg)` | Block quotes (attributes, children) |
+| `post.hr`         | `fn() -> Element(msg)`                                         | Horizontal rules                    |
+| `post.footnote`   | `fn(Int, List(Element(msg))) -> Element(msg)`                  | Footnotes (number, children)        |
 
 ## Replacing all components at once
 

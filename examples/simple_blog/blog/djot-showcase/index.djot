@@ -38,10 +38,34 @@ pub fn hello() -> String {
 }
 ```
 
+## Block attributes
+
+Djot lets you annotate any block with attributes using `{...}` syntax: a class
+with `{.class-name}`, or arbitrary key/value pairs with `{key="value"}`. These
+attributes are passed straight to the matching component, so a theme can react
+to them instead of guessing from the content.
+
+This code block carries a `title`, which the `code` component renders as a
+caption:
+
+{title="hello.gleam"}
+```gleam
+pub fn greet() -> String {
+  "Hello from a titled code block!"
+}
+```
+
 ## Blockquote
 
 > Djot keeps the readability of Markdown while removing many of its
 > ambiguities.
+
+A blockquote annotated with `{.pull}` is turned into a pull-quote by the
+`blockquote` component:
+
+{.pull}
+> Block attributes make per-element styling possible without smuggling magic
+> strings through the prose.
 
 ## Link reference
 

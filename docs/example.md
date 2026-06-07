@@ -52,15 +52,31 @@ let md_config =
   |> post.route_prefix("blog")
   |> post.template(blog_post_template)
   |> post.syntax_highlighting(syntax_config)
-  |> post.pre(fn(children) {
+  |> post.pre(fn(_attributes, children) {
     html.pre([attribute.class("code-block")], children)
   })
-  |> post.code(fn(language, children) {
+  |> post.code(fn(attributes, language, children) {
     let lang_class = case language {
       option.Some(lang) -> "language-" <> lang
       option.None -> ""
     }
-    html.code([attribute.class(lang_class)], children)
+    // A djot code block annotated with `{title="..."}` renders a caption.
+    case dict.get(attributes, "title") {
+      Ok(title) ->
+        html.figure([attribute.class("code-figure")], [
+          html.figcaption([], [element.text(title)]),
+          html.code([attribute.class(lang_class)], children),
+        ])
+      Error(_) -> html.code([attribute.class(lang_class)], children)
+    }
+  })
+  |> post.blockquote(fn(attributes, children) {
+    // A djot blockquote annotated with `{.pull}` becomes a pull-quote.
+    let class = case dict.get(attributes, "class") {
+      Ok("pull") -> "blockquote pull-quote"
+      _ -> "blockquote"
+    }
+    html.blockquote([attribute.class(class)], children)
   })
 ```
 

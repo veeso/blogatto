@@ -1,5 +1,6 @@
 import blogatto/config/post.{Center, Left, Right}
 import blogatto/config/post/code
+import gleam/dict
 import gleam/option.{None, Some}
 import gleeunit/should
 import lustre/attribute
@@ -64,7 +65,7 @@ pub fn default_options_test() {
 
 pub fn default_components_renders_paragraph_test() {
   let comps = post.default_components()
-  let result = comps.p([html.text("hello")])
+  let result = comps.p(dict.new(), [html.text("hello")])
   result
   |> element.to_string
   |> should.equal("<p>hello</p>")
@@ -72,7 +73,7 @@ pub fn default_components_renders_paragraph_test() {
 
 pub fn default_components_renders_h1_test() {
   let comps = post.default_components()
-  let result = comps.h1("title", [html.text("Title")])
+  let result = comps.h1(dict.new(), "title", [html.text("Title")])
   result
   |> element.to_string
   |> should.equal("<h1 id=\"title\">Title</h1>")
@@ -203,7 +204,7 @@ pub fn components_replaces_all_components_test() {
     |> post.components(custom_comps)
 
   // Verify components were set by testing a render
-  let result = cfg.components.p([html.text("test")])
+  let result = cfg.components.p(dict.new(), [html.text("test")])
   result
   |> element.to_string
   |> should.equal("<p>test</p>")
@@ -212,7 +213,7 @@ pub fn components_replaces_all_components_test() {
 // --- Individual component setters ---
 
 pub fn a_setter_replaces_link_component_test() {
-  let custom_a = fn(href, _title, children) {
+  let custom_a = fn(_attrs, href, _title, children) {
     html.a(
       [attribute.attribute("href", href), attribute.class("link")],
       children,
@@ -222,20 +223,20 @@ pub fn a_setter_replaces_link_component_test() {
     post.default()
     |> post.a(custom_a)
 
-  cfg.components.a("https://example.com", None, [html.text("click")])
+  cfg.components.a(dict.new(), "https://example.com", None, [html.text("click")])
   |> element.to_string
   |> should.equal("<a class=\"link\" href=\"https://example.com\">click</a>")
 }
 
 pub fn blockquote_setter_replaces_component_test() {
-  let custom = fn(children) {
+  let custom = fn(_attrs, children) {
     html.blockquote([attribute.class("quote")], children)
   }
   let cfg =
     post.default()
     |> post.blockquote(custom)
 
-  cfg.components.blockquote([html.text("quoted")])
+  cfg.components.blockquote(dict.new(), [html.text("quoted")])
   |> element.to_string
   |> should.equal("<blockquote class=\"quote\">quoted</blockquote>")
 }
@@ -257,14 +258,14 @@ pub fn checkbox_setter_replaces_component_test() {
 }
 
 pub fn code_setter_replaces_component_test() {
-  let custom = fn(_lang, children) {
+  let custom = fn(_attrs, _lang, children) {
     html.code([attribute.class("highlight")], children)
   }
   let cfg =
     post.default()
     |> post.code(custom)
 
-  cfg.components.code(Some("gleam"), [html.text("let x = 1")])
+  cfg.components.code(dict.new(), Some("gleam"), [html.text("let x = 1")])
   |> element.to_string
   |> should.equal("<code class=\"highlight\">let x = 1</code>")
 }
@@ -305,79 +306,79 @@ pub fn footnote_setter_replaces_component_test() {
 }
 
 pub fn h1_setter_replaces_component_test() {
-  let custom = fn(id, children) {
+  let custom = fn(_attrs, id, children) {
     html.h1([attribute.id(id), attribute.class("heading")], children)
   }
   let cfg =
     post.default()
     |> post.h1(custom)
 
-  cfg.components.h1("intro", [html.text("Intro")])
+  cfg.components.h1(dict.new(), "intro", [html.text("Intro")])
   |> element.to_string
   |> should.equal("<h1 class=\"heading\" id=\"intro\">Intro</h1>")
 }
 
 pub fn h2_setter_replaces_component_test() {
-  let custom = fn(id, children) {
+  let custom = fn(_attrs, id, children) {
     html.h2([attribute.id(id), attribute.class("h2")], children)
   }
   let cfg =
     post.default()
     |> post.h2(custom)
 
-  cfg.components.h2("section", [html.text("Section")])
+  cfg.components.h2(dict.new(), "section", [html.text("Section")])
   |> element.to_string
   |> should.equal("<h2 class=\"h2\" id=\"section\">Section</h2>")
 }
 
 pub fn h3_setter_replaces_component_test() {
-  let custom = fn(id, children) {
+  let custom = fn(_attrs, id, children) {
     html.h3([attribute.id(id), attribute.class("h3")], children)
   }
   let cfg =
     post.default()
     |> post.h3(custom)
 
-  cfg.components.h3("sub", [html.text("Sub")])
+  cfg.components.h3(dict.new(), "sub", [html.text("Sub")])
   |> element.to_string
   |> should.equal("<h3 class=\"h3\" id=\"sub\">Sub</h3>")
 }
 
 pub fn h4_setter_replaces_component_test() {
-  let custom = fn(id, children) {
+  let custom = fn(_attrs, id, children) {
     html.h4([attribute.id(id), attribute.class("h4")], children)
   }
   let cfg =
     post.default()
     |> post.h4(custom)
 
-  cfg.components.h4("sub2", [html.text("Sub2")])
+  cfg.components.h4(dict.new(), "sub2", [html.text("Sub2")])
   |> element.to_string
   |> should.equal("<h4 class=\"h4\" id=\"sub2\">Sub2</h4>")
 }
 
 pub fn h5_setter_replaces_component_test() {
-  let custom = fn(id, children) {
+  let custom = fn(_attrs, id, children) {
     html.h5([attribute.id(id), attribute.class("h5")], children)
   }
   let cfg =
     post.default()
     |> post.h5(custom)
 
-  cfg.components.h5("sub3", [html.text("Sub3")])
+  cfg.components.h5(dict.new(), "sub3", [html.text("Sub3")])
   |> element.to_string
   |> should.equal("<h5 class=\"h5\" id=\"sub3\">Sub3</h5>")
 }
 
 pub fn h6_setter_replaces_component_test() {
-  let custom = fn(id, children) {
+  let custom = fn(_attrs, id, children) {
     html.h6([attribute.id(id), attribute.class("h6")], children)
   }
   let cfg =
     post.default()
     |> post.h6(custom)
 
-  cfg.components.h6("sub4", [html.text("Sub4")])
+  cfg.components.h6(dict.new(), "sub4", [html.text("Sub4")])
   |> element.to_string
   |> should.equal("<h6 class=\"h6\" id=\"sub4\">Sub4</h6>")
 }
@@ -394,7 +395,7 @@ pub fn hr_setter_replaces_component_test() {
 }
 
 pub fn img_setter_replaces_component_test() {
-  let custom = fn(src, alt, _title) {
+  let custom = fn(_attrs, src, alt, _title) {
     html.img([
       attribute.src(src),
       attribute.alt(alt),
@@ -405,7 +406,7 @@ pub fn img_setter_replaces_component_test() {
     post.default()
     |> post.img(custom)
 
-  cfg.components.img("/photo.jpg", "A photo", None)
+  cfg.components.img(dict.new(), "/photo.jpg", "A photo", None)
   |> element.to_string
   |> should.equal("<img alt=\"A photo\" class=\"image\" src=\"/photo.jpg\">")
 }
@@ -448,25 +449,27 @@ pub fn ol_setter_replaces_component_test() {
 }
 
 pub fn p_setter_replaces_component_test() {
-  let custom = fn(children) { html.p([attribute.class("paragraph")], children) }
+  let custom = fn(_attrs, children) {
+    html.p([attribute.class("paragraph")], children)
+  }
   let cfg =
     post.default()
     |> post.p(custom)
 
-  cfg.components.p([html.text("text")])
+  cfg.components.p(dict.new(), [html.text("text")])
   |> element.to_string
   |> should.equal("<p class=\"paragraph\">text</p>")
 }
 
 pub fn pre_setter_replaces_component_test() {
-  let custom = fn(children) {
+  let custom = fn(_attrs, children) {
     html.pre([attribute.class("code-block")], children)
   }
   let cfg =
     post.default()
     |> post.pre(custom)
 
-  cfg.components.pre([html.text("code")])
+  cfg.components.pre(dict.new(), [html.text("code")])
   |> element.to_string
   |> should.equal("<pre class=\"code-block\">code</pre>")
 }
@@ -634,15 +637,17 @@ pub fn th_setter_with_right_alignment_test() {
 pub fn multiple_component_setters_compose_test() {
   let cfg =
     post.default()
-    |> post.p(fn(children) { html.p([attribute.class("custom-p")], children) })
+    |> post.p(fn(_attrs, children) {
+      html.p([attribute.class("custom-p")], children)
+    })
     |> post.strong(fn(children) {
       html.strong([attribute.class("custom-bold")], children)
     })
-    |> post.h1(fn(id, children) {
+    |> post.h1(fn(_attrs, id, children) {
       html.h1([attribute.id(id), attribute.class("custom-h1")], children)
     })
 
-  cfg.components.p([html.text("text")])
+  cfg.components.p(dict.new(), [html.text("text")])
   |> element.to_string
   |> should.equal("<p class=\"custom-p\">text</p>")
 
@@ -650,7 +655,7 @@ pub fn multiple_component_setters_compose_test() {
   |> element.to_string
   |> should.equal("<strong class=\"custom-bold\">bold</strong>")
 
-  cfg.components.h1("title", [html.text("Title")])
+  cfg.components.h1(dict.new(), "title", [html.text("Title")])
   |> element.to_string
   |> should.equal("<h1 class=\"custom-h1\" id=\"title\">Title</h1>")
 }
