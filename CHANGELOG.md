@@ -1,5 +1,100 @@
 # Changelog
 
+## 7.0.0
+
+Released on 2026-06-07
+
+### ⚠ Breaking Changes
+
+- thread element attributes through post Components callbacks
+  > custom components for `a`, `blockquote`, `code`,
+`h1`-`h6`, `img`, `p` and `pre` must add a leading
+`Dict(String, String)` attributes parameter. For example
+`fn(children) { ... }` becomes `fn(attributes, children) { ... }`,
+`fn(id, children) { ... }` becomes `fn(attributes, id, children) { ... }`,
+and `fn(href, title, children) { ... }` becomes
+`fn(attributes, href, title, children) { ... }`. Requires maud >= 2.0.0.
+
+### Added
+
+- 💥 thread element attributes through post Components callbacks
+  > Components for every element that can carry author-supplied attributes
+  > now receive those attributes as a leading `Dict(String, String)`
+  > argument. Previously djot parsed `{.class key="value"}` annotations and
+  > Blogatto discarded them at the `Components` boundary, so a theme had to
+  > sniff rendered content (magic strings, overloaded code-fence language
+  > tags, forced styling) to distinguish one block from another. Components
+  > can now branch on a plain `dict.get(attrs, "class")`.
+  >
+  > This requires maud 2.0.0, whose `Components` type exposes the same
+  > attribute argument; the dependency is bumped accordingly.
+  >
+  > Affected callbacks and their new signatures:
+  >
+  >   a:          fn(Dict, String, Option(String), List(Element)) -> Element
+  >   blockquote: fn(Dict, List(Element)) -> Element
+  >   code:       fn(Dict, Option(String), List(Element)) -> Element
+  >   h1..h6:     fn(Dict, String, List(Element)) -> Element
+  >   img:        fn(Dict, String, String, Option(String)) -> Element
+  >   p:          fn(Dict, List(Element)) -> Element
+  >   pre:        fn(Dict, List(Element)) -> Element
+  >
+  > The attribute dictionary is always the first parameter, leaving the
+  > existing trailing arguments (href/title, language, heading id, image
+  > uri/alt/title) in place and in order.
+
+### CI
+
+- harden workflows per zizmor audit
+  > Pin all actions to commit SHA (unpinned-uses), add least-privilege
+  > top-level permissions blocks (excessive-permissions), and set
+  > persist-credentials: false on checkout steps (artipacked).- bump gleam to 1.17
+
+### Documentation
+
+- **example:** add footnotes section to djot showcase
+
+### Fixed
+
+- render djot footnote definitions (#56)
+  > The djot renderer parsed footnote definitions into footnote_numbers but
+  > discarded their bodies, so footnotes never appeared in the output. Render
+  > the definitions after the document content, sorted by reference key,
+  > mirroring the markdown (maud) renderer so both formats match.- make djot footnotes navigable
+  > Footnote markers rendered as a plain <sup><a id=...> with no href, and
+  > definitions were appended as bare paragraphs with no anchor, so footnotes
+  > were not clickable. Render markers as links to the definition
+  > (href=#fn-N), wrap definitions in a <section><ol> with id=fn-N anchors and
+  > a back-link to the reference, and number footnotes by order of first
+  > reference (matching the markdown renderer) instead of by sorted key.
+  >
+  > The shared footnote component (number + children only) cannot express the
+  > link target, so the djot marker is rendered directly.- make markdown footnotes navigable
+  > Markdown footnotes were rendered by maud as bare paragraphs with no
+  > anchors, and markers had no href, so they were not navigable. Render the
+  > footnote definitions ourselves into an anchored <section><ol> with
+  > back-links (bypassing maud's bare append by clearing the document's
+  > footnotes before rendering the body), and make the default footnote
+  > component a clickable link to the definition.
+  >
+  > The footnote <section><ol> markup is now shared between the markdown and
+  > djot renderers via a new internal footnote module, so both formats produce
+  > the same structure. The djot marker is routed back through the (now
+  > clickable) footnote component.- resolve grammar from leading token of code fence info string
+  > `code.highlight` looked up the full fence info string in the languages
+  > dictionary, so a fence carrying a title or filename after the language
+  > name failed to highlight. Authors commonly write fences like
+  > `cpp:main.ino` or `cpp main.ino`, neither of which matches the bare
+  > `cpp` key.
+  >
+  > Match the full info string first so explicitly registered language
+  > names keep resolving, then fall back to the leading token (everything
+  > before the first space or `:`). Unknown leading tokens still return
+  > Error(Nil).
+  >
+  > Adds tests for the colon- and space-suffixed forms, the bare form, and
+  > an unknown language with a suffix.- add heartbeats to close dead connections, also improve live reload script
+
 ## 6.0.0
 
 Released on 2026-05-07
