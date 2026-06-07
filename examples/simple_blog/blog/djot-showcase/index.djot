@@ -49,4 +49,17 @@ See the [official site][djot-site] for the full specification.
 
 [djot-site]: https://djot.net/
 
+## Footnotes
+
+Footnotes can be referenced anywhere in the text[^one] and their definitions
+are rendered at the end of the post[^two]. Multiple footnotes are supported and
+appear in a stable order[^three].
+
 [^djot]: Djot was created by John MacFarlane, the author of CommonMark.
+
+[^one]: The first footnote definition.
+
+[^two]: The second footnote, demonstrating that definition bodies are rendered.
+
+[^three]: The third footnote, with some _emphasis_ to show inline formatting
+    works inside footnote bodies.
