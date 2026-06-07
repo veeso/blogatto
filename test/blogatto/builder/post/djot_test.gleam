@@ -195,20 +195,53 @@ pub fn footnote_reference_test() {
   html |> string.contains("a") |> should.be_true
 }
 
+pub fn footnote_marker_shows_number_not_reference_test() {
+  let source = "Body text[^note].\n\n[^note]: A footnote.\n"
+  let html = render(source)
+  // The marker must show the footnote number, not the raw "^note" key.
+  html |> string.contains(">1</a>") |> should.be_true
+  html |> string.contains("^note") |> should.be_false
+}
+
 pub fn footnote_definition_content_is_rendered_test() {
   let source = "Body text[^a].\n\n[^a]: A footnote.\n"
   let html = render(source)
   html |> string.contains("A footnote.") |> should.be_true
 }
 
-pub fn footnote_definitions_render_in_key_sorted_order_test() {
+pub fn footnotes_render_in_appearance_order_test() {
+  // "^b" is referenced before "^a", so its definition (and number) must come
+  // first, matching the markdown renderer (numbered by order of appearance).
   let source = "First[^b] second[^a].\n\n[^a]: Alpha.\n\n[^b]: Bravo.\n"
   let html = render(source)
-  let assert Ok(alpha_index) = string.split_once(html, "Alpha.")
   let assert Ok(bravo_index) = string.split_once(html, "Bravo.")
-  // "Alpha." (key "a") must appear before "Bravo." (key "b").
-  { string.length(alpha_index.0) < string.length(bravo_index.0) }
+  let assert Ok(alpha_index) = string.split_once(html, "Alpha.")
+  // "Bravo." (referenced first) must appear before "Alpha.".
+  { string.length(bravo_index.0) < string.length(alpha_index.0) }
   |> should.be_true
+}
+
+pub fn footnotes_numbered_by_appearance_test() {
+  // "^b" is referenced first, so it is footnote 1 and "^a" is footnote 2.
+  let source = "First[^b] second[^a].\n\n[^a]: Alpha.\n\n[^b]: Bravo.\n"
+  let html = render(source)
+  let assert Ok(one_index) = string.split_once(html, ">1</a>")
+  let assert Ok(two_index) = string.split_once(html, ">2</a>")
+  // Marker "1" must appear before marker "2" in document order.
+  { string.length(one_index.0) < string.length(two_index.0) }
+  |> should.be_true
+}
+
+pub fn footnote_marker_links_to_definition_test() {
+  let source = "Body[^a].\n\n[^a]: A footnote.\n"
+  let html = render(source)
+  // Marker is a clickable link to the definition.
+  html |> string.contains("href=\"#fn-1\"") |> should.be_true
+  // Definition is anchored so the marker can jump to it.
+  html |> string.contains("id=\"fn-1\"") |> should.be_true
+  // Definition links back to the marker.
+  html |> string.contains("href=\"#fnref-1\"") |> should.be_true
+  html |> string.contains("id=\"fnref-1\"") |> should.be_true
 }
 
 // --- div ---

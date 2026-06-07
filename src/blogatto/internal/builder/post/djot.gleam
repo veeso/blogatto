@@ -7,6 +7,7 @@
 import blogatto/config/post.{type Components, type PostConfig}
 import frontmatter as fm_extractor
 import gleam/dict.{type Dict}
+import gleam/int
 import gleam/list
 import gleam/option.{None, Some}
 import gleam/result
@@ -37,44 +38,126 @@ type Context(msg) {
 pub fn render(config: PostConfig(msg), content: String) -> List(Element(msg)) {
   let body = fm_extractor.extract(content).content
   let document = jot.parse(body)
+  // Footnotes are numbered by order of first reference (matching the markdown
+  // renderer), so we collect references in document order up front.
+  let ordered_refs = collect_footnote_refs(document.content)
   let context =
     Context(
       components: config.components,
       references: document.references,
-      footnote_numbers: build_footnote_numbers(document.footnotes),
+      footnote_numbers: build_footnote_numbers(ordered_refs),
     )
   let content =
     list.map(document.content, render_container(_, context, jot.Loose))
-  let footnotes = render_footnotes(document.footnotes, context)
+  let footnotes = render_footnotes(ordered_refs, document.footnotes, context)
   list.append(content, footnotes)
 }
 
-/// Render the footnote definitions, appended after the document content and
-/// sorted by reference key for deterministic output. Mirrors the markdown
-/// renderer (maud), which appends footnote bodies with no wrapping section, so
-/// both source formats produce the same structure.
+/// Render the footnote definitions as a `<section><ol>` appended after the
+/// document content. Each definition is anchored (`id="fn-N"`) so its inline
+/// marker can link to it, and ends with a back-link to the reference site.
+/// Definitions are emitted in reference order; an unreferenced definition is
+/// skipped.
 fn render_footnotes(
+  ordered_refs: List(String),
   footnotes: Dict(String, List(jot.Container)),
   ctx: Context(msg),
 ) -> List(Element(msg)) {
-  footnotes
-  |> dict.to_list
-  |> list.sort(fn(a, b) { string.compare(a.0, b.0) })
-  |> list.flat_map(fn(pair) {
-    list.map(pair.1, render_container(_, ctx, jot.Loose))
-  })
+  let items =
+    ordered_refs
+    |> list.filter_map(fn(reference) {
+      use containers <- result.map(dict.get(footnotes, reference))
+      let number =
+        ctx.footnote_numbers |> dict.get(reference) |> result.unwrap(0)
+      render_footnote_item(number, containers, ctx)
+    })
+  case items {
+    [] -> []
+    _ -> [
+      element.element("section", [attribute.class("footnotes")], [
+        element.element("ol", [], items),
+      ]),
+    ]
+  }
 }
 
-/// Assign a stable footnote number to each footnote reference in the
-/// document, sorted by reference key for deterministic output.
-fn build_footnote_numbers(
-  footnotes: Dict(String, List(jot.Container)),
-) -> Dict(String, Int) {
-  footnotes
-  |> dict.keys
-  |> list.sort(string.compare)
-  |> list.index_map(fn(key, index) { #(key, index + 1) })
+/// Render a single footnote definition as an `<li id="fn-N">` containing the
+/// definition body followed by a back-link to its reference site.
+fn render_footnote_item(
+  number: Int,
+  containers: List(jot.Container),
+  ctx: Context(msg),
+) -> Element(msg) {
+  let num = int.to_string(number)
+  let body = list.map(containers, render_container(_, ctx, jot.Loose))
+  let backlink =
+    element.element(
+      "a",
+      [
+        attribute.href("#fnref-" <> num),
+        attribute.class("footnote-backref"),
+      ],
+      [element.text("↩")],
+    )
+  element.element(
+    "li",
+    [attribute.id("fn-" <> num)],
+    list.append(body, [backlink]),
+  )
+}
+
+/// Assign a footnote number to each reference in order of first appearance.
+fn build_footnote_numbers(ordered_refs: List(String)) -> Dict(String, Int) {
+  ordered_refs
+  |> list.index_map(fn(reference, index) { #(reference, index + 1) })
   |> dict.from_list
+}
+
+/// Collect footnote references from the document content in order of first
+/// appearance, removing duplicates while preserving that order.
+fn collect_footnote_refs(containers: List(jot.Container)) -> List(String) {
+  containers
+  |> list.flat_map(footnote_refs_in_container)
+  |> list.fold([], fn(acc, reference) {
+    case list.contains(acc, reference) {
+      True -> acc
+      False -> [reference, ..acc]
+    }
+  })
+  |> list.reverse
+}
+
+fn footnote_refs_in_container(container: jot.Container) -> List(String) {
+  case container {
+    jot.Paragraph(content: inlines, ..) | jot.Heading(content: inlines, ..) ->
+      footnote_refs_in_inlines(inlines)
+    jot.BulletList(items: items, ..) | jot.OrderedList(items: items, ..) ->
+      list.flat_map(items, list.flat_map(_, footnote_refs_in_container))
+    jot.BlockQuote(items: items, ..) | jot.Div(items: items, ..) ->
+      list.flat_map(items, footnote_refs_in_container)
+    jot.Codeblock(..) | jot.RawBlock(..) | jot.ThematicBreak -> []
+  }
+}
+
+fn footnote_refs_in_inlines(inlines: List(jot.Inline)) -> List(String) {
+  list.flat_map(inlines, footnote_refs_in_inline)
+}
+
+fn footnote_refs_in_inline(inline: jot.Inline) -> List(String) {
+  case inline {
+    jot.Footnote(reference: reference) -> [reference]
+    jot.Emphasis(content: inner)
+    | jot.Strong(content: inner)
+    | jot.Delete(content: inner)
+    | jot.Insert(content: inner)
+    | jot.Mark(content: inner)
+    | jot.Superscript(content: inner)
+    | jot.Subscript(content: inner)
+    | jot.Span(content: inner, ..)
+    | jot.Link(content: inner, ..)
+    | jot.Image(content: inner, ..) -> footnote_refs_in_inlines(inner)
+    _ -> []
+  }
 }
 
 /// Render a single djot block container into a Lustre element using the
@@ -233,7 +316,18 @@ fn render_inline(inline: jot.Inline, ctx: Context(msg)) -> Element(msg) {
         ctx.footnote_numbers
         |> dict.get(reference)
         |> result.unwrap(0)
-      ctx.components.footnote(number, [element.text(reference)])
+      let num = int.to_string(number)
+      // Render the marker directly: it must carry both an `id` (the back-link
+      // target) and an `href` to the definition, which the `footnote`
+      // component (number + children only) cannot express. The visible text is
+      // the number, not the raw reference key (jot keeps its leading `^`).
+      element.element("sup", [], [
+        element.element(
+          "a",
+          [attribute.id("fnref-" <> num), attribute.href("#fn-" <> num)],
+          [element.text(num)],
+        ),
+      ])
     }
     jot.Code(content: text) -> ctx.components.code(None, [element.text(text)])
     jot.MathInline(content: latex) ->
