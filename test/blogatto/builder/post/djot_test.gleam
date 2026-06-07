@@ -61,6 +61,18 @@ pub fn mark_test() {
   html |> string.contains("highlighted") |> should.be_true
 }
 
+pub fn superscript_test() {
+  let html = render("E = mc^2^")
+  html |> string.contains("<sup>") |> should.be_true
+  html |> string.contains("2") |> should.be_true
+}
+
+pub fn subscript_test() {
+  let html = render("H~2~O")
+  html |> string.contains("<sub>") |> should.be_true
+  html |> string.contains("2") |> should.be_true
+}
+
 pub fn inline_code_test() {
   let html = render("Use `let x = 1` here.")
   html |> string.contains("<code>") |> should.be_true
