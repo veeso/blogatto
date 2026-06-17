@@ -4,6 +4,8 @@ First off, thank you for considering contributing to Blogatto! Every contributio
 
 Please read and follow our [Code of Conduct](CODE_OF_CONDUCT.md) before participating.
 
+If you use AI tools to help with your contribution, you **must** also read and follow our [AI Policy](AI_POLICY.md). It requires that contributions come from a human who understands the submitted work, and that AI usage is disclosed through the pull request template.
+
 ## Reporting Issues
 
 You can report bugs and request features on [GitHub Issues](https://github.com/veeso/blogatto/issues) or on [Codeberg](https://codeberg.org/veeso/blogatto/issues). Issues are typically tracked and resolved on GitHub.
@@ -110,7 +112,7 @@ All three checks run in CI and must pass before a PR can be merged.
 1. Fork the repository and create your branch from `main`
 2. Make your changes following the guidelines above
 3. Open a pull request targeting the `main` branch
-4. Fill in a clear description of what you changed and why
+4. Fill in the pull request template, including a clear description of what you changed and why, and the AI disclosure required by the [AI Policy](AI_POLICY.md)
 
 A maintainer will review your PR. At least one maintainer approval is required before merging.
 
