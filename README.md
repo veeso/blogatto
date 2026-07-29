@@ -45,7 +45,7 @@ import blogatto/config/post
 import blogatto/config/robots
 import blogatto/config/sitemap
 import blogatto/error
-import blogatto/post.{type Post}
+import blogatto/post.{type Post} as _
 import gleam/io
 import gleam/list
 import gleam/time/timestamp
@@ -61,7 +61,7 @@ pub fn main() {
     post.default()
     |> post.path("./blog")
     |> post.route_prefix("blog")
-    |> post.h1(fn(id, children) {
+    |> post.h1(fn(_attributes, id, children) {
       html.h1([attribute.id(id), attribute.class("post-title")], children)
     })
 
