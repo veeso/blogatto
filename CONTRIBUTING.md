@@ -8,7 +8,7 @@ If you use AI tools to help with your contribution, you **must** also read and f
 
 ## Reporting Issues
 
-You can report bugs and request features on [GitHub Issues](https://github.com/veeso/blogatto/issues) or on [Codeberg](https://codeberg.org/veeso/blogatto/issues). Issues are typically tracked and resolved on GitHub.
+You can report bugs and request features on [GitHub Issues](https://github.com/veeso/blogatto/issues). Issues are typically tracked and resolved on GitHub.
 
 When reporting a bug, please include:
 
@@ -69,7 +69,7 @@ Branch names must follow conventional commit prefixes, matching the type of chan
 
 This project uses [Conventional Commits](https://www.conventionalcommits.org/). The changelog is generated with git-cliff, so following this format is mandatory.
 
-```
+```txt
 <type>[optional scope]: <description>
 
 [optional body]
@@ -81,7 +81,7 @@ This project uses [Conventional Commits](https://www.conventionalcommits.org/). 
 
 Examples:
 
-```
+```txt
 feat: add support for custom post sorting
 fix(feed): escape special characters in RSS titles
 refactor!: rename MarkdownConfig fields for clarity

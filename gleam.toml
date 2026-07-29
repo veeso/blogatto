@@ -7,7 +7,6 @@ target = "erlang"
 internal_modules = ["blogatto/internal", "blogatto/internal/*"]
 links = [
   { title = "Website", href = "https://blogat.to" },
-  { title = "Codeberg", href = "https://codeberg.org/veeso/blogatto" },
 ]
 
 [dependencies]
