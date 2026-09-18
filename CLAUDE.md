@@ -20,6 +20,27 @@ gleam deps download      # Download dependencies
 
 There is no single-test runner flag in gleeunit; to run a specific test module, use `gleam test -- --module=<module_name>`.
 
+### Just recipes
+
+The commands above are also wrapped as `just` recipes (`Justfile` + `just/*.just`, one file per group, mirroring remotefs-rs-kube's layout) — prefer these in CI and when scripting:
+
+```bash
+just build                  # gleam build
+just clean                  # gleam clean (confirms before deleting build artifacts)
+just test                   # gleam test
+just test_module <name>     # gleam test -- --module=<name>
+just fmt                    # dprint fmt (formats Gleam, Markdown, TOML, YAML)
+just fmt_check              # dprint check
+just check_types            # gleam check
+just check                  # fmt_check + check_types + test — the full local quality gate
+just changelog_preview <v>  # preview unreleased changelog via git-cliff
+just changelog <v>          # regenerate CHANGELOG.md via git-cliff
+just gh_release <v>         # tag, push, and create a GitHub release from the changelog
+just publish                # gleam publish (publish to Hex)
+just setup_githooks         # point git at .githooks
+just --list                 # list every recipe
+```
+
 ## Architecture
 
 ### Public Modules
@@ -76,7 +97,9 @@ There is no single-test runner flag in gleeunit; to run a specific test module, 
 
 ## CI
 
-GitHub Actions runs on push to main/master and on PRs: deps download, test, format check. Requires OTP 28 and Gleam 1.14.0.
+GitHub Actions runs on push to main/master and on PRs: a `test` job (deps download, `just build`, `just test`, example build) and a `format` job (`dprint check`, via the `test.yml` workflow). Requires OTP 28 and Gleam 1.14.0.
+
+A separate `zizmor.yml` workflow audits `.github/workflows/` for security findings on every push and PR.
 
 The `pages.yml` workflow builds the mdBook docs and deploys to GitHub Pages on push to `main` when `docs/**` changes (or via manual dispatch).
 
@@ -144,3 +167,6 @@ mdbook build docs           # One-shot build to docs/book/
 - Follow Gleam official conventions: qualified imports only (except types/constructors), snake_case functions, PascalCase types, singular module names
 - Libraries must never use `let assert` or `panic` — return `Result` instead
 - When adding a doc file under `docs/`, also register it in `docs/SUMMARY.md` under the matching section (see Documentation above)
+- Formatting goes through dprint (`just fmt`/`just fmt_check`), not raw `gleam format` — dprint shells out to `gleam format --stdin` for `.gleam` files and also covers Markdown, TOML, and YAML
+- Every recurring task runs through a `just` recipe (see Build & Development Commands above); if a task has no recipe yet, add one under `just/` before using it
+- After any change under `.github/workflows/`, run `zizmor .github/workflows` until it exits clean — pin actions to a full commit SHA with a matching version comment, and use least-privilege permissions
