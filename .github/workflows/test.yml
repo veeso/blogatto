@@ -24,7 +24,7 @@ jobs:
       - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1
         with:
           otp-version: "28"
-          gleam-version: "1.17.0"
+          gleam-version: "1.18.1"
           rebar3-version: "3"
           # elixir-version: "1"
       - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4.0.0
@@ -47,7 +47,7 @@ jobs:
       - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1
         with:
           otp-version: "28"
-          gleam-version: "1.17.0"
+          gleam-version: "1.18.1"
           rebar3-version: "3"
       - uses: dprint/check@7dc032d8874778fc024f6f9b4a7e6d896782c330 # v2.5
         with:
