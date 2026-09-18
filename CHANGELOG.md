@@ -1,164 +1,191 @@
 # Changelog
 
+All notable changes to this project are documented in this file.
+
+## 7.0.1
+
+Released on 2026-09-18
+
+### Added
+
+- add Justfile with Gleam-adapted recipes
+
+### Fixed
+
+- **sitemap:** restore trailing slash for root route URL
+
+> gleam_stdlib >= 1.0.4 (pulled in transitively by the tzif bump) changed
+> uri.to_string to no longer synthesize a "/" for an empty path, while
+> uri.merge already collapses the "/" route to an empty path via dot-segment
+> removal. Root sitemap entries lost their trailing slash.
+
+### Build
+
+- bump tzif to `>= 2.0.0`
+
+### Style
+
+- format existing files with dprint
+
 ## 7.0.0
 
 Released on 2026-06-07
 
-### ⚠ Breaking Changes
+### Breaking changes
 
 - thread element attributes through post Components callbacks
-  > custom components for `a`, `blockquote`, `code`,
-  > `h1`-`h6`, `img`, `p` and `pre` must add a leading
-  > `Dict(String, String)` attributes parameter. For example
-  > `fn(children) { ... }` becomes `fn(attributes, children) { ... }`,
-  > `fn(id, children) { ... }` becomes `fn(attributes, id, children) { ... }`,
-  > and `fn(href, title, children) { ... }` becomes
-  > `fn(attributes, href, title, children) { ... }`. Requires maud >= 2.0.0.
+
+> custom components for `a`, `blockquote`, `code`,
+> `h1`-`h6`, `img`, `p` and `pre` must add a leading
+> `Dict(String, String)` attributes parameter. For example
+> `fn(children) { ... }` becomes `fn(attributes, children) { ... }`,
+> `fn(id, children) { ... }` becomes `fn(attributes, id, children) { ... }`,
+> and `fn(href, title, children) { ... }` becomes
+> `fn(attributes, href, title, children) { ... }`. Requires maud >= 2.0.0.
 
 ### Added
 
-- 💥 thread element attributes through post Components callbacks
-  > Components for every element that can carry author-supplied attributes
-  > now receive those attributes as a leading `Dict(String, String)`
-  > argument. Previously djot parsed `{.class key="value"}` annotations and
-  > Blogatto discarded them at the `Components` boundary, so a theme had to
-  > sniff rendered content (magic strings, overloaded code-fence language
-  > tags, forced styling) to distinguish one block from another. Components
-  > can now branch on a plain `dict.get(attrs, "class")`.
-  >
-  > This requires maud 2.0.0, whose `Components` type exposes the same
-  > attribute argument; the dependency is bumped accordingly.
-  >
-  > Affected callbacks and their new signatures:
-  >
-  > a: fn(Dict, String, Option(String), List(Element)) -> Element
-  > blockquote: fn(Dict, List(Element)) -> Element
-  > code: fn(Dict, Option(String), List(Element)) -> Element
-  > h1..h6: fn(Dict, String, List(Element)) -> Element
-  > img: fn(Dict, String, String, Option(String)) -> Element
-  > p: fn(Dict, List(Element)) -> Element
-  > pre: fn(Dict, List(Element)) -> Element
-  >
-  > The attribute dictionary is always the first parameter, leaving the
-  > existing trailing arguments (href/title, language, heading id, image
-  > uri/alt/title) in place and in order.
+- Breaking: thread element attributes through post Components callbacks
 
-### CI
-
-- harden workflows per zizmor audit
-  > Pin all actions to commit SHA (unpinned-uses), add least-privilege
-  > top-level permissions blocks (excessive-permissions), and set
-  > persist-credentials: false on checkout steps (artipacked).- bump gleam to 1.17
-
-### Documentation
-
-- **example:** add footnotes section to djot showcase
+> Components for every element that can carry author-supplied attributes
+> now receive those attributes as a leading `Dict(String, String)`
+> argument. Previously djot parsed `{.class key="value"}` annotations and
+> Blogatto discarded them at the `Components` boundary, so a theme had to
+> sniff rendered content (magic strings, overloaded code-fence language
+> tags, forced styling) to distinguish one block from another. Components
+> can now branch on a plain `dict.get(attrs, "class")`.
+>
+> This requires maud 2.0.0, whose `Components` type exposes the same
+> attribute argument; the dependency is bumped accordingly.
+>
+> Affected callbacks and their new signatures:
+>
+> a: fn(Dict, String, Option(String), List(Element)) -> Element
+> blockquote: fn(Dict, List(Element)) -> Element
+> code: fn(Dict, Option(String), List(Element)) -> Element
+> h1..h6: fn(Dict, String, List(Element)) -> Element
+> img: fn(Dict, String, String, Option(String)) -> Element
+> p: fn(Dict, List(Element)) -> Element
+> pre: fn(Dict, List(Element)) -> Element
+>
+> The attribute dictionary is always the first parameter, leaving the
+> existing trailing arguments (href/title, language, heading id, image
+> uri/alt/title) in place and in order.
 
 ### Fixed
 
 - render djot footnote definitions (#56)
-  > The djot renderer parsed footnote definitions into footnote_numbers but
-  > discarded their bodies, so footnotes never appeared in the output. Render
-  > the definitions after the document content, sorted by reference key,
-  > mirroring the markdown (maud) renderer so both formats match.- make djot footnotes navigable
-  > Footnote markers rendered as a plain <sup><a id=...> with no href, and
-  > definitions were appended as bare paragraphs with no anchor, so footnotes
-  > were not clickable. Render markers as links to the definition
-  > (href=#fn-N), wrap definitions in a <section><ol> with id=fn-N anchors and
-  > a back-link to the reference, and number footnotes by order of first
-  > reference (matching the markdown renderer) instead of by sorted key.
-  >
-  > The shared footnote component (number + children only) cannot express the
-  > link target, so the djot marker is rendered directly.- make markdown footnotes navigable
-  > Markdown footnotes were rendered by maud as bare paragraphs with no
-  > anchors, and markers had no href, so they were not navigable. Render the
-  > footnote definitions ourselves into an anchored <section><ol> with
-  > back-links (bypassing maud's bare append by clearing the document's
-  > footnotes before rendering the body), and make the default footnote
-  > component a clickable link to the definition.
-  >
-  > The footnote <section><ol> markup is now shared between the markdown and
-  > djot renderers via a new internal footnote module, so both formats produce
-  > the same structure. The djot marker is routed back through the (now
-  > clickable) footnote component.- resolve grammar from leading token of code fence info string
-  > `code.highlight` looked up the full fence info string in the languages
-  > dictionary, so a fence carrying a title or filename after the language
-  > name failed to highlight. Authors commonly write fences like
-  > `cpp:main.ino` or `cpp main.ino`, neither of which matches the bare
-  > `cpp` key.
-  >
-  > Match the full info string first so explicitly registered language
-  > names keep resolving, then fall back to the leading token (everything
-  > before the first space or `:`). Unknown leading tokens still return
-  > Error(Nil).
-  >
-  > Adds tests for the colon- and space-suffixed forms, the bare form, and
-  > an unknown language with a suffix.- add heartbeats to close dead connections, also improve live reload script
+
+> The djot renderer parsed footnote definitions into footnote_numbers but
+> discarded their bodies, so footnotes never appeared in the output. Render
+> the definitions after the document content, sorted by reference key,
+> mirroring the markdown (maud) renderer so both formats match.
+
+- make djot footnotes navigable
+
+> Footnote markers rendered as a plain <sup><a id=...> with no href, and
+> definitions were appended as bare paragraphs with no anchor, so footnotes
+> were not clickable. Render markers as links to the definition
+> (href=#fn-N), wrap definitions in a <section><ol> with id=fn-N anchors and
+> a back-link to the reference, and number footnotes by order of first
+> reference (matching the markdown renderer) instead of by sorted key.
+>
+> The shared footnote component (number + children only) cannot express the
+> link target, so the djot marker is rendered directly.
+
+- make markdown footnotes navigable
+
+> Markdown footnotes were rendered by maud as bare paragraphs with no
+> anchors, and markers had no href, so they were not navigable. Render the
+> footnote definitions ourselves into an anchored <section><ol> with
+> back-links (bypassing maud's bare append by clearing the document's
+> footnotes before rendering the body), and make the default footnote
+> component a clickable link to the definition.
+>
+> The footnote <section><ol> markup is now shared between the markdown and
+> djot renderers via a new internal footnote module, so both formats produce
+> the same structure. The djot marker is routed back through the (now
+> clickable) footnote component.
+
+- resolve grammar from leading token of code fence info string
+
+> `code.highlight` looked up the full fence info string in the languages
+> dictionary, so a fence carrying a title or filename after the language
+> name failed to highlight. Authors commonly write fences like
+> `cpp:main.ino` or `cpp main.ino`, neither of which matches the bare
+> `cpp` key.
+>
+> Match the full info string first so explicitly registered language
+> names keep resolving, then fall back to the leading token (everything
+> before the first space or `:`). Unknown leading tokens still return
+> Error(Nil).
+>
+> Adds tests for the colon- and space-suffixed forms, the bare form, and
+> an unknown language with a suffix.
+
+- add heartbeats to close dead connections, also improve live reload script
 
 ## 6.0.0
 
 Released on 2026-05-07
 
-### ⚠ Breaking Changes
+### Breaking changes
 
-- rename `FeedConfig` to `RssFeedConfig` and split into rss submodule
-  > `blogatto/config/feed`'s `FeedConfig`, `FeedItem`, and the
-  > related builder functions have moved to `blogatto/config/feed/rss` as
-  > `RssFeedConfig` and `RssFeedItem`. `Config.feeds` is now `Config.rss_feeds`,
-  > and `config.feed()` is now `config.rss_feed()`. `FeedMetadata` stays in
-  > `blogatto/config/feed`. This makes the existing API explicit about RSS and
-  > leaves room for additional feed formats (e.g. Atom, #44) without overloading
-  > the generic `feed` namespace.
-- rename `MarkdownConfig` to `PostConfig` and split builder
-  > `blogatto/config/markdown` module renamed to
-  > `blogatto/config/post`; `MarkdownConfig` renamed to `PostConfig`;
-  > `Config.markdown_config` field renamed to `post_config`;
-  > `config.markdown()` setter renamed to `config.post()`;
-  > `markdown.markdown_path()` renamed to `post.path()`. `Components`,
-  > `Options`, and `Alignment` move with the module. Component setter names
-  > unchanged; only the module qualifier changes.
+- rename FeedConfig to RssFeedConfig and split into rss submodule
+
+> `blogatto/config/feed`'s `FeedConfig`, `FeedItem`, and the
+> related builder functions have moved to `blogatto/config/feed/rss` as
+> `RssFeedConfig` and `RssFeedItem`. `Config.feeds` is now `Config.rss_feeds`,
+> and `config.feed()` is now `config.rss_feed()`. `FeedMetadata` stays in
+> `blogatto/config/feed`. This makes the existing API explicit about RSS and
+> leaves room for additional feed formats (e.g. Atom, #44) without overloading
+> the generic `feed` namespace.
+
+- rename MarkdownConfig to PostConfig and split builder
+
+> `blogatto/config/markdown` module renamed to
+> `blogatto/config/post`; `MarkdownConfig` renamed to `PostConfig`;
+> `Config.markdown_config` field renamed to `post_config`;
+> `config.markdown()` setter renamed to `config.post()`;
+> `markdown.markdown_path()` renamed to `post.path()`. `Components`,
+> `Options`, and `Alignment` move with the module. Component setter names
+> unchanged; only the module qualifier changes.
 
 ### Added
 
 - support Atom 1.0 feeds alongside RSS
-  > Adds AtomFeed configuration and internal builder for generating
-  > Atom 1.0 feeds via webls. Multiple Atom feeds can be configured
-  > through `config.atom_feed()` with optional filter/serialize hooks
-  > mirroring the RSS API. Updates docs, README, and the simple_blog
-  > example to demonstrate atom feed generation.- add djot support alongside markdown
-  > Add jot-backed renderer for `.dj` and `.djot` post sources, sharing the
-  > same `Components`, frontmatter, and `Post(msg)` pipeline as markdown.
-  > Mixed-format blogs are supported; each post directory picks its own
-  > extension.
-  >
-  > Markdown `Options` and Smalto syntax highlighting remain markdown-only.
-  > Djot-only inline constructs (span, ins, math, symbols) fall back to raw
-  > Lustre elements with attributes preserved.
-  >
-  > Renames `docs/markdown-components.md` to `docs/post-components.md` to
-  > reflect that components apply to both formats.
 
-### CI
+> Adds AtomFeed configuration and internal builder for generating
+> Atom 1.0 feeds via webls. Multiple Atom feeds can be configured
+> through `config.atom_feed()` with optional filter/serialize hooks
+> mirroring the RSS API. Updates docs, README, and the simple_blog
+> example to demonstrate atom feed generation.
 
-- bump gleam 1.16.0
+- add djot support alongside markdown
+
+> Add jot-backed renderer for `.dj` and `.djot` post sources, sharing the
+> same `Components`, frontmatter, and `Post(msg)` pipeline as markdown.
+> Mixed-format blogs are supported; each post directory picks its own
+> extension.
+>
+> Markdown `Options` and Smalto syntax highlighting remain markdown-only.
+> Djot-only inline constructs (span, ins, math, symbols) fall back to raw
+> Lustre elements with attributes preserved.
+>
+> Renames `docs/markdown-components.md` to `docs/post-components.md` to
+> reflect that components apply to both formats.
 
 ### Changed
 
-- 💥 rename FeedConfig to RssFeedConfig and split into rss submodule- 💥 rename `MarkdownConfig` to `PostConfig` and split builder
-  > Renames `blogatto/config/markdown` to `blogatto/config/post` to reflect
-  > that it configures post discovery and rendering rather than the markdown
-  > format specifically. Builder is reshaped: `internal/builder/blog.gleam`
-  > becomes `internal/builder/post.gleam`, and markdown-only rendering is
-  > extracted to `internal/builder/post/markdown.gleam` so other source
-  > formats (e.g. djot) can be added as sibling submodules.
+- Breaking: rename FeedConfig to RssFeedConfig and split into rss submodule
+- Breaking: rename MarkdownConfig to PostConfig and split builder
 
-### Documentation
-
-- README and getting started provide command for latest version
-
-### Miscellaneous
-
-- add githook to run `gleam format`
+> Renames `blogatto/config/markdown` to `blogatto/config/post` to reflect
+> that it configures post discovery and rendering rather than the markdown
+> format specifically. Builder is reshaped: `internal/builder/blog.gleam`
+> becomes `internal/builder/post.gleam`, and markdown-only rendering is
+> extracted to `internal/builder/post/markdown.gleam` so other source
+> formats (e.g. djot) can be added as sibling submodules.
 
 ## 5.1.1
 
@@ -167,10 +194,13 @@ Released on 2026-03-25
 ### Fixed
 
 - use tzcalendar.from_calendar for IANA timezone resolution
-  > Replace the broken resolve-to-offset approach that could produce
-  > incorrect results around DST transitions. The new implementation
-  > uses tzcalendar.from_calendar which properly handles ambiguous
-  > and invalid local times.
+
+> Replace the broken resolve-to-offset approach that could produce
+> incorrect results around DST transitions. The new implementation
+> uses tzcalendar.from_calendar which properly handles ambiguous
+> and invalid local times.
+
+- 5.0.1
 
 ## 5.1.0
 
@@ -179,12 +209,13 @@ Released on 2026-03-25
 ### Added
 
 - support timezone in frontmatter date field
-  > Allow specifying a timezone in the frontmatter date field as either a
-  > UTC offset (+02:00) or an IANA timezone name (Europe/Helsinki).
-  > Dates without a timezone are still interpreted as UTC.
-  >
-  > The timezone database from the zones package is cached via
-  > persistent_term for efficient repeated lookups during builds.
+
+> Allow specifying a timezone in the frontmatter date field as either a
+> UTC offset (+02:00) or an IANA timezone name (Europe/Helsinki).
+> Dates without a timezone are still interpreted as UTC.
+>
+> The timezone database from the zones package is cached via
+> persistent_term for efficient repeated lookups during builds.
 
 ## 5.0.2
 
@@ -193,23 +224,21 @@ Released on 2026-03-20
 ### Fixed
 
 - RSS pubDate is now correctly being serialized with RFC882
-  > webls was serializing with RFC3339. I've created this PR on webls <https://github.com/versecafe/webls/pull/9> to fix this behaviour. This fix on blogatto just bumps webls from 1.6.1 to 1.6.2
+
+> webls was serializing with RFC3339. I've created this PR on webls <https://github.com/versecafe/webls/pull/9> to fix this behaviour. This fix on blogatto just bumps webls from 1.6.1 to 1.6.2
 
 ## 5.0.1
 
 Released on 2026-03-19
 
-### CI
-
-- gleam 1.15.2
-
 ### Fixed
 
 - move HTML escaping from post parsing to RSS feed generation
-  > Escaping at parse time caused double-escaping in HTML output (Lustre
-  > already escapes via element.text) and forced users to use
-  > unsafe_raw_html for titles. Now escaping is applied only when
-  > constructing FeedMetadata for RSS, keeping Post fields raw.
+
+> Escaping at parse time caused double-escaping in HTML output (Lustre
+> already escapes via element.text) and forced users to use
+> unsafe_raw_html for titles. Now escaping is applied only when
+> constructing FeedMetadata for RSS, keeping Post fields raw.
 
 ## 5.0.0
 
@@ -218,40 +247,29 @@ Released on 2026-03-18
 ### Added
 
 - add before_build and after_build hooks to dev server
-  > Add optional hooks that run around each rebuild cycle in the dev server.
-  > Hooks return Result(Nil, String) so they can abort the rebuild with a
-  > descriptive error message (e.g. a failing Tailwind compilation).
-  >
-  > Execution order: before_build → build command → after_build → SSE reload.
-  > A failing before_build aborts the build entirely; a failing after_build
-  > prevents the browser reload. Both error paths log the reason and keep
-  > the server running.
-  >
-  > Internal changes:
-  >
-  > - Introduce RebuildStateConfig public type to bundle build_command and
-  >   hooks into rebuild_actor.new()
-  > - Refactor rebuild() to use Result with `use _ <- result.try` for clean
-  >   short-circuit chaining via run_hook() and exec_build() helpers
-  > - Update existing tests for the new RebuildStateConfig API
-  > - Add 7 new tests covering hook invocation, ordering, and error handling
-  > - Document hooks in docs/dev-server.md (API, reference table, rebuild flow)
 
-### CI
-
-- gleam 1.15.1
+> Add optional hooks that run around each rebuild cycle in the dev server.
+> Hooks return Result(Nil, String) so they can abort the rebuild with a
+> descriptive error message (e.g. a failing Tailwind compilation).
+>
+> Execution order: before_build → build command → after_build → SSE reload.
+> A failing before_build aborts the build entirely; a failing after_build
+> prevents the browser reload. Both error paths log the reason and keep
+> the server running.
+>
+> Internal changes:
+>
+> - Introduce RebuildStateConfig public type to bundle build_command and
+>   hooks into rebuild_actor.new()
+> - Refactor rebuild() to use Result with `use _ <- result.try` for clean
+>   short-circuit chaining via run_hook() and exec_build() helpers
+> - Update existing tests for the new RebuildStateConfig API
+> - Add 7 new tests covering hook invocation, ordering, and error handling
+> - Document hooks in docs/dev-server.md (API, reference table, rebuild flow)
 
 ## 4.0.2
 
 Released on 2026-03-17
-
-### CI
-
-- bump gleam to 1.15.0
-
-### Documentation
-
-- add CONTRIBUTING.md
 
 ### Fixed
 
@@ -263,32 +281,28 @@ Released on 2026-03-17
 
 ### Fixed
 
-- escape HTML tag in frontmatter title, subtitle and excerpt (#32)
+- escape HTML tag in frontmatter title, subtitle and excerpt
 
 ## 4.0.0
 
 Released on 2026-03-16
 
-### ⚠ Breaking Changes
+### Breaking changes
 
 - auto generate `slug` if missing from frontmatter
-  > `slug` is no more required. User has nothing to change to their code though.
+
+> `slug` is no more required. User has nothing to change to their code though.
 
 ### Added
 
-- 💥 auto generate `slug` if missing from frontmatter
-  > `slug` is no more a required field in the frontmatter. If missing it is automatically generated by slugifying the post title- build-time syntax
-- highlighting via smalto
-  > Add syntax highlighting support for code blocks during static site
-  > generation using the smalto library. Closes #27
+- Breaking: auto generate `slug` if missing from frontmatter
 
-### Documentation
+> `slug` is no more a required field in the frontmatter. If missing it is automatically generated by slugifying the post title
 
-- typo in `gleam run` command and conventional use of `dev` for setting up the dev server (#2)
-  > - Fixes "build" to "run" which it should be.
-  > - Also a proposal for where to put and how to name the dev module, so it can be run with `gleam dev` directly. This follows the convention in Gleam projects (since Gleam 1.11: <https://gleam.run/news/gleam-javascript-gets-30-percent-faster/>).
-  >
-  > Edited and submitted with the online editor in Forgejo so squash the commits together as I didn't find a way to do that myself. 😁
+- build-time syntax highlighting via smalto
+
+> Add syntax highlighting support for code blocks during static site
+> generation using the smalto library. Closes #27
 
 ### Build
 
@@ -301,19 +315,22 @@ Released on 2026-03-04
 ### Added
 
 - add route_builder to MarkdownConfig for custom blog post routing
-  > Add an optional route_builder function to MarkdownConfig that allows
-  > users to fully customize the output path and URL for each blog post.
-  > When set, the route_prefix field is ignored, giving full control over
-  > post URLs for date-based, category-based, or any custom URL scheme.
-  >
-  > Introduces PostMetadata type in blogatto/post with frontmatter-derived
-  > fields available at routing time (excludes url, excerpt, contents).
+
+> Add an optional route_builder function to MarkdownConfig that allows
+> users to fully customize the output path and URL for each blog post.
+> When set, the route_prefix field is ignored, giving full control over
+> post URLs for date-based, category-based, or any custom URL scheme.
+>
+> Introduces PostMetadata type in blogatto/post with frontmatter-derived
+> fields available at routing time (excludes url, excerpt, contents).
+
 - expose mork markdown parsing options via MarkdownConfig
-  > Add Options type to MarkdownConfig allowing users to enable/disable
-  > markdown extensions (tables, footnotes, heading IDs, task lists, emoji
-  > shortcodes, autolinks). Defaults match mork's defaults with tables and
-  > most extensions enabled. Updates blog builder to use mork_document.Options
-  > directly instead of the deprecated mork.configure() builder API.
+
+> Add Options type to MarkdownConfig allowing users to enable/disable
+> markdown extensions (tables, footnotes, heading IDs, task lists, emoji
+> shortcodes, autolinks). Defaults match mork's defaults with tables and
+> most extensions enabled. Updates blog builder to use mork_document.Options
+> directly instead of the deprecated mork.configure() builder API.
 
 ## 2.0.1
 
@@ -321,115 +338,220 @@ Released on 2026-03-02
 
 ### Fixed
 
+- link GitHub to repo instead of profile and fix OG preview on docs site
+- use custom domain URL in docs site config
+
+> The previous commit set url to veeso.github.io with /blogatto baseurl,
+> but the site uses a custom domain (blogat.to) served at root. This
+> caused all relative URLs (CSS, JS, favicon, images) to 404.
+
+- add explicit og:image meta tag to docs site head
+
+> jekyll-seo-tag was not outputting og:image from site.image config.
+> Add an explicit meta tag in head.html to ensure OG preview works.
+
+- replace incorrect Codeberg SVG icon with proper iceberg logo
 - **dev_server:** dev server now redirects with 301 on paths without trailing slash (e.g. `/blog` => `/blog/`)
-  > since Blogatto always expects path to have a trailing slash the returned path should always have the trailing slash. Also, currently the dev server returned 404 on a path without trailing slash, instead of serving the page.
+
+> since Blogatto always expects path to have a trailing slash the returned path should always have the trailing slash. Also, currently the dev server returned 404 on a path without trailing slash, instead of serving the page.
+
+- 2.0.1
 
 ## 2.0.0
 
 Released on 2026-02-26
 
-### ⚠ Breaking Changes
+### Breaking changes
 
 - move excerpt from FeedMetadata to Post, excerpt_len from FeedConfig to MarkdownConfig
-  > Post(msg) now has a required `excerpt` field.
-  > FeedMetadata no longer has an `excerpt` field. FeedConfig no longer
-  > has an `excerpt_len` field — use `markdown.excerpt_len()` instead.
+
+> Post(msg) now has a required `excerpt` field.
+> FeedMetadata no longer has an `excerpt` field. FeedConfig no longer
+> has an `excerpt_len` field — use `markdown.excerpt_len()` instead.
+
 - pass all posts to blog post template function
-  > pass all posts to blog post template function
+
+> pass all posts to blog post template function
 
 ### Added
 
 - add dev server with file watching, live rebuild, and HTTP serving
-- 💥 move excerpt from FeedMetadata to Post, excerpt_len from FeedConfig to MarkdownConfig
-  > Excerpt is now computed at post-build time and exposed directly on
-  > Post(msg), making it available in route view functions (e.g. blog
-  > listing pages) rather than only during feed generation.
-  >
-  > excerpt_len configuration moves from FeedConfig to MarkdownConfig
-  > since it controls how post content is processed during the markdown
-  > build step.
-- 💥 pass all posts to blog post template function
-  > The template function signature changes from `fn(Post(msg)) -> Element(msg)`
-  > to `fn(Post(msg), List(Post(msg))) -> Element(msg)`, enabling templates to
-  > access all other posts for related posts, navigation, etc.
+- Breaking: move excerpt from FeedMetadata to Post, excerpt_len from FeedConfig to MarkdownConfig
 
-### Documentation
+> Excerpt is now computed at post-build time and exposed directly on
+> Post(msg), making it available in route view functions (e.g. blog
+> listing pages) rather than only during feed generation.
+>
+> excerpt_len configuration moves from FeedConfig to MarkdownConfig
+> since it controls how post content is processed during the markdown
+> build step.
 
-- add dev server documentation page
+- Breaking: pass all posts to blog post template function
+
+> The template function signature changes from `fn(Post(msg)) -> Element(msg)`
+> to `fn(Post(msg), List(Post(msg))) -> Element(msg)`, enabling templates to
+> access all other posts for related posts, navigation, etc.
+
+- blogatto 2.0.0
 
 ## 1.0.2
 
 Released on 2026-02-25
 
-- Fixed:
-  - truncate excerpts at word boundaries to avoid broken HTML entities (#2)
+### Fixed
+
+- truncate excerpts at word boundaries to avoid broken HTML entities (#2)
+
+> - fix: truncate excerpts at word boundaries to avoid broken HTML entities
+>
+> Excerpt truncation used hard string.slice which could cut mid-word or
+> mid-HTML entity (e.g. &#39; → &#), producing invalid XML in RSS feeds.
+> Truncation now backs up to the last space boundary instead.
+
+- 1.0.2
 
 ## 1.0.1
 
 Released on 2026-02-25
 
-- CI:
-  - build example in ci
-- Documentation:
-  - document slug as required frontmatter field
-- Fixed:
-  - strip matching quotes from frontmatter values
+### Fixed
+
+- strip matching quotes from frontmatter values
+
+> The frontmatter parser now strips surrounding double or single quotes
+> from values, so `title: "Hello World"` and `title: 'Hello World'` both
+> yield `Hello World`. Mismatched or unbalanced quotes are left as-is.
+
+- 1.0.1
 
 ## 1.0.0
 
 Released on 2026-02-24
 
-- Added:
-  - project setup
-  - add post type
-  - add configuration modules
-  - add internal builder modules
-  - add module documentation to entry point
-  - featured_image to Post type
-  - robots builder
-  - sitemap builder with full test coverage
-  - add RSS 2.0 channel fields to FeedConfig
-  - implement feed builder with full test coverage
-  - implement pages builder with full test coverage
-  - implement static assets builder with full test coverage
-  - blog builder
-  - update Config routes to accept post list in view functions
-  - pass post list to page view functions in pages builder
-  - reorder build pipeline to parse blog posts before pages
-  - add url field to Post and refactor robots builder
-  - add builder pattern to FeedConfig
-- Changed:
-  - replace FeedMetadata frontmatter dict with Post type
-  - drop custom links from SitemapEntry, make priority optional
-  - extract path utilities into dedicated internal/path module
-  - align FeedItem with RSS 2.0 item structure
-- Documentation:
-  - rewrite README with comprehensive documentation
-  - update CLAUDE.md for route view signature and build order changes
-  - add simple_blog example with full build pipeline
-  - user and code documentation
-  - theme and titles
-  - title
-  - cname
-  - favicon
-  - links
-  - add example blog walkthrough
-  - logo
-  - Move logo to website
-  - quick start showcase output
-- Fixed:
-  - address code review findings across codebase
-  - pre-release improvements across codebase
-  - use tempo for date parsing, add trailing slash to post URLs
-- Miscellaneous:
-  - add CLAUDE.md
-  - update project metadata in gleam.toml
-  - featured_image to build pipeline
-  - logo
-  - manifest
-  - funding
-- Testing:
-  - config module unit tests
-  - add full-coverage tests for blogatto.gleam build pipeline
-- Style:
-  - gleam format
+### Added
+
+- project setup
+- add post type
+- add configuration modules
+- add internal builder modules
+- add module documentation to entry point
+- featured_image to Post type
+- robots builder
+- sitemap builder with full test coverage
+
+> Implement sitemap XML generation via webls. The builder takes an output
+> directory, site URL, and SitemapBuild config with optional filter and
+> serialize functions, produces sitemap items from routes, and writes the
+> XML file. Includes tests for all code paths: default and custom
+> filter/serialize, all ChangeFrequency variants, nested output paths,
+> priority, last_modified, empty routes, and error handling.
+
+- add RSS 2.0 channel fields to FeedConfig
+
+> Add all standard RSS channel metadata fields (link, description,
+> language, copyright, managing_editor, categories, ttl, image, etc.)
+> to FeedConfig. Add Cloud, Image, TextInput, and Weekday types.
+> Add builder conversion to webls RssChannel.
+
+- implement feed builder with full test coverage
+
+> Complete the build_feed implementation (was todo), fix guid permalink
+> flag to use Some(True) so webls renders it, and add 30 tests covering
+> file I/O, XML structure, default/custom filter and serialize, all RSS
+> 2.0 channel fields, item fields, and multi-post scenarios.
+
+- implement pages builder with full test coverage
+- implement static assets builder with full test coverage
+
+> Add builder/static module that copies files from the configured
+> static_dir to the output directory, preserving directory structure.
+> Tests use the temporary library for automatic temp dir cleanup.
+
+- blog builder
+- update Config routes to accept post list in view functions
+- pass post list to page view functions in pages builder
+- reorder build pipeline to parse blog posts before pages
+- add url field to Post and refactor robots builder
+
+> Add absolute URL field to Post type, computed from site URL, route
+> prefix, language, and slug. Refactor robots builder to accept full
+> Config and skip generation when no robots config is set. Update all
+> related tests.
+
+- add builder pattern to FeedConfig
+
+> Add new() constructor and setter functions to feed module, replacing
+> verbose 20-field record constructors with a compact builder API
+> consistent with config, markdown, and robots modules.
+
+### Changed
+
+- replace FeedMetadata frontmatter dict with Post type
+
+> FeedMetadata now holds a full Post(msg) instead of a raw
+> Dict(String, String), giving filter/serialize callbacks access to
+> all parsed post fields. FeedConfig and FeedMetadata are now generic
+> over msg to thread the Lustre message type.
+
+- drop custom links from SitemapEntry, make priority optional
+
+> webls does not support custom links, so the `links` field has been
+> removed from SitemapEntry. Priority changed from Float to Option(Float).
+
+- extract path utilities into dedicated internal/path module
+
+> Move route_filepath and path join logic from builder.gleam into a new
+> blogatto/internal/path module. Add InvalidUri error variant, build()
+> stub in blogatto.gleam, and update CLAUDE.md for sitemap config changes.
+
+- align FeedItem with RSS 2.0 item structure
+
+> Replace custom FeedItem fields with standard RSS 2.0 item fields
+> (title, link, author, comments, source, pub_date, categories,
+> enclosure, guid). Add Enclosure type. Change Post date from
+> calendar.Date to timestamp.Timestamp.
+
+### Fixed
+
+- address code review findings across codebase
+
+> - Handle simplifile Enoent on first build when output_dir doesn't exist
+> - Fix doc comment ordering to match actual build pipeline
+> - Strip trailing slashes from post URLs
+> - Move to_maud_components from public markdown module to internal blog builder
+> - Implement excerpt_len truncation in feed builder
+> - Remove dead SitemapLink type and placeholder test
+> - Migrate test files to use temporary library for temp directories
+> - Add module doc comments to error and path modules
+> - Update CLAUDE.md to reflect actual builder structure
+
+- pre-release improvements across codebase
+
+> - Add builder API to SitemapConfig (new, filter, serialize, path) for
+>   consistency with other config modules and future extensibility
+> - Add internal_modules config to gleam.toml for explicit HexDocs control
+> - Extract feed excerpts from rendered post body instead of frontmatter
+>   description, with HTML tag stripping and whitespace collapsing
+> - Sort blog posts by date (newest first) in blog builder output
+> - Move excerpt logic to internal/excerpt module with full test coverage
+> - Update all tests, docs, examples, and README to use new APIs
+
+- use tempo for date parsing, add trailing slash to post URLs
+
+> Replace hand-rolled date parser with tempo library for proper date
+> validation. Add trailing slash to generated post URLs for SEO
+> correctness. Add describe_error tests and document route_prefix
+> impact on feed/sitemap URLs.
+
+### Doc
+
+- rewrite README with comprehensive documentation
+- update CLAUDE.md for route view signature and build order changes
+- add simple_blog example with full build pipeline
+
+> Demonstrates homepage, blog posts, RSS feed, sitemap, and robots.txt
+> using Lustre templates and the blogatto builder pattern.
+
+### Style
+
+- gleam format

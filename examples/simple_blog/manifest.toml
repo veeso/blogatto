@@ -7,7 +7,7 @@
 # You should check this file into your source control repository.
 
 packages = [
-  { name = "blogatto", version = "7.0.0", build_tools = ["gleam"], requirements = ["filepath", "filespy", "frontmatter", "gleam_erlang", "gleam_http", "gleam_otp", "gleam_stdlib", "gleam_time", "gtempo", "houdini", "jot", "lustre", "marceau", "maud", "mist", "mork", "simplifile", "smalto", "smalto_lustre", "str", "tzif", "webls", "zones"], source = "local", path = "../.." },
+  { name = "blogatto", version = "7.0.1", build_tools = ["gleam"], requirements = ["filepath", "filespy", "frontmatter", "gleam_erlang", "gleam_http", "gleam_otp", "gleam_stdlib", "gleam_time", "gtempo", "houdini", "jot", "lustre", "marceau", "maud", "mist", "mork", "simplifile", "smalto", "smalto_lustre", "str", "tzif", "webls", "zones"], source = "local", path = "../.." },
   { name = "casefold", version = "2.1.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "casefold", source = "hex", outer_checksum = "6E1EBB01B945448EE43BE5618F122341F9D876442E65F28FD3948009C31CE3E5" },
   { name = "exception", version = "2.1.1", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "exception", source = "hex", outer_checksum = "6BDEA95248093599391C3B5DF1835C5C6A86C353C2F99CE539B450E3432FE117" },
   { name = "filepath", version = "1.1.2", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "filepath", source = "hex", outer_checksum = "B06A9AF0BF10E51401D64B98E4B627F1D2E48C154967DA7AF4D0914780A6D40A" },
