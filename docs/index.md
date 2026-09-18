@@ -42,8 +42,8 @@ The output is a fully static site ready to deploy to any static hosting provider
 
 ## Documentation
 
-| Guide                                        | Description                                               |
-| -------------------------------------------- | --------------------------------------------------------- |
+| Guide                                           | Description                                               |
+| ----------------------------------------------- | --------------------------------------------------------- |
 | [Getting started](getting-started.md)           | Installation, project setup, and your first build         |
 | [Example blog](example.md)                      | Walkthrough of the complete example project               |
 | [Blog posts](blog-posts.md)                     | Directory structure, frontmatter, multilingual support    |

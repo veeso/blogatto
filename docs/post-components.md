@@ -154,7 +154,7 @@ post.code(fn(_attributes, lang, children) {
 })
 ```
 
-In Djot you can also annotate a fenced block, e.g. `` {title="hello.gleam"} `` on the line before the fence, and read it from `attributes`:
+In Djot you can also annotate a fenced block, e.g. `{title="hello.gleam"}` on the line before the fence, and read it from `attributes`:
 
 ```gleam
 import gleam/dict
