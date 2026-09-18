@@ -30,7 +30,7 @@ simplifile = ">= 2.4.0 and < 3.0.0"
 smalto = ">= 3.0.0 and < 4.0.0"
 smalto_lustre = ">= 3.0.0 and < 4.0.0"
 str = ">= 2.0.1 and < 3.0.0"
-tzif = ">= 1.1.2 and < 2.0.0"
+tzif = ">= 2.0.0 and < 3.0.0"
 webls = ">= 1.6.2 and < 2.0.0"
 zones = ">= 1.26010.1 and < 2.0.0"
 
