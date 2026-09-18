@@ -1,4 +1,9 @@
 [changelog]
+header = """
+# Changelog
+
+All notable changes to this project are documented in this file.
+"""
 body = """
 ## {{ version | trim_start_matches(pat="v") }}
 
