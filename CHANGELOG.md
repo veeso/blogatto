@@ -8,12 +8,12 @@ Released on 2026-06-07
 
 - thread element attributes through post Components callbacks
   > custom components for `a`, `blockquote`, `code`,
-`h1`-`h6`, `img`, `p` and `pre` must add a leading
-`Dict(String, String)` attributes parameter. For example
-`fn(children) { ... }` becomes `fn(attributes, children) { ... }`,
-`fn(id, children) { ... }` becomes `fn(attributes, id, children) { ... }`,
-and `fn(href, title, children) { ... }` becomes
-`fn(attributes, href, title, children) { ... }`. Requires maud >= 2.0.0.
+  > `h1`-`h6`, `img`, `p` and `pre` must add a leading
+  > `Dict(String, String)` attributes parameter. For example
+  > `fn(children) { ... }` becomes `fn(attributes, children) { ... }`,
+  > `fn(id, children) { ... }` becomes `fn(attributes, id, children) { ... }`,
+  > and `fn(href, title, children) { ... }` becomes
+  > `fn(attributes, href, title, children) { ... }`. Requires maud >= 2.0.0.
 
 ### Added
 
@@ -31,13 +31,13 @@ and `fn(href, title, children) { ... }` becomes
   >
   > Affected callbacks and their new signatures:
   >
-  >   a:          fn(Dict, String, Option(String), List(Element)) -> Element
-  >   blockquote: fn(Dict, List(Element)) -> Element
-  >   code:       fn(Dict, Option(String), List(Element)) -> Element
-  >   h1..h6:     fn(Dict, String, List(Element)) -> Element
-  >   img:        fn(Dict, String, String, Option(String)) -> Element
-  >   p:          fn(Dict, List(Element)) -> Element
-  >   pre:        fn(Dict, List(Element)) -> Element
+  > a: fn(Dict, String, Option(String), List(Element)) -> Element
+  > blockquote: fn(Dict, List(Element)) -> Element
+  > code: fn(Dict, Option(String), List(Element)) -> Element
+  > h1..h6: fn(Dict, String, List(Element)) -> Element
+  > img: fn(Dict, String, String, Option(String)) -> Element
+  > p: fn(Dict, List(Element)) -> Element
+  > pre: fn(Dict, List(Element)) -> Element
   >
   > The attribute dictionary is always the first parameter, leaving the
   > existing trailing arguments (href/title, language, heading id, image
@@ -103,20 +103,20 @@ Released on 2026-05-07
 
 - rename `FeedConfig` to `RssFeedConfig` and split into rss submodule
   > `blogatto/config/feed`'s `FeedConfig`, `FeedItem`, and the
-related builder functions have moved to `blogatto/config/feed/rss` as
-`RssFeedConfig` and `RssFeedItem`. `Config.feeds` is now `Config.rss_feeds`,
-and `config.feed()` is now `config.rss_feed()`. `FeedMetadata` stays in
-`blogatto/config/feed`. This makes the existing API explicit about RSS and
-leaves room for additional feed formats (e.g. Atom, #44) without overloading
-the generic `feed` namespace.
+  > related builder functions have moved to `blogatto/config/feed/rss` as
+  > `RssFeedConfig` and `RssFeedItem`. `Config.feeds` is now `Config.rss_feeds`,
+  > and `config.feed()` is now `config.rss_feed()`. `FeedMetadata` stays in
+  > `blogatto/config/feed`. This makes the existing API explicit about RSS and
+  > leaves room for additional feed formats (e.g. Atom, #44) without overloading
+  > the generic `feed` namespace.
 - rename `MarkdownConfig` to `PostConfig` and split builder
   > `blogatto/config/markdown` module renamed to
-`blogatto/config/post`; `MarkdownConfig` renamed to `PostConfig`;
-`Config.markdown_config` field renamed to `post_config`;
-`config.markdown()` setter renamed to `config.post()`;
-`markdown.markdown_path()` renamed to `post.path()`. `Components`,
-`Options`, and `Alignment` move with the module. Component setter names
-unchanged; only the module qualifier changes.
+  > `blogatto/config/post`; `MarkdownConfig` renamed to `PostConfig`;
+  > `Config.markdown_config` field renamed to `post_config`;
+  > `config.markdown()` setter renamed to `config.post()`;
+  > `markdown.markdown_path()` renamed to `post.path()`. `Components`,
+  > `Options`, and `Alignment` move with the module. Component setter names
+  > unchanged; only the module qualifier changes.
 
 ### Added
 
@@ -228,6 +228,7 @@ Released on 2026-03-18
   > the server running.
   >
   > Internal changes:
+  >
   > - Introduce RebuildStateConfig public type to bundle build_command and
   >   hooks into rebuild_actor.new()
   > - Refactor rebuild() to use Result with `use _ <- result.try` for clean
@@ -284,8 +285,8 @@ Released on 2026-03-16
 ### Documentation
 
 - typo in `gleam run` command and conventional use of `dev` for setting up the dev server (#2)
-  > * Fixes "build" to "run" which it should be.
-  > * Also a proposal for where to put and how to name the dev module, so it can be run with `gleam dev` directly. This follows the convention in Gleam projects (since Gleam 1.11: <https://gleam.run/news/gleam-javascript-gets-30-percent-faster/>).
+  > - Fixes "build" to "run" which it should be.
+  > - Also a proposal for where to put and how to name the dev module, so it can be run with `gleam dev` directly. This follows the convention in Gleam projects (since Gleam 1.11: <https://gleam.run/news/gleam-javascript-gets-30-percent-faster/>).
   >
   > Edited and submitted with the online editor in Forgejo so squash the commits together as I didn't find a way to do that myself. 😁
 
@@ -331,8 +332,8 @@ Released on 2026-02-26
 
 - move excerpt from FeedMetadata to Post, excerpt_len from FeedConfig to MarkdownConfig
   > Post(msg) now has a required `excerpt` field.
-FeedMetadata no longer has an `excerpt` field. FeedConfig no longer
-has an `excerpt_len` field — use `markdown.excerpt_len()` instead.
+  > FeedMetadata no longer has an `excerpt` field. FeedConfig no longer
+  > has an `excerpt_len` field — use `markdown.excerpt_len()` instead.
 - pass all posts to blog post template function
   > pass all posts to blog post template function
 

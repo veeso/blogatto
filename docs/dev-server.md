@@ -250,11 +250,11 @@ The dev server is built on OTP actors:
 
 The dev server watches these directories based on your config:
 
-| Source                  | Derived from                   |
-| ----------------------- | ------------------------------ |
-| Gleam source code       | `src/` (always watched)        |
+| Source                  | Derived from               |
+| ----------------------- | -------------------------- |
+| Gleam source code       | `src/` (always watched)    |
 | Blog post directories   | `config.post_config.paths` |
-| Static assets directory | `config.static_dir`            |
+| Static assets directory | `config.static_dir`        |
 
 The output directory itself is **not** watched — it is rebuilt by the build command.
 

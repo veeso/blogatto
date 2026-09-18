@@ -11,7 +11,6 @@ This guide walks you through installing Blogatto and building your first static 
 
 Blogatto is available on [Hex](https://hex.pm/packages/blogatto). Add it as a dependency to your project:
 
-
 ```sh
 gleam add blogatto
 ```
