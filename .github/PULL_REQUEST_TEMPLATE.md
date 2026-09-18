@@ -7,7 +7,7 @@ Provide a brief description of the changes you made in this pull request. If you
 ## Checklist
 
 - [ ] I have read the [AI Policy](https://github.com/veeso/blogatto/blob/main/AI_POLICY.md) and the [contributing guidelines](https://github.com/veeso/blogatto/blob/main/CONTRIBUTING.md).
-- [ ] I ran `gleam test` and `gleam format --check src test`, and both pass.
+- [ ] I ran `just check`, and it passes.
 
 ## AI Disclosure
 

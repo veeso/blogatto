@@ -35,18 +35,20 @@ cd blogatto
 gleam deps download
 
 # Run tests
-gleam test
+just test
 
 # Format code
-gleam format src test
+just fmt
 ```
+
+Common tasks are wrapped as `just` recipes (`Justfile` + `just/*.just`) — run `just --list` to see all of them.
 
 ### Git Hooks
 
 The repository ships pre-commit hooks under `.githooks/` that run `gleam format` on staged files in `src/` and `examples/`. Enable them once per clone:
 
 ```bash
-git config core.hooksPath .githooks
+just setup_githooks
 ```
 
 ## Making Changes
@@ -101,11 +103,7 @@ A `!` after the type/scope indicates a breaking change.
 
 ### Before Submitting
 
-1. **Run the tests**: `gleam test`
-2. **Format your code**: `gleam format src test`
-3. **Check formatting**: `gleam format --check src test`
-
-All three checks run in CI and must pass before a PR can be merged.
+Run the full local quality gate: `just check` (runs `fmt_check`, `check_types`, and `test`). The same checks run in CI and must pass before a PR can be merged.
 
 ## Pull Requests
 
