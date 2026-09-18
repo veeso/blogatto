@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "gleam-conventions": {
+      "source": "veeso/agents-code-conventions",
+      "sourceType": "github",
+      "skillPath": "gleam-conventions/gleam-conventions/SKILL.md",
+      "computedHash": "0e86230f0bfab37f935542a752c590c7f343249ee91bc6c9195bf45335078d50"
+    }
+  }
+}

@@ -3,6 +3,6 @@
 /build
 erl_crash.dump
 
-.claude/
+.claude/plans/
 
 docs/book/
