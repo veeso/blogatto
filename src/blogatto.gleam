@@ -132,6 +132,7 @@ fn sitemap_build(
         |> list.try_map(fn(route) {
           uri.parse(route)
           |> result.try(fn(relative) { uri.merge(base_uri, relative) })
+          |> result.map(root_path_as_slash)
           |> result.map(uri.to_string)
           |> result.replace_error(error.InvalidUri(route))
         }),
@@ -144,5 +145,16 @@ fn sitemap_build(
       let build = sitemap.SitemapBuild(config: sitemap_config, routes: routes)
       sitemap.build(config.output_dir, config.site_url, build)
     }
+  }
+}
+
+// `uri.merge` resolves the "/" route to an empty path (per RFC 3986
+// dot-segment removal), which `uri.to_string` then renders without a
+// trailing slash. Restore it so the site root is `https://example.com/`
+// rather than `https://example.com`, consistent with blog post URLs.
+fn root_path_as_slash(merged: uri.Uri) -> uri.Uri {
+  case merged.path {
+    "" -> uri.Uri(..merged, path: "/")
+    _ -> merged
   }
 }
