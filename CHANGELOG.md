@@ -2,6 +2,22 @@
 
 All notable changes to this project are documented in this file.
 
+## 8.0.0
+
+Released on 2026-10-31
+
+### Breaking changes
+
+- **post:** pass every post to the post template (#66)
+
+> all_posts passed to the post template now includes the post being rendered and its translations. Filter with list.filter(all_posts, fn(other) { other.slug != post.slug }) to restore the previous behavior.
+
+### Added
+
+- Breaking: **post:** pass every post to the post template (#66)
+
+> The post template's all_posts argument used to exclude the post being rendered and all of its translations, and came in parse order. It now contains every post, including the rendered one and its translations, sorted newest first, the same list routes receive. Translations count as the same post only when they share a slug. Docs explain how to filter out the current post and show a recent posts example. Version bumped to 8.0.0.
+
 ## 7.0.1
 
 Released on 2026-09-18
