@@ -32,7 +32,7 @@ target = "erlang"
 gleam_stdlib = ">= 0.44.0 and < 2.0.0"
 lustre = ">= 5.6.0 and < 6.0.0"
 gleam_time = ">= 1.7.0 and < 2.0.0"
-blogatto = ">= 1.0.0 and < 2.0.0"
+blogatto = ">= 8.0.0 and < 9.0.0"
 ```
 
 ## Build script
@@ -279,7 +279,7 @@ fn blog_post_template(p: Post(Nil), _all_posts: List(Post(Nil))) -> Element(Nil)
 Key points:
 
 - `p.language` is `None` for the default language and `Some("it")` for localized variants — here it falls back to `"en"`
-- `_all_posts` gives access to all other posts (useful for related posts, navigation, etc.)
+- `_all_posts` contains every post, including the one being rendered, sorted newest first (useful for previous/next links, related posts, etc.). Filter it to exclude the current post, see [Blog post templates](static-pages.md#blog-post-templates).
 - `p.contents` is a `List(Element(Nil))` containing the rendered markdown — just drop it into a container element
 - The template adds a navigation link back to the homepage
 - SEO metadata (`title`, `description`) is set from the post's frontmatter fields

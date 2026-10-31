@@ -80,24 +80,25 @@ pub fn build(
   case config.post_config {
     option.Some(post_config) -> {
       use posts <- result.try(parse_all_posts_dir(config, post_config))
-      use built_posts <- result.try(
-        list.try_map(posts, fn(post_info) {
-          let other_posts =
-            posts
-            |> list.filter(fn(p) { p.post.slug != post_info.post.slug })
-            |> list.map(fn(p) { p.post })
-          build_post(post_info, post_config, other_posts)
+      // Every post, newest first, is handed to the template of every post page.
+      let all_posts =
+        posts
+        |> list.map(fn(post_info) { post_info.post })
+        |> sort_newest_first
+      use _ <- result.try(
+        list.try_each(posts, fn(post_info) {
+          build_post(post_info, post_config, all_posts)
         }),
       )
-      // Sort posts by date, newest first.
-      Ok(
-        list.sort(built_posts, fn(a, b) {
-          order.negate(timestamp.compare(a.date, b.date))
-        }),
-      )
+      Ok(all_posts)
     }
     option.None -> Ok([])
   }
+}
+
+/// Sort posts by date, newest first.
+fn sort_newest_first(posts: List(post.Post(msg))) -> List(post.Post(msg)) {
+  list.sort(posts, fn(a, b) { order.negate(timestamp.compare(a.date, b.date)) })
 }
 
 /// Build a single blog post page based on the provided PostInfo(msg) and configuration.
@@ -108,7 +109,7 @@ fn build_post(
   post_info: PostInfo(msg),
   post_config: post_cfg.PostConfig(msg),
   all_posts: List(post.Post(msg)),
-) -> Result(post.Post(msg), error.BlogattoError) {
+) -> Result(Nil, error.BlogattoError) {
   // create the output directory for the post if it doesn't exist
   use _ <- result.try(
     post_info.assets_dir
@@ -140,7 +141,7 @@ fn build_post(
     }),
   )
 
-  Ok(post_info.post)
+  Ok(Nil)
 }
 
 /// Default template to use to wrap the rendered content of a blog post.
