@@ -48,6 +48,7 @@ import blogatto/error
 import blogatto/post.{type Post} as _
 import gleam/io
 import gleam/list
+import gleam/option
 import gleam/time/timestamp
 import lustre/attribute
 import lustre/element.{type Element}
@@ -61,6 +62,7 @@ pub fn main() {
     post.default()
     |> post.path("./blog")
     |> post.route_prefix("blog")
+    |> post.template(post_template)
     |> post.h1(fn(_attributes, id, children) {
       html.h1([attribute.id(id), attribute.class("post-title")], children)
     })
@@ -125,6 +127,33 @@ fn home_view(posts: List(Post(Nil))) -> Element(Nil) {
           ])
         }),
       ),
+    ]),
+  ])
+}
+
+fn post_template(p: Post(Nil), _all_posts: List(Post(Nil))) -> Element(Nil) {
+  html.html([attribute.lang(option.unwrap(p.language, "en"))], [
+    html.head([], [
+      html.meta([attribute.charset("UTF-8")]),
+      html.meta([
+        attribute.name("viewport"),
+        attribute.content("width=device-width, initial-scale=1"),
+      ]),
+      html.title([], p.title),
+      html.meta([
+        attribute.name("description"),
+        attribute.content(p.description),
+      ]),
+    ]),
+    html.body([], [
+      html.nav([], [
+        html.a([attribute.href("/")], [element.text("Home")]),
+      ]),
+      html.article([], [
+        html.h1([], [element.text(p.title)]),
+        html.p([], [html.em([], [element.text(p.description)])]),
+        html.div([], p.contents),
+      ]),
     ]),
   ])
 }

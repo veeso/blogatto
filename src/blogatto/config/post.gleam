@@ -64,7 +64,7 @@ pub type PostConfig(msg) {
     /// You can enable it with `post.syntax_highlighting(config, code.default())`, or customize it with your own configuration.
     syntax_highlighting: Option(code.SyntaxHighlightingConfig(msg)),
     /// Optional custom template for rendering a blog post page.
-    /// Receives the parsed `Post`, and all the other posts, and returns a full page element.
+    /// Receives the parsed `Post` and all posts, sorted newest first, including the one being rendered and its translations, and returns a full page element.
     /// When `None`, Blogatto uses a minimal default template.
     template: Option(fn(Post(msg), List(Post(msg))) -> Element(msg)),
   )
@@ -285,8 +285,14 @@ pub fn syntax_highlighting(
 /// Set a custom template function for rendering blog post pages.
 ///
 /// The template receives a fully parsed `Post` (with rendered contents)
-/// and all the other posts, and returns the complete page element. When not set, Blogatto uses
+/// and all posts, sorted newest first, including the one being rendered and its
+/// translations. It returns the complete page element. When not set, Blogatto uses
 /// a minimal default template with the post title and contents.
+///
+/// To get only the other posts, filter the list, e.g.
+/// `list.filter(all_posts, fn(other) { other.slug != post.slug })`.
+/// Translations share their post's `slug`, so this also drops them. A translation
+/// with its own slug is kept.
 pub fn template(
   config: PostConfig(msg),
   template: fn(Post(msg), List(Post(msg))) -> Element(msg),

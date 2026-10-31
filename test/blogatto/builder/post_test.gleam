@@ -113,6 +113,26 @@ fn config_with_template(
   |> config.post(md_config)
 }
 
+/// Template that renders `all_posts` as `<li>{slug}:{language or "default"}</li>` items,
+/// in the order received.
+fn listing_template(
+  _p: post.Post(msg),
+  all_posts: List(post.Post(msg)),
+) -> element.Element(msg) {
+  html.html([], [
+    html.body([], [
+      html.ul(
+        [attribute.id("all-posts")],
+        list.map(all_posts, fn(p: post.Post(msg)) {
+          html.li([], [
+            element.text(p.slug <> ":" <> option.unwrap(p.language, "default")),
+          ])
+        }),
+      ),
+    ]),
+  ])
+}
+
 /// Config with a custom route_builder.
 fn route_builder_config(
   output_dir: String,
@@ -822,6 +842,108 @@ pub fn build_with_custom_template_applies_template_test() {
 
     let assert Ok(content) = simplifile.read(html_path)
     content |> string.contains("custom-wrapper") |> should.be_true
+  }
+}
+
+pub fn build_template_all_posts_sorted_newest_first_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+
+    let alpha_dir = create_post_dir(blog, "alpha")
+    write_markdown(
+      alpha_dir,
+      "index.md",
+      markdown_content(
+        "Alpha",
+        "alpha",
+        "2024-01-01 00:00:00",
+        "First written",
+        "# Alpha\n",
+      ),
+    )
+
+    let beta_dir = create_post_dir(blog, "beta")
+    write_markdown(
+      beta_dir,
+      "index.md",
+      markdown_content(
+        "Beta",
+        "beta",
+        "2024-03-01 00:00:00",
+        "Latest written",
+        "# Beta\n",
+      ),
+    )
+
+    let gamma_dir = create_post_dir(blog, "gamma")
+    write_markdown(
+      gamma_dir,
+      "index.md",
+      markdown_content(
+        "Gamma",
+        "gamma",
+        "2024-02-01 00:00:00",
+        "Middle written",
+        "# Gamma\n",
+      ),
+    )
+
+    config_with_template(dir, blog, listing_template)
+    |> post_builder.build()
+    |> should.be_ok
+
+    let expected =
+      "<li>beta:default</li><li>gamma:default</li><li>alpha:default</li>"
+
+    // every page receives the same newest-first list, including its own post
+    list.each(["alpha", "beta", "gamma"], fn(slug) {
+      let assert Ok(content) = simplifile.read(expected_html_path(dir, slug))
+      content |> string.contains(expected) |> should.be_true
+    })
+  }
+}
+
+pub fn build_template_all_posts_includes_translations_test() {
+  let assert Ok(_) = {
+    use dir <- temporary.create(temporary.directory())
+    use blog <- temporary.create(temporary.directory())
+
+    let post_dir = create_post_dir(blog, "my-post")
+    write_markdown(post_dir, "index.md", sample_markdown())
+    write_markdown(
+      post_dir,
+      "index-it.md",
+      markdown_content(
+        "Ciao Mondo",
+        "hello-world",
+        "2024-01-15 10:00:00",
+        "Un post di test",
+        "# Ciao\n",
+      ),
+    )
+
+    config_with_template(dir, blog, listing_template)
+    |> post_builder.build()
+    |> should.be_ok
+
+    let assert Ok(default_html) =
+      simplifile.read(expected_html_path(dir, "hello-world"))
+    default_html
+    |> string.contains("<li>hello-world:default</li>")
+    |> should.be_true
+    default_html
+    |> string.contains("<li>hello-world:it</li>")
+    |> should.be_true
+
+    let assert Ok(it_html) =
+      simplifile.read(expected_localized_html_path(dir, "it", "hello-world"))
+    it_html
+    |> string.contains("<li>hello-world:default</li>")
+    |> should.be_true
+    it_html
+    |> string.contains("<li>hello-world:it</li>")
+    |> should.be_true
   }
 }
 

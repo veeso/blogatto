@@ -148,6 +148,7 @@ Blog post templates control the full page layout wrapping each rendered blog pos
 ```gleam
 import blogatto/config/post
 import blogatto/post.{type Post}
+import gleam/list
 import gleam/option
 import lustre/attribute
 import lustre/element.{type Element}
@@ -158,8 +159,13 @@ let md =
   |> post.path("./blog")
   |> post.template(post_template)
 
-fn post_template(post: Post(Nil), _all_posts: List(Post(Nil))) -> Element(Nil) {
+fn post_template(post: Post(Nil), all_posts: List(Post(Nil))) -> Element(Nil) {
   let lang = option.unwrap(post.language, "en")
+  // all_posts is sorted newest first, so the first three others are the most recent
+  let recent_posts =
+    all_posts
+    |> list.filter(fn(other) { other.slug != post.slug })
+    |> list.take(3)
 
   html.html([attribute.lang(lang)], [
     html.head([], [
@@ -178,9 +184,40 @@ fn post_template(post: Post(Nil), _all_posts: List(Post(Nil))) -> Element(Nil) {
         html.h1([], [element.text(post.title)]),
         html.div([], post.contents),
       ]),
+      html.aside([], [
+        html.h2([], [element.text("Recent posts")]),
+        html.ul(
+          [],
+          list.map(recent_posts, fn(other) {
+            html.li([], [
+              html.a([attribute.href(other.url)], [element.text(other.title)]),
+            ])
+          }),
+        ),
+      ]),
     ]),
   ])
 }
 ```
 
-The template receives a fully parsed `Post` with rendered `contents`, and the list of all other posts (useful for related posts, navigation, etc.). When no template is set, Blogatto uses a minimal default that wraps the title and contents in a basic HTML page.
+The template receives a fully parsed `Post` with rendered `contents`, and `all_posts`: every blog post, **including the post being rendered**, sorted newest first. The example above lists the three most recent other posts. It is useful for previous/next links, related posts, navigation, etc. When no template is set, Blogatto uses a minimal default that wraps the title and contents in a basic HTML page.
+
+> Before 8.0.0, `all_posts` excluded the current post and its translations.
+
+### Excluding the current post
+
+To get only the other posts, filter `all_posts`. The first variant drops the current post and its translations, the second drops only the current page and keeps its translations. Both need `import gleam/list`.
+
+Translations count as the same post only when they share a `slug` in their frontmatter. A translation with its own slug is a separate post, so the filter keeps it.
+
+```gleam
+// Other posts, excluding the current one and its translations
+let other_posts =
+  list.filter(all_posts, fn(other) { other.slug != post.slug })
+
+// Other pages, excluding only this exact page (translations are kept)
+let other_pages =
+  list.filter(all_posts, fn(other) {
+    other.slug != post.slug || other.language != post.language
+  })
+```

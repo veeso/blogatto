@@ -176,6 +176,7 @@ fn home_view(posts: List(Post(Nil))) -> Element(Nil) {
 
 /// Blog post template: renders a full HTML page for a single blog post
 /// with a navigation link back to the homepage.
+/// `_all_posts` contains every post, including this one.
 fn blog_post_template(
   p: Post(Nil),
   _all_posts: List(Post(Nil)),
